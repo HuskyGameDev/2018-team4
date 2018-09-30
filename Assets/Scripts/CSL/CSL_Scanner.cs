@@ -8,8 +8,9 @@ public class CSL_Scanner : MonoBehaviour {
 
 	#region Testing
 	private void Start() {
-		//StartCoroutine(ScanTest(1000));
-		//TokenTest();
+        //StartCoroutine(ScanTest(1000));
+        //TokenTest();
+        CSL.Build();
 	}
 
 

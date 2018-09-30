@@ -123,7 +123,7 @@ GameObject:
   - component: {fileID: 301339734}
   - component: {fileID: 301339733}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: CSl Tester
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
