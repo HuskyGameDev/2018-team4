@@ -1,16 +1,29 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// A grammer and rules specification for a Card Scripting Language
+/// </summary>
 public class CSL {
 
 	#region Token
-	public enum Token { WHITESP, NEWLN, WHILE, ELSE, IF, PLAYER, DECK, MAP, CAMERA, ENGINE, TITLE, TEXT, UI,
+	/// <summary>
+	/// The types of tokens interpreted by the system.
+	/// </summary>
+	public enum Token {
+		//Non Temrinals
+		NumConstant, Variable, Factor, MullExpr, SimpleExpr, Expr, CompoundStatement, ExitStatement, ReturnStatement,
+		IOStatement, Test, WhileStatement, TestStatment, IfStatement, Assignment, Statement, StatementList, Type, 
+		VarDecl, IdentifierList, DeclList, ProcedureBody, FunctionDecl, ProcedureHead, ProceadureDecl, Procedures, Script,
+
+		//Terminals
+		WHITESP, NEWLN, WHILE, ELSE, IF, PLAYER, DECK, MAP, CAMERA, ENGINE, TITLE, TEXT, UI,
 		CARD, NEW, VAR, DELETE, TRUE, FALSE, RETURN, RUN, LEFTBRACE, LEFTSQR, LEFTPAREN,
 		RIGHTBRACE, RIGHTSQR, RIGHTPAREN, AND, OR, NOT, XOR, COMMA, PERIOD, EQUAL,
 		NOTEQUAL, GREATEQUAL, LESSEQUAL, GREATTHAN, LESSTHAN, ASSIGN, ADD, SUB, DIV, MUL, SEMICOLON,
 		IDENTIFIER, FLOATCON, STRINGCON, INTCON, ERR, IDENERR
 	}
 
-	public static TokenRegexPair[] tokenRegexPairs = new TokenRegexPair[] {
+	public static TokenRegexPair[] terminalTokens = new TokenRegexPair[] {
 		new TokenRegexPair(Token.NEWLN,		"\n",			@"^(\n)$"),
 		new TokenRegexPair(Token.WHITESP,	" ",			@"^\s$"),
 		new TokenRegexPair(Token.WHILE,		"while",		@"^(while)$"),
@@ -66,7 +79,9 @@ public class CSL {
 	#endregion
 
 	#region Rules
-
+	public static TokenMap[] rules = new TokenMap[] {
+		new TokenMap()
+	};
 
 	#endregion
 
@@ -84,6 +99,17 @@ public class CSL {
 		}
 	}
 
+	#endregion
+
+	#region Structs
+	public struct TokenMap {
+		public Token nonTerminal;
+		public Token[] tokens;
+		public TokenMap(Token nonTerminal, Token[] tokens) {
+			this.nonTerminal = nonTerminal;
+			this.tokens = tokens;
+		}
+	}
 
 	public struct TokenRegexPair {
 		public Token token;

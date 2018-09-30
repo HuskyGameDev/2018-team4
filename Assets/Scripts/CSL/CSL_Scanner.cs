@@ -18,13 +18,13 @@ public class CSL_Scanner : MonoBehaviour {
 	/// For each token, compare it to the samples of EVERY token for a match, and report the matches
 	/// </summary>
 	void TokenTest() {
-		for (int k = 0; k < CSL.tokenRegexPairs.Length; k++) {
+		for (int k = 0; k < CSL.terminalTokens.Length; k++) {
 
-			Regex reg = new Regex(CSL.tokenRegexPairs[k].regex);
-			Debug.Log("--" + System.Enum.GetName(typeof(CSL.Token), CSL.tokenRegexPairs[k].token) + "----------");
-			for (int i = 0; i < CSL.tokenRegexPairs.Length; i++) {
-				if (reg.IsMatch(CSL.tokenRegexPairs[i].sample))
-					Debug.Log(CSL.tokenRegexPairs[i].sample + " | " + CSL.tokenRegexPairs[k].regex + " | " + reg.IsMatch(CSL.tokenRegexPairs[i].sample));
+			Regex reg = new Regex(CSL.terminalTokens[k].regex);
+			Debug.Log("--" + System.Enum.GetName(typeof(CSL.Token), CSL.terminalTokens[k].token) + "----------");
+			for (int i = 0; i < CSL.terminalTokens.Length; i++) {
+				if (reg.IsMatch(CSL.terminalTokens[i].sample))
+					Debug.Log(CSL.terminalTokens[i].sample + " | " + CSL.terminalTokens[k].regex + " | " + reg.IsMatch(CSL.terminalTokens[i].sample));
 			}
 			//Debug.Log("");
 			//Debug.Log("");
@@ -37,11 +37,11 @@ public class CSL_Scanner : MonoBehaviour {
 		int errCount = 0;
 		List<CSL.TokenRegexPair> testingTokens = new List<CSL.TokenRegexPair>();
 
-		for (int i = 0; i < CSL.tokenRegexPairs.Length; i++) {
+		for (int i = 0; i < CSL.terminalTokens.Length; i++) {
 			//Don't intentionally put errors intot he test
-			if (CSL.tokenRegexPairs[i].token == CSL.Token.ERR || CSL.tokenRegexPairs[i].token == CSL.Token.IDENERR)
+			if (CSL.terminalTokens[i].token == CSL.Token.ERR || CSL.terminalTokens[i].token == CSL.Token.IDENERR)
 				continue;
-			testingTokens.Add(CSL.tokenRegexPairs[i]);
+			testingTokens.Add(CSL.terminalTokens[i]);
 		}
 
 		for (int i = 0; i < testSize; i++) {
@@ -95,15 +95,15 @@ public class CSL_Scanner : MonoBehaviour {
 
 			CSL.Token token = CSL.Token.ERR;
 			
-			for (int i = 0; i < CSL.tokenRegexPairs.Length; i++) {
+			for (int i = 0; i < CSL.terminalTokens.Length; i++) {
 				text = "";
-				regex = new Regex(CSL.tokenRegexPairs[i].regex);
+				regex = new Regex(CSL.terminalTokens[i].regex);
 				for (int k = 0; k < remainder.Length; k++) {
 					text += remainder[k];
 					//Debug.Log(text + "<=?=>" + CSL.tokenRegexPairs[i].regex);
 					//yield return new WaitForEndOfFrame();
 					if (regex.IsMatch(text)) {
-						token = CSL.tokenRegexPairs[i].token;
+						token = CSL.terminalTokens[i].token;
 						//Debug.Log("Match Found: " + text + "<=?=>" + CSL.tokenRegexPairs[i].regex + " | " + token);
 						break;
 					}
