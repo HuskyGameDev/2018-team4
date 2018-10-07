@@ -9,7 +9,7 @@ public class Player : MonoBehaviour {
 
     public enum StatType {Spd, Str, Int, San};
 
-    private int[] playerStats = new int[4];; // Spd:0, Str:1, Int:2, San:3
+    private int[] playerStats = new int[4]; // Spd:0, Str:1, Int:2, San:3
     private int[,] playerStatDice = new int[4,7]; // Spd:0, Str:1, Int:2, San:3
     private bool playerDead = false;
     private object mapLocation;
@@ -19,7 +19,7 @@ public class Player : MonoBehaviour {
 	private object playerItemsUsed;
     private object playerArtifactsUsed;
     private object playerEventsUsed;
-	private List<String> playerFlags;
+	private List<string> playerFlags;
 	
 	private int playerMovement;
 	private int playerAttack;
@@ -49,16 +49,16 @@ public class Player : MonoBehaviour {
 		//playerItems = new CardDeck();
 		//playerArtifacts = new CardDeck();
 		//playerEvents = new CardDeck();
-		playerFlags = new List<String>();
+		playerFlags = new List<string>();
     }
 	
 	/// <summary>
     /// Resets player movement, attack, and items/artifacts/events
     /// </summary>
-	public void StartTurn() {
+	/*public void StartTurn() {
 		//TODO : potential movement and attack modifications
 		playerMovement = GetStatDice(0);
-		PlayerAttack = 1;
+		playerAttack = 1;
 		while (!playerItemsUsed.Empty()) {
 			playerItems.add(playerItemsUsed.remove());
 		}
@@ -68,7 +68,7 @@ public class Player : MonoBehaviour {
 		while (!playerEventsUsed.Empty()) {
 			playerEvents.add(playerEventsUsed.remove());
 		}
-	}
+	}*/
 
     /// <summary>
     /// Returns the value of the given stat.
@@ -164,16 +164,16 @@ public class Player : MonoBehaviour {
             default: return 0;
         }
     }
-	
-	public int[,] GetStatDiceArray() {
-		return System.Array.Copy(playerStatDice);
-	}
 
-    /// <summary>
-    /// Checks if the player is dead
-    /// </summary>
-    /// <returns>True is the player is dead, otherwise false</returns>
-    public bool IsDead() {
+	/*public int[,] GetStatDiceArray() {
+		return System.Array.Copy(playerStatDice);
+	}*/
+
+	/// <summary>
+	/// Checks if the player is dead
+	/// </summary>
+	/// <returns>True is the player is dead, otherwise false</returns>
+	public bool IsDead() {
         CheckDead();
         return playerDead;
     }
@@ -289,7 +289,7 @@ public class Player : MonoBehaviour {
         return playerEventsUsed;
     }
 	
-	public void AddPlayerFlag(String flag) {
+	public void AddPlayerFlag(string flag) {
 		//TODO
 	}
 		
