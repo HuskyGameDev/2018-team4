@@ -9,14 +9,31 @@ public class Player : MonoBehaviour {
 
     public enum StatType {Spd, Str, Int, San};
 
-    private int[] playerStats = new int[4];
-    private int[,] playerStatDice = new int[4,7];
+    private int[] playerStats = new int[4];; // Spd:0, Str:1, Int:2, San:3
+    private int[,] playerStatDice = new int[4,7]; // Spd:0, Str:1, Int:2, San:3
     private bool playerDead = false;
     private object mapLocation;
     private object playerItems;
     private object playerArtifacts;
-    private object playerEffects;
+    private object playerEvents;
+	private object playerItemsUsed;
+    private object playerArtifactsUsed;
+    private object playerEventsUsed;
+	private List<String> playerFlags;
+	
+	private int playerMovement;
+	private int playerAttack;
 
+	/*
+	TODO:
+		Movement
+		Store/Give Event/Item/Artifact
+		Get Event/Item/Artifact
+		Discard Event/Item/Artifact
+		Get/Set String Flag (List<String>)
+	*/
+	
+	
 	void Start () {
         //playerStats = new int[4];
         //playerStatDice = new int[4, 7];
@@ -29,7 +46,29 @@ public class Player : MonoBehaviour {
                                     {1, 2, 3, 4, 4, 5, 5, 5},
                                     {3, 4, 5, 5, 6, 6, 7, 8}
                                     };
+		//playerItems = new CardDeck();
+		//playerArtifacts = new CardDeck();
+		//playerEvents = new CardDeck();
+		playerFlags = new List<String>();
     }
+	
+	/// <summary>
+    /// Resets player movement, attack, and items/artifacts/events
+    /// </summary>
+	public void StartTurn() {
+		//TODO : potential movement and attack modifications
+		playerMovement = GetStatDice(0);
+		PlayerAttack = 1;
+		while (!playerItemsUsed.Empty()) {
+			playerItems.add(playerItemsUsed.remove());
+		}
+		while (!playerArtifactsUsed.Empty()) {
+			playerArtifacts.add(playerArtifactsUsed.remove());
+		}
+		while (!playerEventsUsed.Empty()) {
+			playerEvents.add(playerEventsUsed.remove());
+		}
+	}
 
     /// <summary>
     /// Returns the value of the given stat.
@@ -125,6 +164,10 @@ public class Player : MonoBehaviour {
             default: return 0;
         }
     }
+	
+	public int[,] GetStatDiceArray() {
+		return System.Array.Copy(playerStatDice);
+	}
 
     /// <summary>
     /// Checks if the player is dead
@@ -166,6 +209,37 @@ public class Player : MonoBehaviour {
     public object GetLocation() {
         return mapLocation;
     }
+	
+	/// <summary>
+    /// Returns true if the player has movement left
+    /// </summary>
+    /// <returns></returns>
+	public bool CanMove() {
+		if (playerMovement > 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/// <summary>
+    /// Returns the amount of movement the player has left
+    /// </summary>
+    /// <returns></returns>
+	public int MoveRemaining() {
+		return playerMovement;
+	}
+	
+	/*
+	/// <summary>
+    /// Moves player to given room
+    /// </summary>
+	public void MovePlayer(HexCoordinate pos, int MoveCost = 1) {
+		//TODO
+	}
+	*/
+	
+	
 
     /// <summary>
     /// Get the player's list of items
@@ -187,7 +261,36 @@ public class Player : MonoBehaviour {
     /// Get the player's list of effects
     /// </summary>
     /// <returns></returns>
-    public object GetPlayerEffects() {
-        return playerEffects;
+    public object GetPlayerEvents() {
+        return playerEvents;
     }
+	
+	/// <summary>
+    /// Get the player's list of used items
+    /// </summary>
+    /// <returns></returns>
+    public object GetPlayerItemsUsed() {
+        return playerItemsUsed;
+    }
+
+    /// <summary>
+    /// Get the player's list of used artifacts
+    /// </summary>
+    /// <returns></returns>
+    public object GetPlayerArtifactsUsed() {
+        return playerArtifactsUsed;
+    }
+
+    /// <summary>
+    /// Get the player's list of used effects
+    /// </summary>
+    /// <returns></returns>
+    public object GetPlayerEventsUsed() {
+        return playerEventsUsed;
+    }
+	
+	public void AddPlayerFlag(String flag) {
+		//TODO
+	}
+		
 }
