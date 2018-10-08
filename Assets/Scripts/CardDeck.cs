@@ -6,13 +6,13 @@ public class CardDeck {
 
     public class Card
     {
-        private List<CSL.Token> tokens = new List<CSL.Token>();
+        private List<CSL.SymbolicToken> tokens = new List<CSL.SymbolicToken>();
 
-        public Card (List<CSL.Token> tokens)
+        public Card (List<CSL.SymbolicToken> tokens)
         {
             this.tokens = tokens;
         }
-        public List<CSL.Token> GetTokens()
+        public List<CSL.SymbolicToken> GetTokens()
         {
             return tokens;
 

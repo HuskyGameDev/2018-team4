@@ -10,205 +10,225 @@ public static class CSL {
 	/// <summary>
 	/// The types of tokens interpreted by the system.
 	/// </summary>
-	public enum Token {
+	public enum SymbolicToken {
 		//Non Temrinals
-		NumConstant, Variable, Factor, MullExpr, AddExpr, SimpleExpr, Expr, CompoundStatement, ExitStatement, ReturnStatement,
-		IOStatement, Test, WhileStatement, TestStatment, IfStatement, Assignment, Statement, StatementList, Type, 
-		VarDecl, IdentifierList, DeclList, ProcedureBody, FunctionDecl, ProcedureHead, ProceadureDecl, Procedures, Script, ScriptPrime,
+		ScriptPrime, Script, EffectList, ChoiceList, EffectSet, ChoiceSet, Effect, Choice, StatementList, Statement,
+		Assignment, IfStatement, TestStatement, Test, WhileStatement, IOStatement, DiscardStatement, CompoundStatement,
+		Expr, SimpleExpr, AddExpr, MullExpr, Factor, Variable, Timing, Enforcement, NumConstant, Type,
 
 		//Terminals
-		WHITESP, NEWLN, WHILE, ELSE, IF, PLAYER, DECK, MAP, CAMERA, ENGINE, TITLE, TEXT, UI,
-		CARD, NEW, VAR, DELETE, TRUE, FALSE, RETURN, RUN, LEFTBRACE, LEFTSQR, LEFTPAREN,
+		COMMENT, IMAGE, IMMEDIATE, STATIC, NAME, TEXT, OPTIONAL, REQUIRED, ROOM, ITEM, EVENT, ARTIFACT, WHITESP,
+		NEWLN, WHILE, ELSE, IF, VAR, TRUE, FALSE, LEFTBRACE, LEFTSQR, LEFTPAREN,
+		CHOICEIDEN, EFFECTIDEN, DISCARD, THIS, DELAYED,
 		RIGHTBRACE, RIGHTSQR, RIGHTPAREN, AND, OR, NOT, XOR, COMMA, PERIOD, EQUAL,
 		NOTEQUAL, GREATEQUAL, LESSEQUAL, GREATTHAN, LESSTHAN, ASSIGN, ADD, SUB, DIV, MUL, SEMICOLON,
 		IDENTIFIER, FLOATCON, STRINGCON, INTCON, ERR, IDENERR
 	}
 
 
-    static public Token[] terminals = new Token[] {
-        Token.WHITESP, Token.NEWLN, Token.WHILE, Token.ELSE, Token.IF, Token.PLAYER, Token.DECK, Token.MAP, Token.CAMERA, Token.ENGINE, Token.TITLE, Token.TEXT, Token.UI,
-        Token.CARD, Token.NEW, Token.VAR, Token.DELETE, Token.TRUE, Token.FALSE, Token.RETURN, Token.RUN, Token.LEFTBRACE, Token.LEFTSQR, Token.LEFTPAREN,
-        Token.RIGHTBRACE, Token.RIGHTSQR, Token.RIGHTPAREN, Token.AND, Token.OR, Token.NOT, Token.XOR, Token.COMMA, Token.PERIOD, Token.EQUAL,
-        Token.NOTEQUAL, Token.GREATEQUAL, Token.LESSEQUAL, Token.GREATTHAN, Token.LESSTHAN, Token.ASSIGN, Token.ADD, Token.SUB, Token.DIV, Token.MUL, Token.SEMICOLON,
-        Token.IDENTIFIER, Token.FLOATCON, Token.STRINGCON, Token.INTCON, Token.ERR, Token.IDENERR
+    static public SymbolicToken[] terminals = new SymbolicToken[] {
+        SymbolicToken.WHITESP, SymbolicToken.NEWLN, SymbolicToken.WHILE, SymbolicToken.ELSE, SymbolicToken.IF, SymbolicToken.TEXT,
+        SymbolicToken.VAR, SymbolicToken.DELAYED, SymbolicToken.TRUE, SymbolicToken.FALSE, SymbolicToken.LEFTBRACE, SymbolicToken.LEFTSQR, SymbolicToken.LEFTPAREN,
+        SymbolicToken.RIGHTBRACE, SymbolicToken.RIGHTSQR, SymbolicToken.RIGHTPAREN, SymbolicToken.AND, SymbolicToken.OR, SymbolicToken.NOT, SymbolicToken.XOR, SymbolicToken.COMMA, SymbolicToken.PERIOD, SymbolicToken.EQUAL,
+        SymbolicToken.NOTEQUAL, SymbolicToken.GREATEQUAL, SymbolicToken.LESSEQUAL, SymbolicToken.GREATTHAN, SymbolicToken.LESSTHAN, SymbolicToken.ASSIGN, SymbolicToken.ADD, SymbolicToken.SUB,
+		SymbolicToken.DIV, SymbolicToken.MUL, SymbolicToken.SEMICOLON, SymbolicToken.IDENTIFIER, SymbolicToken.FLOATCON, SymbolicToken.STRINGCON, SymbolicToken.INTCON, SymbolicToken.ERR, SymbolicToken.IDENERR
     };
 
-    static public Token[] nonTerminals = new Token[] {
-       Token.NumConstant, Token.Variable, Token.Factor, Token.MullExpr, Token.AddExpr, Token.SimpleExpr, Token.Expr, Token.CompoundStatement, Token.ExitStatement, Token.ReturnStatement,
-       Token.IOStatement, Token.Test, Token.WhileStatement, Token.TestStatment, Token.IfStatement, Token.Assignment, Token.Statement, Token.StatementList, Token.Type,
-       Token. VarDecl, Token.IdentifierList, Token.DeclList, Token.ProcedureBody, Token.FunctionDecl, Token.ProcedureHead, Token.ProceadureDecl, Token.Procedures, Token.Script, Token.ScriptPrime
-    };
+    static public SymbolicToken[] nonTerminals = new SymbolicToken[] {
+		SymbolicToken.ScriptPrime, SymbolicToken.Script, SymbolicToken.EffectList, SymbolicToken.ChoiceList, SymbolicToken.EffectSet, SymbolicToken.ChoiceSet, SymbolicToken.Effect,
+		SymbolicToken.Choice, SymbolicToken.StatementList, SymbolicToken.Statement, SymbolicToken.Assignment, SymbolicToken.IfStatement, SymbolicToken.Test, SymbolicToken.TestStatement,
+		SymbolicToken.WhileStatement, SymbolicToken.IOStatement, SymbolicToken.DiscardStatement, SymbolicToken.CompoundStatement, SymbolicToken.Expr,
+		SymbolicToken.SimpleExpr, SymbolicToken.AddExpr, SymbolicToken.MullExpr, SymbolicToken.Factor, SymbolicToken.Variable, SymbolicToken.Timing, SymbolicToken.Enforcement,
+		SymbolicToken.NumConstant, SymbolicToken.Type
+	};
 
     public static TokenRegexPair[] terminalTokens = new TokenRegexPair[] {
-		new TokenRegexPair(Token.NEWLN,		"\n",			@"^(\n)$"),
-		new TokenRegexPair(Token.WHITESP,	" ",			@"^\s$"),
-		new TokenRegexPair(Token.WHILE,		"while",		@"^(while)$"),
-		new TokenRegexPair(Token.ELSE,		"else",			@"^(else)$"),
-		new TokenRegexPair(Token.IF,		"if",			@"^(if)$"),
-		new TokenRegexPair(Token.PLAYER,	"player",		@"^(player)$"),
-		new TokenRegexPair(Token.DECK,		"deck",			@"^(deck)$"),
-		new TokenRegexPair(Token.MAP,		"map",			@"^(map)$"),
-		new TokenRegexPair(Token.CAMERA,	"camera",		@"^(camera)$"),
-		new TokenRegexPair(Token.ENGINE,	"engine",		@"^(engine)$"),
-		new TokenRegexPair(Token.TITLE,		"title",		@"^(title)$"),
-		new TokenRegexPair(Token.TEXT,		"text",			@"^(text)$"),
-		new TokenRegexPair(Token.UI,		"UI",			@"^(UI)$"),
-		new TokenRegexPair(Token.CARD,		"card",			@"^(card)$"),
-		new TokenRegexPair(Token.NEW,		"new",			@"^(new)$"),
-		new TokenRegexPair(Token.VAR,		"var",			@"^(var)$"),
-		new TokenRegexPair(Token.DELETE,	"delete",		@"^(delete)$"),
-		new TokenRegexPair(Token.TRUE,		"true",			@"^(true)$"),
-		new TokenRegexPair(Token.FALSE,		"false",		@"^(false)$"),
-		new TokenRegexPair(Token.RETURN,	"return",		@"^(return)$"),
-		new TokenRegexPair(Token.RUN,		"run",			@"^(run)$"),
-		new TokenRegexPair(Token.LEFTBRACE, "{",			@"^\{$"),
-		new TokenRegexPair(Token.LEFTSQR,	"[",			@"^\[$"),
-		new TokenRegexPair(Token.LEFTPAREN,	"(",			@"^\($"),
-		new TokenRegexPair(Token.RIGHTBRACE,"}",			@"^\}$"),
-		new TokenRegexPair(Token.RIGHTSQR,	"]",			@"^\]$"),
-		new TokenRegexPair(Token.RIGHTPAREN,")",			@"^\)$"),
-		new TokenRegexPair(Token.AND,		"&&",			@"^(&&)$"),
-		new TokenRegexPair(Token.OR,		"||",			@"^(\|\|)$"),
-		new TokenRegexPair(Token.XOR,		"|x|",			@"^((\|)(x)(\|))$"),
-		new TokenRegexPair(Token.NOT,		"!",			@"^(\!)$"),
-		new TokenRegexPair(Token.COMMA,		",",			@"^(,)$"),
-		new TokenRegexPair(Token.PERIOD,	".",			@"^(\.)$"),
-		new TokenRegexPair(Token.EQUAL,		"==",			@"^(==)$"),
-		new TokenRegexPair(Token.NOTEQUAL,	"!=",			@"^(!=)$"),
-		new TokenRegexPair(Token.GREATEQUAL,">=",			@"^(>=)$"),
-		new TokenRegexPair(Token.LESSEQUAL,	"<=",			@"^(<=)$"),
-		new TokenRegexPair(Token.GREATTHAN,	">",			@"^(>)$"),
-		new TokenRegexPair(Token.LESSTHAN,	"<",			@"^(<)$"),
-		new TokenRegexPair(Token.ASSIGN,	"=",			@"^(=)$"),
-		new TokenRegexPair(Token.ADD,		"+",			@"^(\+)$"),
-		new TokenRegexPair(Token.SUB,		"-",			@"^(-)$"),
-		new TokenRegexPair(Token.DIV,		"/",			@"^(/)$"),
-		new TokenRegexPair(Token.MUL,		"*",			@"^(\*)$"),
-		new TokenRegexPair(Token.SEMICOLON,	";",			@"^(;)$"),
-		new TokenRegexPair(Token.IDENERR,   "7Birds",       @"^([0-9]+[a-zA-Z]([a-zA-Z]|[0-9])+)$"),
-		new TokenRegexPair(Token.IDENTIFIER,"sumdiffs",		@"^([a-zA-Z]([a-zA-Z]|[0-9])*)$"),
-		new TokenRegexPair(Token.FLOATCON,  "-3.2314",      @"^((-?)(\d)*(\.)(\d)+)$"),
-		new TokenRegexPair(Token.STRINGCON, "\"Hello\"",    "^(\"(.*)\")$"),
-		new TokenRegexPair(Token.INTCON,    "1337",			@"^(-?[0-9]+)$"),
-		new TokenRegexPair(Token.ERR,       "`",			@".*$")
+		new TokenRegexPair(SymbolicToken.COMMENT,	"/*Goodbye*/",  @"^(/\*(.*)\*/)$"),
+		new TokenRegexPair(SymbolicToken.NEWLN,		"\n",			@"^(\n)$"),
+		new TokenRegexPair(SymbolicToken.WHITESP,	" ",			@"^\s$"),
+		new TokenRegexPair(SymbolicToken.WHILE,		"while",		@"^(while)$"),
+		new TokenRegexPair(SymbolicToken.ELSE,		"else",			@"^(else)$"),
+		new TokenRegexPair(SymbolicToken.IF,		"if",			@"^(if)$"),
+		new TokenRegexPair(SymbolicToken.TEXT,		"text",			@"^(text)$"),
+		new TokenRegexPair(SymbolicToken.VAR,		"var",			@"^(var)$"),
+		new TokenRegexPair(SymbolicToken.TRUE,		"true",			@"^(true)$"),
+		new TokenRegexPair(SymbolicToken.FALSE,		"false",		@"^(false)$"),
+
+		new TokenRegexPair(SymbolicToken.IMAGE,		"image",		@"^(image)$"),
+		new TokenRegexPair(SymbolicToken.IMMEDIATE,	"immediate",	@"^(immediate)$"),
+		new TokenRegexPair(SymbolicToken.DELAYED,	"delayed",      @"^(delayed)$"),
+		new TokenRegexPair(SymbolicToken.IMMEDIATE,	"enter",		@"^(enter)$"),
+		new TokenRegexPair(SymbolicToken.DELAYED,	"exit",			@"^(exit)$"),
+		new TokenRegexPair(SymbolicToken.STATIC,	"static",		@"^(static)$"),
+		new TokenRegexPair(SymbolicToken.NAME,		"name",         @"^(name)$"),
+		new TokenRegexPair(SymbolicToken.OPTIONAL,	"optional",     @"^(optional)$"),
+		new TokenRegexPair(SymbolicToken.REQUIRED,	"required",     @"^(required)$"),
+		new TokenRegexPair(SymbolicToken.ROOM,		"room",         @"^(room)$"),
+		new TokenRegexPair(SymbolicToken.ITEM,		"item",         @"^(item)$"),
+		new TokenRegexPair(SymbolicToken.EVENT,		"event",		@"^(event)$"),
+		new TokenRegexPair(SymbolicToken.ARTIFACT,	"artifact",		@"^(artifact)$"),
+		new TokenRegexPair(SymbolicToken.CHOICEIDEN,"choice",		@"^(choice)$"),
+		new TokenRegexPair(SymbolicToken.EFFECTIDEN,"effect",       @"^(effect)$"),
+		new TokenRegexPair(SymbolicToken.DISCARD,	"discard",		@"^(discard)$"),
+		new TokenRegexPair(SymbolicToken.THIS,		"this",			@"^(this)$"),
+
+		new TokenRegexPair(SymbolicToken.LEFTBRACE, "{",			@"^\{$"),
+		new TokenRegexPair(SymbolicToken.LEFTSQR,	"[",			@"^\[$"),
+		new TokenRegexPair(SymbolicToken.LEFTPAREN,	"(",			@"^\($"),
+		new TokenRegexPair(SymbolicToken.RIGHTBRACE,"}",			@"^\}$"),
+		new TokenRegexPair(SymbolicToken.RIGHTSQR,	"]",			@"^\]$"),
+		new TokenRegexPair(SymbolicToken.RIGHTPAREN,")",			@"^\)$"),
+
+		new TokenRegexPair(SymbolicToken.AND,		"&&",			@"^(&&)$"),
+		new TokenRegexPair(SymbolicToken.OR,		"||",			@"^(\|\|)$"),
+		new TokenRegexPair(SymbolicToken.XOR,		"|x|",			@"^((\|)(x)(\|))$"),
+		new TokenRegexPair(SymbolicToken.NOT,		"!",			@"^(\!)$"),
+
+		new TokenRegexPair(SymbolicToken.COMMA,		",",			@"^(,)$"),
+		new TokenRegexPair(SymbolicToken.PERIOD,	".",			@"^(\.)$"),
+		new TokenRegexPair(SymbolicToken.SEMICOLON, ";",            @"^(;)$"),
+
+
+		new TokenRegexPair(SymbolicToken.EQUAL,		"==",			@"^(==)$"),
+		new TokenRegexPair(SymbolicToken.NOTEQUAL,	"!=",			@"^(!=)$"),
+		new TokenRegexPair(SymbolicToken.GREATEQUAL,">=",			@"^(>=)$"),
+		new TokenRegexPair(SymbolicToken.LESSEQUAL,	"<=",			@"^(<=)$"),
+		new TokenRegexPair(SymbolicToken.GREATTHAN,	">",			@"^(>)$"),
+		new TokenRegexPair(SymbolicToken.LESSTHAN,	"<",			@"^(<)$"),
+
+		new TokenRegexPair(SymbolicToken.ASSIGN,	"=",			@"^(=)$"),
+
+		new TokenRegexPair(SymbolicToken.ADD,		"+",			@"^(\+)$"),
+		new TokenRegexPair(SymbolicToken.SUB,		"-",			@"^(-)$"),
+		new TokenRegexPair(SymbolicToken.DIV,		"/",			@"^(/)$"),
+		new TokenRegexPair(SymbolicToken.MUL,		"*",			@"^(\*)$"),
+
+		new TokenRegexPair(SymbolicToken.IDENERR,   "7Birds",       @"^([0-9]+[a-zA-Z]([a-zA-Z]|[0-9])+)$"),
+
+		new TokenRegexPair(SymbolicToken.IDENTIFIER,"sumdiffs",		"^([a-zA-Z]([a-zA-Z]|[0-9])*)$"),
+		new TokenRegexPair(SymbolicToken.STRINGCON, "\"Hello\"",    "^(\"(.*)\")$"),
+		new TokenRegexPair(SymbolicToken.FLOATCON,  "-3.2314",      @"^((-?)(\d)*(\.)(\d)+)$"),
+		new TokenRegexPair(SymbolicToken.INTCON,    "1337",			@"^(-?[0-9]+)$"),
+
+		new TokenRegexPair(SymbolicToken.ERR,       "`",			@"^.*$")
 	};
 	#endregion
 
 	#region Rules
 	public static TokenMap[] rules = new TokenMap[] {
-        new TokenMap(Token.ScriptPrime, new Token[] { Token.Script }),
+        new TokenMap(SymbolicToken.ScriptPrime, new SymbolicToken[] { SymbolicToken.Script }),
 
-		new TokenMap(Token.Script, new Token[] { Token.DeclList, Token.Procedures } ),
-		new TokenMap(Token.Script, new Token[] { Token.Procedures } ),
+        new TokenMap(SymbolicToken.Script, new SymbolicToken[] { SymbolicToken.Type, SymbolicToken.SEMICOLON, SymbolicToken.NAME, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.IMAGE, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.EffectList, SymbolicToken.ChoiceList }),
 
+		new TokenMap(SymbolicToken.EffectList, new SymbolicToken[] { SymbolicToken.EffectSet } ),
+		new TokenMap(SymbolicToken.EffectList, new SymbolicToken[] { SymbolicToken.EffectList, SymbolicToken.EffectSet } ),
 
-        new TokenMap(Token.Procedures, new Token[] { Token.ProceadureDecl, Token.Procedures } ),
-        new TokenMap(Token.Procedures, new Token[] { Token.ProceadureDecl } ),
+		new TokenMap(SymbolicToken.ChoiceList, new SymbolicToken[] { SymbolicToken.ChoiceSet } ),
+		new TokenMap(SymbolicToken.ChoiceList, new SymbolicToken[] { SymbolicToken.ChoiceList, SymbolicToken.ChoiceSet } ),
 
+		new TokenMap(SymbolicToken.EffectSet, new SymbolicToken[] { SymbolicToken.Timing, SymbolicToken.Effect} ),
+		new TokenMap(SymbolicToken.EffectSet, new SymbolicToken[] { SymbolicToken.EffectSet, SymbolicToken.Effect} ),
 
-        new TokenMap(Token.ProceadureDecl, new Token[] { Token.ProcedureHead, Token.ProcedureBody } ),
+		new TokenMap(SymbolicToken.ChoiceSet, new SymbolicToken[] { SymbolicToken.Timing, SymbolicToken.Enforcement, SymbolicToken.Choice} ),
+		new TokenMap(SymbolicToken.ChoiceSet, new SymbolicToken[] { SymbolicToken.ChoiceSet, SymbolicToken.Choice } ),
 
-        new TokenMap(Token.ProcedureHead, new Token[] { Token.FunctionDecl, Token.DeclList } ),
-        new TokenMap(Token.ProcedureHead, new Token[] { Token.FunctionDecl } ),
+		new TokenMap(SymbolicToken.Effect, new SymbolicToken[] { SymbolicToken.EFFECTIDEN, SymbolicToken.LEFTBRACE, SymbolicToken.StatementList, SymbolicToken.RIGHTBRACE } ),
 
-        new TokenMap(Token.FunctionDecl, new Token[] { Token.Type, Token.IDENTIFIER, Token.LEFTPAREN, Token.RIGHTPAREN, Token.LEFTBRACE } ),
-
-        new TokenMap(Token.ProcedureBody, new Token[] { Token.StatementList, Token.RIGHTBRACE } ),
-
-        new TokenMap(Token.DeclList, new Token[] { Token.Type, Token.IdentifierList, Token.SEMICOLON } ),
-        new TokenMap(Token.DeclList, new Token[] { Token.DeclList, Token.Type, Token.IdentifierList, Token.SEMICOLON } ),
+		new TokenMap(SymbolicToken.Choice, new SymbolicToken[] { SymbolicToken.CHOICEIDEN, SymbolicToken.LEFTBRACE, SymbolicToken.NAME, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.Test, SymbolicToken.LEFTBRACE, SymbolicToken.TEXT, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.EffectList, SymbolicToken.RIGHTBRACE, SymbolicToken.RIGHTBRACE } ),
 
 
-        new TokenMap(Token.IdentifierList, new Token[] { Token.VarDecl } ),
-        new TokenMap(Token.IdentifierList, new Token[] { Token.IdentifierList, Token.COMMA, Token.VarDecl } ),
+		new TokenMap(SymbolicToken.StatementList, new SymbolicToken[] { SymbolicToken.Statement } ),
+        new TokenMap(SymbolicToken.StatementList, new SymbolicToken[] { SymbolicToken.StatementList, SymbolicToken.Statement } ),
 
-        new TokenMap(Token.VarDecl, new Token[] { Token.IDENTIFIER } ),
-        new TokenMap(Token.VarDecl, new Token[] { Token.IDENTIFIER, Token.LEFTSQR, Token.INTCON, Token.RIGHTSQR } ),
-
-        new TokenMap(Token.Type, new Token[] { Token.INTCON } ),
-        new TokenMap(Token.Type, new Token[] { Token.FLOATCON } ),
-
-        new TokenMap(Token.StatementList, new Token[] { Token.Statement } ),
-        new TokenMap(Token.StatementList, new Token[] { Token.StatementList, Token.Statement } ),
-
-        new TokenMap(Token.Statement, new Token[] { Token.Assignment } ),
-        new TokenMap(Token.Statement, new Token[] { Token.IfStatement } ),
-        new TokenMap(Token.Statement, new Token[] { Token.WhileStatement } ),
-        new TokenMap(Token.Statement, new Token[] { Token.IOStatement } ),
-        new TokenMap(Token.Statement, new Token[] { Token.ReturnStatement } ),
-        new TokenMap(Token.Statement, new Token[] { Token.ExitStatement } ),
-        new TokenMap(Token.Statement, new Token[] { Token.CompoundStatement } ),
+        new TokenMap(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.Assignment } ),
+        new TokenMap(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.IfStatement } ),
+        new TokenMap(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.WhileStatement } ),
+        new TokenMap(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.IOStatement } ),
+        new TokenMap(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.CompoundStatement } ),
 
 
-        new TokenMap(Token.Assignment, new Token[] { Token.Variable, Token.ASSIGN, Token.Expr, Token.SEMICOLON } ),
+        new TokenMap(SymbolicToken.Assignment, new SymbolicToken[] { SymbolicToken.Variable, SymbolicToken.ASSIGN, SymbolicToken.Expr, SymbolicToken.SEMICOLON } ),
 
-        new TokenMap(Token.IfStatement, new Token[] { Token.IF, Token.TestStatment, Token.ELSE, Token.CompoundStatement } ),
-        new TokenMap(Token.IfStatement, new Token[] { Token.IF, Token.TestStatment } ),
-
-        new TokenMap(Token.TestStatment, new Token[] { Token.Test, Token.CompoundStatement } ),
-
-        new TokenMap(Token.Test, new Token[] { Token.Expr } ),
-
-        new TokenMap(Token.WhileStatement, new Token[] { Token.WHILE, Token.Expr, Token.Statement } ),
-
-        //new TokenMap(Token.IOStatement, new Token[] { Token.READ } ),
-
-        new TokenMap(Token.ReturnStatement, new Token[] { Token.RETURN, Token.Expr, Token.SEMICOLON } ),
-
-        new TokenMap(Token.CompoundStatement, new Token[] { Token.LEFTBRACE, Token.StatementList, Token.RIGHTBRACE } ),
-
-        new TokenMap(Token.Expr, new Token[] { Token.Expr, Token.ADD, Token.SimpleExpr } ),
-        new TokenMap(Token.Expr, new Token[] { Token.Expr, Token.OR, Token.SimpleExpr } ),
-        new TokenMap(Token.Expr, new Token[] { Token.SimpleExpr } ),
-        new TokenMap(Token.Expr, new Token[] { Token.NOT, Token.SimpleExpr } ),
-
-        new TokenMap(Token.SimpleExpr, new Token[] { Token.SimpleExpr, Token.EQUAL, Token.AddExpr } ),
-        new TokenMap(Token.SimpleExpr, new Token[] { Token.SimpleExpr, Token.NOTEQUAL, Token.AddExpr } ),
-        new TokenMap(Token.SimpleExpr, new Token[] { Token.SimpleExpr, Token.LESSEQUAL, Token.AddExpr } ),
-        new TokenMap(Token.SimpleExpr, new Token[] { Token.SimpleExpr, Token.LESSTHAN, Token.AddExpr } ),
-        new TokenMap(Token.SimpleExpr, new Token[] { Token.SimpleExpr, Token.GREATEQUAL, Token.AddExpr } ),
-        new TokenMap(Token.SimpleExpr, new Token[] { Token.SimpleExpr, Token.GREATTHAN, Token.AddExpr } ),
-        new TokenMap(Token.SimpleExpr, new Token[] { Token.AddExpr } ),
+        new TokenMap(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement, SymbolicToken.ELSE, SymbolicToken.IfStatement } ),
+        new TokenMap(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement, SymbolicToken.ELSE, SymbolicToken.CompoundStatement } ),
+		new TokenMap(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement } ),
 
 
-        new TokenMap(Token.AddExpr, new Token[] { Token.AddExpr, Token.ADD, Token.AddExpr } ),
-        new TokenMap(Token.AddExpr, new Token[] { Token.AddExpr, Token.ADD, Token.MullExpr } ),
-        new TokenMap(Token.AddExpr, new Token[] { Token.MullExpr} ),
+		new TokenMap(SymbolicToken.TestStatement, new SymbolicToken[] { SymbolicToken.Test, SymbolicToken.CompoundStatement } ),
 
-        new TokenMap(Token.MullExpr, new Token[] { Token.MullExpr, Token.MUL, Token.Factor } ),
-        new TokenMap(Token.MullExpr, new Token[] { Token.MullExpr, Token.SUB, Token.Factor } ),
-        new TokenMap(Token.MullExpr, new Token[] { Token.Factor } ),
+		new TokenMap(SymbolicToken.Test, new SymbolicToken[] { SymbolicToken.LEFTPAREN, SymbolicToken.Expr, SymbolicToken.RIGHTPAREN } ),
 
-        new TokenMap(Token.Factor, new Token[] { Token.Variable } ),
-        new TokenMap(Token.Factor, new Token[] { Token.NumConstant } ),
-        new TokenMap(Token.Factor, new Token[] { Token.IDENTIFIER, Token.LEFTPAREN, Token.RIGHTPAREN } ),
-        new TokenMap(Token.Factor, new Token[] { Token.LEFTPAREN, Token.Expr, Token.RIGHTPAREN } ),
+		new TokenMap(SymbolicToken.WhileStatement, new SymbolicToken[] { SymbolicToken.WHILE, SymbolicToken.Expr, SymbolicToken.Statement, SymbolicToken.SEMICOLON } ),
 
-        new TokenMap(Token.Variable, new Token[] { Token.IDENTIFIER } ),
-        new TokenMap(Token.Variable, new Token[] { Token.IDENTIFIER, Token.LEFTSQR, Token.Expr, Token.RIGHTSQR } ),
+		new TokenMap(SymbolicToken.IOStatement, new SymbolicToken[] { SymbolicToken.WHILE, SymbolicToken.Expr, SymbolicToken.Statement } ),
+
+		new TokenMap(SymbolicToken.DiscardStatement, new SymbolicToken[] {SymbolicToken.DISCARD, SymbolicToken.IDENTIFIER }),
+		new TokenMap(SymbolicToken.DiscardStatement, new SymbolicToken[] {SymbolicToken.DISCARD, SymbolicToken.THIS }),
+
+		new TokenMap(SymbolicToken.CompoundStatement, new SymbolicToken[] { SymbolicToken.LEFTBRACE, SymbolicToken.StatementList, SymbolicToken.RIGHTBRACE } ),
+
+        new TokenMap(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.Expr, SymbolicToken.ADD, SymbolicToken.SimpleExpr } ),
+        new TokenMap(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.Expr, SymbolicToken.OR, SymbolicToken.SimpleExpr } ),
+        new TokenMap(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.SimpleExpr } ),
+        new TokenMap(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.NOT, SymbolicToken.SimpleExpr } ),
+
+        new TokenMap(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.EQUAL, SymbolicToken.AddExpr } ),
+        new TokenMap(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.NOTEQUAL, SymbolicToken.AddExpr } ),
+        new TokenMap(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.LESSEQUAL, SymbolicToken.AddExpr } ),
+        new TokenMap(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.LESSTHAN, SymbolicToken.AddExpr } ),
+        new TokenMap(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.GREATEQUAL, SymbolicToken.AddExpr } ),
+        new TokenMap(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.GREATTHAN, SymbolicToken.AddExpr } ),
+        new TokenMap(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.AddExpr } ),
 
 
-        new TokenMap(Token.NumConstant, new Token[] { Token.INTCON } ),
-        new TokenMap(Token.NumConstant, new Token[] {Token.FLOATCON } )
+        new TokenMap(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.AddExpr, SymbolicToken.ADD, SymbolicToken.AddExpr } ),
+        new TokenMap(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.AddExpr, SymbolicToken.SUB, SymbolicToken.MullExpr } ),
+        new TokenMap(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.MullExpr } ),
+
+        new TokenMap(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.MullExpr, SymbolicToken.MUL, SymbolicToken.Factor } ),
+        new TokenMap(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.MullExpr, SymbolicToken.SUB, SymbolicToken.Factor } ),
+        new TokenMap(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.Factor } ),
+
+        new TokenMap(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.Variable } ),
+        new TokenMap(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.NumConstant } ),
+        new TokenMap(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.IDENTIFIER, SymbolicToken.LEFTPAREN, SymbolicToken.RIGHTPAREN } ),
+        new TokenMap(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.LEFTPAREN, SymbolicToken.Expr, SymbolicToken.RIGHTPAREN } ),
+
+        new TokenMap(SymbolicToken.Variable, new SymbolicToken[] { SymbolicToken.IDENTIFIER } ),
+        new TokenMap(SymbolicToken.Variable, new SymbolicToken[] { SymbolicToken.IDENTIFIER, SymbolicToken.LEFTSQR, SymbolicToken.Expr, SymbolicToken.RIGHTSQR } ),
+
+		new TokenMap(SymbolicToken.Timing, new SymbolicToken[] { SymbolicToken.IMMEDIATE } ),
+		new TokenMap(SymbolicToken.Timing, new SymbolicToken[] { SymbolicToken.DELAYED } ),
+		new TokenMap(SymbolicToken.Timing, new SymbolicToken[] { SymbolicToken.STATIC } ),
+
+		new TokenMap(SymbolicToken.Enforcement, new SymbolicToken[] { SymbolicToken.OPTIONAL } ),
+		new TokenMap(SymbolicToken.Enforcement, new SymbolicToken[] { SymbolicToken.REQUIRED } ),
 
 
-    };
+		new TokenMap(SymbolicToken.NumConstant, new SymbolicToken[] { SymbolicToken.INTCON } ),
+        new TokenMap(SymbolicToken.NumConstant, new SymbolicToken[] { SymbolicToken.FLOATCON } ),
+
+		new TokenMap(SymbolicToken.Type, new SymbolicToken[] { SymbolicToken.ITEM }),
+		new TokenMap(SymbolicToken.Type, new SymbolicToken[] { SymbolicToken.ROOM }),
+		new TokenMap(SymbolicToken.Type, new SymbolicToken[] { SymbolicToken.EVENT }),
+		new TokenMap(SymbolicToken.Type, new SymbolicToken[] { SymbolicToken.ARTIFACT })
+	};
 
 	#endregion
 
 	#region Methods
-    public static void Build() {
+    static public IEnumerator<object> Build() {
         //First Set storage
-        Dictionary<Token, List<Token>> firstSet = new Dictionary<Token, List<Token>>();
+        Dictionary<SymbolicToken, List<SymbolicToken>> firstSet = new Dictionary<SymbolicToken, List<SymbolicToken>>();
         //Follow Set storage
-        Dictionary<Token, List<Token>> followSet = new Dictionary<Token, List<Token>>();
+        Dictionary<SymbolicToken, List<SymbolicToken>> followSet = new Dictionary<SymbolicToken, List<SymbolicToken>>();
 
         //Create the first and follow set for each non termial
-        foreach (Token nT in nonTerminals) {
+        foreach (SymbolicToken nT in nonTerminals) {
             //Create first set
-            firstSet.Add(nT, new List<Token>());
+            firstSet.Add(nT, new List<SymbolicToken>());
             //create follow set
-            followSet.Add(nT, new List<Token>());
+            followSet.Add(nT, new List<SymbolicToken>());
 
             //for each Rule featuring this token as the NonTerminal, add the first token in tokens to the First set
             foreach (TokenMap map in rules)
@@ -228,31 +248,72 @@ public static class CSL {
                 }
             }
 
-            Debug.Log(System.Enum.GetName(typeof(Token), nT) + " first: " + PrintList(firstSet[nT]));
-            Debug.Log(System.Enum.GetName(typeof(Token), nT) + " follow: " + PrintList(followSet[nT]));
+            //Debug.Log(System.Enum.GetName(typeof(Token), nT) + " first: " + PrintList(firstSet[nT]));
+            //Debug.Log(System.Enum.GetName(typeof(Token), nT) + " follow: " + PrintList(followSet[nT]));
         }
-        
-        //Create the States.
+
+		//Create the States.
 
 
+		List<SymbolicToken> unexapndedList = new List<SymbolicToken>();
+		List<SymbolicToken> seenList = new List<SymbolicToken>();
+		List<TokenMap> stateRules = new List<TokenMap>();
+		unexapndedList.Add(SymbolicToken.ScriptPrime);
+		seenList.Add(SymbolicToken.ScriptPrime);
+
+		while (unexapndedList.Count > 0) {
+			yield return null;
+
+			SymbolicToken target = unexapndedList[0];
+			//Debug.Log(PrintList(seenList));
+			//Debug.Log(System.Enum.GetName(typeof(Token), target));
+			unexapndedList.RemoveAt(0);
+
+			//For each token, add this rule to the state.
+			for (int i = 0; i < rules.Length; i++) {
+				//If this token has the rule 
+				if (rules[i].nonTerminal == target)
+					stateRules.Add(rules[i]);
+				yield return null;
+			}
+			//Go through the first set for this token
+			if (firstSet.ContainsKey(target) == false)
+				continue;
+			foreach (SymbolicToken t in firstSet[target]) {
+				yield return null;
+
+				//If we have not seen this token before.
+				if (seenList.Contains(t) == false) {
+					unexapndedList.Add(t);
+					seenList.Add(t);
+				}
+			}
+		}
+
+		string toPrint = "";
+		foreach (TokenMap map in stateRules) {
+			toPrint += map.ToString();
+			toPrint += "\n";
+		}
+		Debug.Log(toPrint);
     }
 
-    private static string PrintList(List<Token> list) {
+    private static string PrintList(List<SymbolicToken> list) {
         string rt = "";
         for (int i = 0; i < list.Count; i++)
         {
-            rt += System.Enum.GetName(typeof(Token), list[i]) + ",";
+            rt += System.Enum.GetName(typeof(SymbolicToken), list[i]) + ", ";
         }
         return rt;
     }
 
 
-	public static object Box(Token token, string text) {
+	public static object Box(SymbolicToken token, string text) {
 		//Debug.Log(token + " | " + text);
 		switch (token) {
-			case Token.INTCON:
+			case SymbolicToken.INTCON:
 				return (object)System.Convert.ToInt32(text);
-			case Token.STRINGCON:
+			case SymbolicToken.STRINGCON:
 				string retString = text.Substring(1,text.Length-1);
 				return (object)retString;
 			default:
@@ -264,23 +325,51 @@ public static class CSL {
 
 	#region Structs
 	public struct TokenMap {
-		public Token nonTerminal;
-		public Token[] tokens;
-		public TokenMap(Token nonTerminal, Token[] tokens) {
+		public SymbolicToken nonTerminal;
+		public SymbolicToken[] tokens;
+		public TokenMap(SymbolicToken nonTerminal, SymbolicToken[] tokens) {
 			this.nonTerminal = nonTerminal;
 			this.tokens = tokens;
+		}
+
+		public string ToString() {
+			string ret = "";
+			ret += System.Enum.GetName(typeof(SymbolicToken), nonTerminal);
+			ret += " -> ";
+			for (int i = 0; i < tokens.Length; i++) {
+				ret += System.Enum.GetName(typeof(SymbolicToken), tokens[i]);
+				ret += " ";
+			}
+			return ret;
 		}
 	}
 
 	public struct TokenRegexPair {
-		public Token token;
+		public SymbolicToken token;
 		public string sample;
 		public string regex;
-		public TokenRegexPair(Token token, string sample, string regex) {
+		public TokenRegexPair(SymbolicToken token, string sample, string regex) {
 			this.token = token;
 			this.regex = regex;
 			this.sample = sample;
 		} 
+	}
+
+
+	public struct Script {
+		public List<ParsedToken> tokens;
+		public Script(List<ParsedToken> tokens) {
+			this.tokens = tokens;
+		}
+	}
+
+	public struct ParsedToken {
+		public SymbolicToken token;
+		public object data;
+		public ParsedToken(SymbolicToken token, object data) {
+			this.token = token;
+			this.data = data;
+		}
 	}
 	#endregion
 }

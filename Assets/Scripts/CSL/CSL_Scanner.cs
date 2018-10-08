@@ -8,9 +8,9 @@ public class CSL_Scanner : MonoBehaviour {
 
 	#region Testing
 	private void Start() {
-        //StartCoroutine(ScanTest(1000));
+        //StartCoroutine(ScanTest(20));
         //TokenTest();
-        CSL.Build();
+       StartCoroutine(CSL.Build());
 	}
 
 
@@ -22,7 +22,7 @@ public class CSL_Scanner : MonoBehaviour {
 		for (int k = 0; k < CSL.terminalTokens.Length; k++) {
 
 			Regex reg = new Regex(CSL.terminalTokens[k].regex);
-			Debug.Log("--" + System.Enum.GetName(typeof(CSL.Token), CSL.terminalTokens[k].token) + "----------");
+			Debug.Log("--" + System.Enum.GetName(typeof(CSL.SymbolicToken), CSL.terminalTokens[k].token) + "----------");
 			for (int i = 0; i < CSL.terminalTokens.Length; i++) {
 				if (reg.IsMatch(CSL.terminalTokens[i].sample))
 					Debug.Log(CSL.terminalTokens[i].sample + " | " + CSL.terminalTokens[k].regex + " | " + reg.IsMatch(CSL.terminalTokens[i].sample));
@@ -40,7 +40,7 @@ public class CSL_Scanner : MonoBehaviour {
 
 		for (int i = 0; i < CSL.terminalTokens.Length; i++) {
 			//Don't intentionally put errors intot he test
-			if (CSL.terminalTokens[i].token == CSL.Token.ERR || CSL.terminalTokens[i].token == CSL.Token.IDENERR)
+			if (CSL.terminalTokens[i].token == CSL.SymbolicToken.ERR || CSL.terminalTokens[i].token == CSL.SymbolicToken.IDENERR)
 				continue;
 			testingTokens.Add(CSL.terminalTokens[i]);
 		}
@@ -57,16 +57,16 @@ public class CSL_Scanner : MonoBehaviour {
 
 			Debug.Log(testString);
 			//Perform the scan
-			List<ParsedToken> tokens = Scan(testString);
+			List<CSL.ParsedToken> tokens = Scan(testString).tokens;
 
 			//Check to see if there is an ERR token in the scan (which should not happen since we only provided it valid samples)
 			bool errFlag = false;
 			string tokenString = "";
 
 			for (int k = 0; k < tokens.Count; k++) {
-				ParsedToken pToken = tokens[k];
-				tokenString += System.Enum.GetName(typeof(CSL.Token), pToken.token) + " ";
-				if (pToken.token == CSL.Token.ERR || pToken.token == CSL.Token.IDENERR)
+				CSL.ParsedToken pToken = tokens[k];
+				tokenString += System.Enum.GetName(typeof(CSL.SymbolicToken), pToken.token) + " ";
+				if (pToken.token == CSL.SymbolicToken.ERR || pToken.token == CSL.SymbolicToken.IDENERR)
 					errFlag = true;
 			}
 			Debug.Log(tokenString);
@@ -86,46 +86,48 @@ public class CSL_Scanner : MonoBehaviour {
 	#endregion
 
 	#region Methods
-	List<ParsedToken> Scan(string input) {
-		List<ParsedToken> tokens = new List<ParsedToken>();
+	CSL.Script Scan(string input) {
+		List<CSL.ParsedToken> tokens = new List<CSL.ParsedToken>();
 		string remainder = input;
 		string text = "";
 		int nl = 0;
 		Regex regex;
 		while (remainder.Length > 0) {
 
-			CSL.Token token = CSL.Token.ERR;
+			CSL.SymbolicToken token = CSL.SymbolicToken.ERR;
 			
 			for (int i = 0; i < CSL.terminalTokens.Length; i++) {
 				text = "";
+				string testingText = ""; // Track the current testing string.
 				regex = new Regex(CSL.terminalTokens[i].regex);
 				for (int k = 0; k < remainder.Length; k++) {
-					text += remainder[k];
+					testingText += remainder[k];
 					//Debug.Log(text + "<=?=>" + CSL.tokenRegexPairs[i].regex);
 					//yield return new WaitForEndOfFrame();
-					if (regex.IsMatch(text)) {
+					if (regex.IsMatch(testingText)) {
+						text = testingText; // Store our string since we know that this is the valid string.
 						token = CSL.terminalTokens[i].token;
 						//Debug.Log("Match Found: " + text + "<=?=>" + CSL.tokenRegexPairs[i].regex + " | " + token);
-						break;
+						//break;
 					}
 				}
 
-				if (token != CSL.Token.ERR)
+				if (token != CSL.SymbolicToken.ERR)
 					break;
 			}
 
 
-			 if (token != CSL.Token.ERR) {
+			 if (token != CSL.SymbolicToken.ERR) {
 
-				if (token == CSL.Token.WHITESP) {
+				if (token == CSL.SymbolicToken.WHITESP) {
 					//nothing
 				}
-				else if (token == CSL.Token.NEWLN) {
+				else if (token == CSL.SymbolicToken.NEWLN) {
 					nl++;
 				}
 				else {
 					//Debug.Log(text + " | " + System.Enum.GetName(typeof(CSL.Token), token));
-					tokens.Add(new ParsedToken(token, CSL.Box(token, text)));
+					tokens.Add(new CSL.ParsedToken(token, CSL.Box(token, text)));
 				}
 				//Debug.Log("Pre<"+remainder+">");
 				remainder = remainder.Substring(text.Length);
@@ -138,18 +140,7 @@ public class CSL_Scanner : MonoBehaviour {
 			}
 		}
 
-		return tokens;
-	}
-	#endregion
-
-	#region Structs
-	public struct ParsedToken {
-		public CSL.Token token;
-		public object data;
-		public ParsedToken(CSL.Token token, object data) {
-			this.token = token;
-			this.data = data;
-		}
+		return new CSL.Script(tokens);
 	}
 	#endregion
 }
