@@ -52,6 +52,14 @@ public class Player : MonoBehaviour {
 		playerFlags = new List<string>();
     }
 	
+    //This just allows the UI Script to get the scaling for the user to see. 
+    public int[,] statScaling()
+    {
+        return playerStatDice;
+    }
+
+
+
 	/// <summary>
     /// Resets player movement, attack, and items/artifacts/events
     /// </summary>
