@@ -53,7 +53,7 @@ public class Player : MonoBehaviour {
     }
 	
     //This just allows the UI Script to get the scaling for the user to see. 
-    public int[,] statScaling()
+    public int[,] StatScaling()
     {
         return playerStatDice;
     }
