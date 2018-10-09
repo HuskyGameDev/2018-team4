@@ -5,6 +5,8 @@ using System.Collections.Generic;
 /// A grammer and rules specification for a Card Scripting Language
 /// </summary>
 public static class CSL {
+	
+	public enum ScriptType {Room, Item, Artifact, Event, Effect }
 
 	#region Token
 	/// <summary>
