@@ -4,9 +4,14 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-
+/*
+ * This is the class for the UI in game
+ *
+ */ 
 public class InGameUI : MonoBehaviour
 {
+    //These are GUI texts that I modify to show players stats or their scaling
+    //They are serialized so I can keep them private while letting them be seen in the editor
     [SerializeField]
     private Text speed;
     [SerializeField]
@@ -24,9 +29,14 @@ public class InGameUI : MonoBehaviour
     [SerializeField]
     private Text intArray;
 
+    //This is the player object and their scaling arrays that I use a lot
     private int[,] playerScale;
     public Player player;
 
+    /*
+     * This is what gets set as soon as the scene loads. Right now, it's only funtion calls to edit text
+     * It will eventually hold a lot more due to the large UI factor of our game
+     */
     void Start()
     {
         GUIStyle style = new GUIStyle();
@@ -38,6 +48,10 @@ public class InGameUI : MonoBehaviour
         UItext(8, intArray);
     }
 
+    /*
+     * This updates things every frame. I have the players stats here so they are always up to date. 
+     * May be subject to change later in the future. 
+     */ 
     void Update()
     {
         UItext(1, speed);
@@ -47,10 +61,16 @@ public class InGameUI : MonoBehaviour
 
     }
 
+    /*
+     * This is where all the UI text gets set to their values
+     * It's one big switch statement, that I'm sure will only get bigger as time continues. 
+     * Right now it changes all the stats text and the stat array texts 
+     */ 
     public void UItext(int option, Text text)
     {
         switch (option)
         {
+            //1-4 is just the stat value. Gets updated each frame
             case 1:
                 text.text = "Spd = " + player.GetStatDice(Player.StatType.Spd);
                 break;
@@ -64,6 +84,9 @@ public class InGameUI : MonoBehaviour
             case 4:
                 text.text = "San = " + player.GetStatDice(Player.StatType.San);
                 break;
+            //5-8 is the stat array text. This gets called when the scene starts
+            //Each has an if, and that if checks to see if the number its about to print, has the same index value  
+            //the current stat it is at. If so, highlight the color so the player can see where they are at. 
             case 5:
                 text.text = "Speed\n ";
                 for (int i = 0; i <= 7; i++)
