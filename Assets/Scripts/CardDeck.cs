@@ -64,9 +64,12 @@ public class CardDeck {
             return null; // the deck is depleted
 
         // take the first card off the deck and add it to the discard pile
-        _deck.Remove(card);
-        return card;
-
+        bool removed = _deck.Remove(card);
+		if (removed) {
+			return card;
+		} else {
+			return null;
+		}
     }
     public Card TakeCard()
     {
