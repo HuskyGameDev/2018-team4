@@ -6,14 +6,21 @@ using UnityEngine;
 /// Player object. Holds player stats, the number of dice to roll for stats, the player's location, items, artifacts, status effects, etc.
 /// </summary>
 public class Player : MonoBehaviour {
+	/* TODO:
+	Movement (teleport, animation, statemachine will decide what moement is valid)
+	-Store/Give Event/Item/Artifact
+	-Get Event/Item/Artifact
+	-Discard Event/Item/Artifact
+	-Get/Set String Flag (List<String>)
+	*/
 
-    public enum StatType {Spd, Str, Int, San};	// stat types
-	//public enum CardType {Item, Artifact, Event, Effect}; // Card types
+	#region Values
+	public enum StatType {Spd, Str, Int, San};	// stat types
 
     private int[] playerStatLevel; // Spd:0, Str:1, Int:2, San:3   Holds the level fir each stat
     private int[,] playerStatScaling; // Spd:0, Str:1, Int:2, San:3   Holds the scaling for each stat at each level
     private bool playerDead = false;	// if the player is dead
-    private HexCoordinate mapLocation;	// players location on the map
+    private HexCoordinate playerLocation;	// players location on the map
 	private List<string> playerFlags;   // flags on player
 	private DynamicContainer playerData;	// data about player
 
@@ -28,28 +35,22 @@ public class Player : MonoBehaviour {
 	private CardDeck playerEffectsUsed; // player's effects, that have been used this turn
 
 	private int playerMovement;	// player's movement remaining for their turn
-	private int playerAttack;	// player's attack remaining for this turn
+	private int playerAttack;   // player's attack remaining for this turn
+	#endregion
 
-	/* TODO:
-		Movement (teleport, animation, statemachine will decide what moement is valid)
-		-Store/Give Event/Item/Artifact
-		-Get Event/Item/Artifact
-		-Discard Event/Item/Artifact
-		-Get/Set String Flag (List<String>)
-	*/
-	
-	void Start () {
-        //playerStats = new int[4];
-        //playerStatDice = new int[4, 8];
-        //loadPlayerStats
+	#region Constructors
+	public Player() {
+		//playerStats = new int[4];
+		//playerStatDice = new int[4, 8];
+		//loadPlayerStats
 
-        playerStatLevel = new int[] {3, 3, 2, 2};
-        playerStatScaling = new int[,] {
-                                    {4, 4, 4, 4, 5, 6, 8, 8},
-                                    {2, 2, 3, 3, 4, 4, 6, 7},
-                                    {1, 2, 3, 4, 4, 5, 5, 5},
-                                    {3, 4, 5, 5, 6, 6, 7, 8}
-                                    };
+		playerStatLevel = new int[] { 3, 3, 2, 2 };
+		playerStatScaling = new int[,] {
+									{4, 4, 4, 4, 5, 6, 8, 8},
+									{2, 2, 3, 3, 4, 4, 6, 7},
+									{1, 2, 3, 4, 4, 5, 5, 5},
+									{3, 4, 5, 5, 6, 6, 7, 8}
+									};
 		playerItems = new CardDeck();
 		playerArtifacts = new CardDeck();
 		playerEvents = new CardDeck();
@@ -62,12 +63,13 @@ public class Player : MonoBehaviour {
 
 		playerFlags = new List<string>();
 		playerData = new DynamicContainer();
-    }
+	}
+	#endregion
 
-
+	#region Methods
 	/// <summary>
-    /// Resets player movement, attack, and items/artifacts/events
-    /// </summary>
+	/// Resets player movement, attack, and items/artifacts/events
+	/// </summary>
 	public void StartTurn() {
 		//TODO : potential movement and attack modifications
 		playerMovement = GetStatDice(0);
@@ -85,12 +87,13 @@ public class Player : MonoBehaviour {
 		}*/
 	}
 
-    /// <summary>
-    /// Returns the value of the given stat.
-    /// </summary>
-    /// <param name="stat">Stat to return the value of: Spd, Str, Int, or San</param>
-    /// <returns>The value of the given stat</returns>
-    public int GetStat(StatType stat) {
+	#region Stats_&_Scaling
+	/// <summary>
+	/// Returns the value of the given stat.
+	/// </summary>
+	/// <param name="stat">Stat to return the value of: Spd, Str, Int, or San</param>
+	/// <returns>The value of the given stat</returns>
+	public int GetStat(StatType stat) {
         switch(stat)
         {
             case StatType.Spd: return playerStatLevel[0];
@@ -190,7 +193,9 @@ public class Player : MonoBehaviour {
 		return statScalingCopy;
 		//return playerStatScaling;
 	}
+	#endregion
 
+	#region Dead
 	/// <summary>
 	/// Checks if the player is dead
 	/// </summary>
@@ -223,13 +228,15 @@ public class Player : MonoBehaviour {
             if (playerStatLevel[i] > 7) playerStatLevel[i] = 7;
         }
     }
+	#endregion
 
-    /// <summary>
-    /// Get the location of the player
-    /// </summary>
-    /// <returns></returns>
-    public object GetLocation() {
-        return mapLocation;
+	#region Location_/_Movement
+	/// <summary>
+	/// Get the location of the player
+	/// </summary>
+	/// <returns></returns>
+	public object GetLocation() {
+        return playerLocation;
     }
 	
 	/// <summary>
@@ -253,6 +260,17 @@ public class Player : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// Moves player to given room
+	/// </summary>
+	public void MovePlayer(HexCoordinate pos, int MoveCost = 1) {
+		//TODO: animation, move location of map?
+		playerMovement -= MoveCost;
+		playerLocation = pos;
+	}
+	#endregion
+
+	#region Attack
+	/// <summary>
 	/// Returns true if the player has attacks left
 	/// </summary>
 	/// <returns></returns>
@@ -271,14 +289,8 @@ public class Player : MonoBehaviour {
 	public int AttackRemaining() {
 		return playerAttack;
 	}
-	
-	/// <summary>
-    /// Moves player to given room
-    /// </summary>
-	public void MovePlayer(HexCoordinate pos, int MoveCost = 1) {
-		//TODO
+	#endregion
 
-	}
 
 	/* old get player inventory stuff
     /// <summary>
@@ -330,6 +342,8 @@ public class Player : MonoBehaviour {
     }
 	*/
 
+
+	#region Inventory
 	/// <summary>
 	/// Get one of the parts of the players inventory
 	/// Either used or unused, items, artifacts, events, or effects
@@ -481,7 +495,9 @@ public class Player : MonoBehaviour {
 			}
 		}
 	}
+	#endregion
 
+	#region Flags
 	/// <summary>
 	/// Add a flag to the list, unless it is already in the list
 	/// </summary>
@@ -509,7 +525,9 @@ public class Player : MonoBehaviour {
 	public bool RemoveFlag(string flag) {
 		return playerFlags.Remove(flag);
 	}
+	#endregion
 
+	#region DynamicContainer
 	/// <summary>
 	/// Sets a value into internal storage via a type and key
 	/// </summary>
@@ -529,4 +547,6 @@ public class Player : MonoBehaviour {
 	public void GetData<T>(string key, out T output) {
 		playerData.GetData<T>(key, out output);
 	}
+	#endregion
+	#endregion
 }
