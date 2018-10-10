@@ -173,13 +173,33 @@ public class Player : MonoBehaviour {
     /// <param name="stat">The stat for which to find the number of dice to roll</param>
     /// <returns>The number of dice to roll</returns>
     public int GetStatDice(StatType stat) {
-        switch (stat)
+		switch (stat)
         {
-            case StatType.Spd: return playerStatScaling[0, playerStatLevel[0]];
-            case StatType.Str: return playerStatScaling[1, playerStatLevel[1]];
-            case StatType.Int: return playerStatScaling[2, playerStatLevel[2]];
-            case StatType.San: return playerStatScaling[3, playerStatLevel[3]];
-            default: return 0;
+            case StatType.Spd:
+				if (playerStatLevel[0] >= 0) {
+					return playerStatScaling[0, playerStatLevel[0]];
+				} else {
+					return 0;
+				}
+            case StatType.Str:
+				if (playerStatLevel[1] >= 0) {
+					return playerStatScaling[1, playerStatLevel[1]];
+				} else {
+					return 0;
+				}
+			case StatType.Int:
+				if (playerStatLevel[2] >= 0) {
+					return playerStatScaling[2, playerStatLevel[2]];
+				} else {
+					return 0;
+				}
+			case StatType.San:
+				if (playerStatLevel[3] >= 0) {
+					return playerStatScaling[3, playerStatLevel[3]];
+				} else {
+					return 0;
+				}
+			default: return 0;
         }
     }
 
