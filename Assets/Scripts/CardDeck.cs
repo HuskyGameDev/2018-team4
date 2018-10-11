@@ -64,8 +64,7 @@ public class CardDeck {
             return null; // the deck is depleted
 
         // take the first card off the deck and add it to the discard pile
-        bool removed = _deck.Remove(card);
-		if (removed) {
+		if (_deck.Remove(card)) {
 			return card;
 		} else {
 			return null;
@@ -99,6 +98,16 @@ public class CardDeck {
         List<Card> tempList = _deck.GetRange(0, amount - 1);
         _deck.RemoveRange(0,amount-1);
         return tempList;
+    }
+    public List<Card> InsertCard(Card card, int index)
+    {
+        _deck.Insert(index, card);
+        return _deck;
+    }
+    public List<Card> InsertCards(List<Card> cards, int index)
+    {
+        _deck.InsertRange(index, cards);
+        return _deck;
     }
 
         /* ...etc... */
