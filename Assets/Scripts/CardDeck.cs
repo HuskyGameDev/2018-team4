@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CardDeck {
 
-    public class Card
+    public class Card //Card Defines what a card is, code taken from SybolicToken script
     {
         private List<CSL.SymbolicToken> tokens = new List<CSL.SymbolicToken>();
 
@@ -20,22 +20,22 @@ public class CardDeck {
     }
 
 
-    private List<Card> _deck = new List<Card>();
+    private List<Card> _deck = new List<Card>(); //List that will store cards
 
-    public List<Card> getCards()
+    public List<Card> getCards() //returns the list as a whole
     {
         return _deck;
     }
 
-    public void AddCard(Card card)
+    public void AddCard(Card card) //adds input card to the "bottom" of the deck
     {
         _deck.Add(card);
     }
-    public void AddCards(List<Card> cards)
+    public void AddCards(List<Card> cards) //adds multiple cards to the "bottom" of the deck
     {
         _deck.AddRange(cards);
     }
-    public void AddCards(CardDeck deck)
+    public void AddCards(CardDeck deck) //adds two decks together. Input is put on the "bottom" of the original deck. (For shuffling, add discard pile to original deck)
     {
         _deck.AddRange(deck.getCards());
     }
@@ -58,35 +58,38 @@ public class CardDeck {
 
     }
 
-    public Card TakeCard(Card card)
+    public Card TakeCard(Card card) //Retrieves a specific card from a deck.
     {
         if (_deck.Count == 0)
             return null; // the deck is depleted
 
-        // take the first card off the deck and add it to the discard pile
-		if (_deck.Remove(card)) {
+        // 
+		if (_deck.Remove(card)) { //Only retrieves the card if it is in the deck. 
 			return card;
 		} else {
 			return null;
 		}
     }
-    public Card TakeCard()
+    public Card TakeCard() //take the top card off the deck
     {
         if (_deck.Count == 0) {
             Debug.Log("drawing more cards than there are in deck");
         return null; // the deck is depleted
         }
 
-        // take the first card off the deck and add it to the discard pile
+        //creates a temporary card that is the card, then removes the card from the deck. Returns temporary card
         Card tempCard = _deck[0];
         _deck.RemoveAt(0);
         return tempCard;
     }
-    public List<Card> Look(int amount)
+
+
+    public List<Card> Look(int amount) //peek at the "top" cards of a deck
     {
         return _deck.GetRange(0, amount - 1);
     }
-    public List<Card> TakeCards(int amount)
+
+    public List<Card> TakeCards(int amount) // take mulitple cards from the "top" of a deck as a list
     {
         if (_deck.Count < amount)
         {
@@ -94,17 +97,17 @@ public class CardDeck {
             return null;
         }
 
-        // take the first card off the deck and add it to the discard pile
+        // ditto to TakeCard()
         List<Card> tempList = _deck.GetRange(0, amount - 1);
         _deck.RemoveRange(0,amount-1);
         return tempList;
     }
-    public List<Card> InsertCard(Card card, int index)
+    public List<Card> InsertCard(Card card, int index) //places a card in a specific place in the deck
     {
         _deck.Insert(index, card);
         return _deck;
     }
-    public List<Card> InsertCards(List<Card> cards, int index)
+    public List<Card> InsertCards(List<Card> cards, int index) //places multiple cards in a specific place in th deck
     {
         _deck.InsertRange(index, cards);
         return _deck;
