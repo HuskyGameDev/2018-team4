@@ -10,7 +10,7 @@ public class CSL_Scanner : MonoBehaviour {
 	private void Start() {
         //StartCoroutine(ScanTest(20));
         //TokenTest();
-       StartCoroutine(CSL.Build());
+       //StartCoroutine(CSL.Build());
 	}
 
 
@@ -34,7 +34,7 @@ public class CSL_Scanner : MonoBehaviour {
 	}
 
 
-	IEnumerator ScanTest(int testSize) {
+	/*IEnumerator ScanTest(int testSize) {
 		int errCount = 0;
 		List<CSL.TokenRegexPair> testingTokens = new List<CSL.TokenRegexPair>();
 
@@ -82,11 +82,11 @@ public class CSL_Scanner : MonoBehaviour {
 		Debug.Log("---------------------------------------------------------");
 		Debug.Log("---------------------------------------------------------");
 		Debug.Log("Testing completed with " + errCount + " errors.");
-	}
+	}*/
 	#endregion
 
 	#region Methods
-	CSL.Script Scan(string input) {
+	/*CSL.Script Scan(string input) {
 		List<CSL.ParsedToken> tokens = new List<CSL.ParsedToken>();
 		string remainder = input;
 		string text = "";
@@ -141,6 +141,6 @@ public class CSL_Scanner : MonoBehaviour {
 		}
 
 		return new CSL.Script(tokens);
-	}
+	}*/
 	#endregion
 }

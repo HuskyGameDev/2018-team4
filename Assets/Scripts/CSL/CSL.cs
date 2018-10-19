@@ -4,8 +4,12 @@ using System.Collections.Generic;
 /// <summary>
 /// A grammer and rules specification for a Card Scripting Language
 /// </summary>
-public static class CSL {
-	
+public class CSL : MonoBehaviour {
+
+	private void Start() {
+		StartCoroutine(Build());
+	}
+
 	public enum ScriptType {Room, Item, Artifact, Event, Effect }
 
 	#region Token
@@ -13,8 +17,12 @@ public static class CSL {
 	/// The types of tokens interpreted by the system.
 	/// </summary>
 	public enum SymbolicToken {
+		//NEVER REMOVE SCRIPTPRIME or EOF
+		ScriptPrime, EOF, 
+
+
 		//Non Temrinals
-		ScriptPrime, Script, EffectList, ChoiceList, EffectSet, ChoiceSet, Effect, Choice, StatementList, Statement,
+		 Script, EffectList, ChoiceList, EffectSet, ChoiceSet, Effect, Choice, StatementList, Statement,
 		Assignment, IfStatement, TestStatement, Test, WhileStatement, IOStatement, DiscardStatement, CompoundStatement,
 		Expr, SimpleExpr, AddExpr, MullExpr, Factor, Variable, Timing, Enforcement, NumConstant, Type,
 
@@ -28,23 +36,24 @@ public static class CSL {
 	}
 
 
-    static public SymbolicToken[] terminals = new SymbolicToken[] {
-        SymbolicToken.WHITESP, SymbolicToken.NEWLN, SymbolicToken.WHILE, SymbolicToken.ELSE, SymbolicToken.IF, SymbolicToken.TEXT,
+    static public List<SymbolicToken> terminals = new List<SymbolicToken>(new SymbolicToken[] {
+		SymbolicToken.WHITESP, SymbolicToken.NEWLN, SymbolicToken.WHILE, SymbolicToken.ELSE, SymbolicToken.IF, SymbolicToken.TEXT,
         SymbolicToken.VAR, SymbolicToken.DELAYED, SymbolicToken.TRUE, SymbolicToken.FALSE, SymbolicToken.LEFTBRACE, SymbolicToken.LEFTSQR, SymbolicToken.LEFTPAREN,
         SymbolicToken.RIGHTBRACE, SymbolicToken.RIGHTSQR, SymbolicToken.RIGHTPAREN, SymbolicToken.AND, SymbolicToken.OR, SymbolicToken.NOT, SymbolicToken.XOR, SymbolicToken.COMMA, SymbolicToken.PERIOD, SymbolicToken.EQUAL,
         SymbolicToken.NOTEQUAL, SymbolicToken.GREATEQUAL, SymbolicToken.LESSEQUAL, SymbolicToken.GREATTHAN, SymbolicToken.LESSTHAN, SymbolicToken.ASSIGN, SymbolicToken.ADD, SymbolicToken.SUB,
-		SymbolicToken.DIV, SymbolicToken.MUL, SymbolicToken.SEMICOLON, SymbolicToken.IDENTIFIER, SymbolicToken.FLOATCON, SymbolicToken.STRINGCON, SymbolicToken.INTCON, SymbolicToken.ERR, SymbolicToken.IDENERR
-    };
+		SymbolicToken.DIV, SymbolicToken.MUL, SymbolicToken.SEMICOLON, SymbolicToken.IDENTIFIER, SymbolicToken.FLOATCON, SymbolicToken.STRINGCON, SymbolicToken.INTCON, SymbolicToken.EOF
+    });
 
-    static public SymbolicToken[] nonTerminals = new SymbolicToken[] {
+    static public List<SymbolicToken> nonTerminals = new List<SymbolicToken>( new SymbolicToken[] {
 		SymbolicToken.ScriptPrime, SymbolicToken.Script, SymbolicToken.EffectList, SymbolicToken.ChoiceList, SymbolicToken.EffectSet, SymbolicToken.ChoiceSet, SymbolicToken.Effect,
 		SymbolicToken.Choice, SymbolicToken.StatementList, SymbolicToken.Statement, SymbolicToken.Assignment, SymbolicToken.IfStatement, SymbolicToken.Test, SymbolicToken.TestStatement,
 		SymbolicToken.WhileStatement, SymbolicToken.IOStatement, SymbolicToken.DiscardStatement, SymbolicToken.CompoundStatement, SymbolicToken.Expr,
 		SymbolicToken.SimpleExpr, SymbolicToken.AddExpr, SymbolicToken.MullExpr, SymbolicToken.Factor, SymbolicToken.Variable, SymbolicToken.Timing, SymbolicToken.Enforcement,
 		SymbolicToken.NumConstant, SymbolicToken.Type
-	};
+	});
 
     public static TokenRegexPair[] terminalTokens = new TokenRegexPair[] {
+
 		new TokenRegexPair(SymbolicToken.COMMENT,	"/*Goodbye*/",  @"^(/\*(.*)\*/)$"),
 		new TokenRegexPair(SymbolicToken.NEWLN,		"\n",			@"^(\n)$"),
 		new TokenRegexPair(SymbolicToken.WHITESP,	" ",			@"^\s$"),
@@ -117,188 +126,255 @@ public static class CSL {
 	#endregion
 
 	#region Rules
-	public static TokenMap[] rules = new TokenMap[] {
-        new TokenMap(SymbolicToken.ScriptPrime, new SymbolicToken[] { SymbolicToken.Script }),
+	public static GrammarRule[] productionRules = new GrammarRule[] {
+new GrammarRule(SymbolicToken.ScriptPrime, new SymbolicToken[] { SymbolicToken.Script }),
 
-        new TokenMap(SymbolicToken.Script, new SymbolicToken[] { SymbolicToken.Type, SymbolicToken.SEMICOLON, SymbolicToken.NAME, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.IMAGE, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.EffectList, SymbolicToken.ChoiceList }),
+        new GrammarRule(SymbolicToken.Script, new SymbolicToken[] { SymbolicToken.Type, SymbolicToken.SEMICOLON, SymbolicToken.NAME, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.IMAGE, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.EffectList, SymbolicToken.ChoiceList }),
 
-		new TokenMap(SymbolicToken.EffectList, new SymbolicToken[] { SymbolicToken.EffectSet } ),
-		new TokenMap(SymbolicToken.EffectList, new SymbolicToken[] { SymbolicToken.EffectList, SymbolicToken.EffectSet } ),
+		new GrammarRule(SymbolicToken.EffectList, new SymbolicToken[] { SymbolicToken.EffectSet } ),
+		new GrammarRule(SymbolicToken.EffectList, new SymbolicToken[] { SymbolicToken.EffectList, SymbolicToken.EffectSet } ),
 
-		new TokenMap(SymbolicToken.ChoiceList, new SymbolicToken[] { SymbolicToken.ChoiceSet } ),
-		new TokenMap(SymbolicToken.ChoiceList, new SymbolicToken[] { SymbolicToken.ChoiceList, SymbolicToken.ChoiceSet } ),
+		new GrammarRule(SymbolicToken.ChoiceList, new SymbolicToken[] { SymbolicToken.ChoiceSet } ),
+		new GrammarRule(SymbolicToken.ChoiceList, new SymbolicToken[] { SymbolicToken.ChoiceList, SymbolicToken.ChoiceSet } ),
 
-		new TokenMap(SymbolicToken.EffectSet, new SymbolicToken[] { SymbolicToken.Timing, SymbolicToken.Effect} ),
-		new TokenMap(SymbolicToken.EffectSet, new SymbolicToken[] { SymbolicToken.EffectSet, SymbolicToken.Effect} ),
+		new GrammarRule(SymbolicToken.EffectSet, new SymbolicToken[] { SymbolicToken.Timing, SymbolicToken.Effect} ),
+		new GrammarRule(SymbolicToken.EffectSet, new SymbolicToken[] { SymbolicToken.EffectSet, SymbolicToken.Effect} ),
 
-		new TokenMap(SymbolicToken.ChoiceSet, new SymbolicToken[] { SymbolicToken.Timing, SymbolicToken.Enforcement, SymbolicToken.Choice} ),
-		new TokenMap(SymbolicToken.ChoiceSet, new SymbolicToken[] { SymbolicToken.ChoiceSet, SymbolicToken.Choice } ),
+		new GrammarRule(SymbolicToken.ChoiceSet, new SymbolicToken[] { SymbolicToken.Timing, SymbolicToken.Enforcement, SymbolicToken.Choice} ),
+		new GrammarRule(SymbolicToken.ChoiceSet, new SymbolicToken[] { SymbolicToken.ChoiceSet, SymbolicToken.Choice } ),
 
-		new TokenMap(SymbolicToken.Effect, new SymbolicToken[] { SymbolicToken.EFFECTIDEN, SymbolicToken.LEFTBRACE, SymbolicToken.StatementList, SymbolicToken.RIGHTBRACE } ),
+		new GrammarRule(SymbolicToken.Effect, new SymbolicToken[] { SymbolicToken.EFFECTIDEN, SymbolicToken.LEFTBRACE, SymbolicToken.StatementList, SymbolicToken.RIGHTBRACE } ),
 
-		new TokenMap(SymbolicToken.Choice, new SymbolicToken[] { SymbolicToken.CHOICEIDEN, SymbolicToken.LEFTBRACE, SymbolicToken.NAME, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.Test, SymbolicToken.LEFTBRACE, SymbolicToken.TEXT, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.EffectList, SymbolicToken.RIGHTBRACE, SymbolicToken.RIGHTBRACE } ),
-
-
-		new TokenMap(SymbolicToken.StatementList, new SymbolicToken[] { SymbolicToken.Statement } ),
-        new TokenMap(SymbolicToken.StatementList, new SymbolicToken[] { SymbolicToken.StatementList, SymbolicToken.Statement } ),
-
-        new TokenMap(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.Assignment } ),
-        new TokenMap(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.IfStatement } ),
-        new TokenMap(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.WhileStatement } ),
-        new TokenMap(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.IOStatement } ),
-        new TokenMap(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.CompoundStatement } ),
+		new GrammarRule(SymbolicToken.Choice, new SymbolicToken[] { SymbolicToken.CHOICEIDEN, SymbolicToken.LEFTBRACE, SymbolicToken.NAME, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.Test, SymbolicToken.LEFTBRACE, SymbolicToken.TEXT, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.EffectList, SymbolicToken.RIGHTBRACE, SymbolicToken.RIGHTBRACE } ),
 
 
-        new TokenMap(SymbolicToken.Assignment, new SymbolicToken[] { SymbolicToken.Variable, SymbolicToken.ASSIGN, SymbolicToken.Expr, SymbolicToken.SEMICOLON } ),
+		new GrammarRule(SymbolicToken.StatementList, new SymbolicToken[] { SymbolicToken.Statement } ),
+        new GrammarRule(SymbolicToken.StatementList, new SymbolicToken[] { SymbolicToken.StatementList, SymbolicToken.Statement } ),
 
-        new TokenMap(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement, SymbolicToken.ELSE, SymbolicToken.IfStatement } ),
-        new TokenMap(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement, SymbolicToken.ELSE, SymbolicToken.CompoundStatement } ),
-		new TokenMap(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement } ),
-
-
-		new TokenMap(SymbolicToken.TestStatement, new SymbolicToken[] { SymbolicToken.Test, SymbolicToken.CompoundStatement } ),
-
-		new TokenMap(SymbolicToken.Test, new SymbolicToken[] { SymbolicToken.LEFTPAREN, SymbolicToken.Expr, SymbolicToken.RIGHTPAREN } ),
-
-		new TokenMap(SymbolicToken.WhileStatement, new SymbolicToken[] { SymbolicToken.WHILE, SymbolicToken.Expr, SymbolicToken.Statement, SymbolicToken.SEMICOLON } ),
-
-		new TokenMap(SymbolicToken.IOStatement, new SymbolicToken[] { SymbolicToken.WHILE, SymbolicToken.Expr, SymbolicToken.Statement } ),
-
-		new TokenMap(SymbolicToken.DiscardStatement, new SymbolicToken[] {SymbolicToken.DISCARD, SymbolicToken.IDENTIFIER }),
-		new TokenMap(SymbolicToken.DiscardStatement, new SymbolicToken[] {SymbolicToken.DISCARD, SymbolicToken.THIS }),
-
-		new TokenMap(SymbolicToken.CompoundStatement, new SymbolicToken[] { SymbolicToken.LEFTBRACE, SymbolicToken.StatementList, SymbolicToken.RIGHTBRACE } ),
-
-        new TokenMap(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.Expr, SymbolicToken.ADD, SymbolicToken.SimpleExpr } ),
-        new TokenMap(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.Expr, SymbolicToken.OR, SymbolicToken.SimpleExpr } ),
-        new TokenMap(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.SimpleExpr } ),
-        new TokenMap(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.NOT, SymbolicToken.SimpleExpr } ),
-
-        new TokenMap(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.EQUAL, SymbolicToken.AddExpr } ),
-        new TokenMap(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.NOTEQUAL, SymbolicToken.AddExpr } ),
-        new TokenMap(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.LESSEQUAL, SymbolicToken.AddExpr } ),
-        new TokenMap(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.LESSTHAN, SymbolicToken.AddExpr } ),
-        new TokenMap(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.GREATEQUAL, SymbolicToken.AddExpr } ),
-        new TokenMap(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.GREATTHAN, SymbolicToken.AddExpr } ),
-        new TokenMap(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.AddExpr } ),
+        new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.Assignment } ),
+        new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.IfStatement } ),
+        new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.WhileStatement } ),
+        new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.IOStatement } ),
+        new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.CompoundStatement } ),
 
 
-        new TokenMap(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.AddExpr, SymbolicToken.ADD, SymbolicToken.AddExpr } ),
-        new TokenMap(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.AddExpr, SymbolicToken.SUB, SymbolicToken.MullExpr } ),
-        new TokenMap(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.MullExpr } ),
+        new GrammarRule(SymbolicToken.Assignment, new SymbolicToken[] { SymbolicToken.Variable, SymbolicToken.ASSIGN, SymbolicToken.Expr, SymbolicToken.SEMICOLON } ),
 
-        new TokenMap(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.MullExpr, SymbolicToken.MUL, SymbolicToken.Factor } ),
-        new TokenMap(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.MullExpr, SymbolicToken.SUB, SymbolicToken.Factor } ),
-        new TokenMap(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.Factor } ),
-
-        new TokenMap(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.Variable } ),
-        new TokenMap(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.NumConstant } ),
-        new TokenMap(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.IDENTIFIER, SymbolicToken.LEFTPAREN, SymbolicToken.RIGHTPAREN } ),
-        new TokenMap(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.LEFTPAREN, SymbolicToken.Expr, SymbolicToken.RIGHTPAREN } ),
-
-        new TokenMap(SymbolicToken.Variable, new SymbolicToken[] { SymbolicToken.IDENTIFIER } ),
-        new TokenMap(SymbolicToken.Variable, new SymbolicToken[] { SymbolicToken.IDENTIFIER, SymbolicToken.LEFTSQR, SymbolicToken.Expr, SymbolicToken.RIGHTSQR } ),
-
-		new TokenMap(SymbolicToken.Timing, new SymbolicToken[] { SymbolicToken.IMMEDIATE } ),
-		new TokenMap(SymbolicToken.Timing, new SymbolicToken[] { SymbolicToken.DELAYED } ),
-		new TokenMap(SymbolicToken.Timing, new SymbolicToken[] { SymbolicToken.STATIC } ),
-
-		new TokenMap(SymbolicToken.Enforcement, new SymbolicToken[] { SymbolicToken.OPTIONAL } ),
-		new TokenMap(SymbolicToken.Enforcement, new SymbolicToken[] { SymbolicToken.REQUIRED } ),
+        new GrammarRule(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement, SymbolicToken.ELSE, SymbolicToken.IfStatement } ),
+        new GrammarRule(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement, SymbolicToken.ELSE, SymbolicToken.CompoundStatement } ),
+		new GrammarRule(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement } ),
 
 
-		new TokenMap(SymbolicToken.NumConstant, new SymbolicToken[] { SymbolicToken.INTCON } ),
-        new TokenMap(SymbolicToken.NumConstant, new SymbolicToken[] { SymbolicToken.FLOATCON } ),
+		new GrammarRule(SymbolicToken.TestStatement, new SymbolicToken[] { SymbolicToken.Test, SymbolicToken.CompoundStatement } ),
 
-		new TokenMap(SymbolicToken.Type, new SymbolicToken[] { SymbolicToken.ITEM }),
-		new TokenMap(SymbolicToken.Type, new SymbolicToken[] { SymbolicToken.ROOM }),
-		new TokenMap(SymbolicToken.Type, new SymbolicToken[] { SymbolicToken.EVENT }),
-		new TokenMap(SymbolicToken.Type, new SymbolicToken[] { SymbolicToken.ARTIFACT })
+		new GrammarRule(SymbolicToken.Test, new SymbolicToken[] { SymbolicToken.LEFTPAREN, SymbolicToken.Expr, SymbolicToken.RIGHTPAREN } ),
+
+		new GrammarRule(SymbolicToken.WhileStatement, new SymbolicToken[] { SymbolicToken.WHILE, SymbolicToken.Expr, SymbolicToken.Statement, SymbolicToken.SEMICOLON } ),
+
+		new GrammarRule(SymbolicToken.IOStatement, new SymbolicToken[] { SymbolicToken.WHILE, SymbolicToken.Expr, SymbolicToken.Statement } ),
+
+		new GrammarRule(SymbolicToken.DiscardStatement, new SymbolicToken[] {SymbolicToken.DISCARD, SymbolicToken.IDENTIFIER }),
+		new GrammarRule(SymbolicToken.DiscardStatement, new SymbolicToken[] {SymbolicToken.DISCARD, SymbolicToken.THIS }),
+
+		new GrammarRule(SymbolicToken.CompoundStatement, new SymbolicToken[] { SymbolicToken.LEFTBRACE, SymbolicToken.StatementList, SymbolicToken.RIGHTBRACE } ),
+
+        new GrammarRule(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.Expr, SymbolicToken.ADD, SymbolicToken.SimpleExpr } ),
+        new GrammarRule(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.Expr, SymbolicToken.OR, SymbolicToken.SimpleExpr } ),
+        new GrammarRule(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.SimpleExpr } ),
+        new GrammarRule(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.NOT, SymbolicToken.SimpleExpr } ),
+
+        new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.EQUAL, SymbolicToken.AddExpr } ),
+        new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.NOTEQUAL, SymbolicToken.AddExpr } ),
+        new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.LESSEQUAL, SymbolicToken.AddExpr } ),
+        new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.LESSTHAN, SymbolicToken.AddExpr } ),
+        new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.GREATEQUAL, SymbolicToken.AddExpr } ),
+        new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.GREATTHAN, SymbolicToken.AddExpr } ),
+        new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.AddExpr } ),
+
+
+        new GrammarRule(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.AddExpr, SymbolicToken.ADD, SymbolicToken.AddExpr } ),
+        new GrammarRule(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.AddExpr, SymbolicToken.SUB, SymbolicToken.MullExpr } ),
+        new GrammarRule(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.MullExpr } ),
+
+        new GrammarRule(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.MullExpr, SymbolicToken.MUL, SymbolicToken.Factor } ),
+        new GrammarRule(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.MullExpr, SymbolicToken.SUB, SymbolicToken.Factor } ),
+        new GrammarRule(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.Factor } ),
+
+        new GrammarRule(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.Variable } ),
+        new GrammarRule(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.NumConstant } ),
+        new GrammarRule(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.IDENTIFIER, SymbolicToken.LEFTPAREN, SymbolicToken.RIGHTPAREN } ),
+        new GrammarRule(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.LEFTPAREN, SymbolicToken.Expr, SymbolicToken.RIGHTPAREN } ),
+
+        new GrammarRule(SymbolicToken.Variable, new SymbolicToken[] { SymbolicToken.IDENTIFIER } ),
+        new GrammarRule(SymbolicToken.Variable, new SymbolicToken[] { SymbolicToken.IDENTIFIER, SymbolicToken.LEFTSQR, SymbolicToken.Expr, SymbolicToken.RIGHTSQR } ),
+
+		new GrammarRule(SymbolicToken.Timing, new SymbolicToken[] { SymbolicToken.IMMEDIATE } ),
+		new GrammarRule(SymbolicToken.Timing, new SymbolicToken[] { SymbolicToken.DELAYED } ),
+		new GrammarRule(SymbolicToken.Timing, new SymbolicToken[] { SymbolicToken.STATIC } ),
+
+		new GrammarRule(SymbolicToken.Enforcement, new SymbolicToken[] { SymbolicToken.OPTIONAL } ),
+		new GrammarRule(SymbolicToken.Enforcement, new SymbolicToken[] { SymbolicToken.REQUIRED } ),
+
+
+		new GrammarRule(SymbolicToken.NumConstant, new SymbolicToken[] { SymbolicToken.INTCON } ),
+        new GrammarRule(SymbolicToken.NumConstant, new SymbolicToken[] { SymbolicToken.FLOATCON } ),
+
+		new GrammarRule(SymbolicToken.Type, new SymbolicToken[] { SymbolicToken.ITEM }),
+		new GrammarRule(SymbolicToken.Type, new SymbolicToken[] { SymbolicToken.ROOM }),
+		new GrammarRule(SymbolicToken.Type, new SymbolicToken[] { SymbolicToken.EVENT }),
+		new GrammarRule(SymbolicToken.Type, new SymbolicToken[] { SymbolicToken.ARTIFACT })
 	};
 
 	#endregion
 
 	#region Methods
-    static public IEnumerator<object> Build() {
-        //First Set storage
-        Dictionary<SymbolicToken, List<SymbolicToken>> firstSet = new Dictionary<SymbolicToken, List<SymbolicToken>>();
-        //Follow Set storage
-        Dictionary<SymbolicToken, List<SymbolicToken>> followSet = new Dictionary<SymbolicToken, List<SymbolicToken>>();
-
-        //Create the first and follow set for each non termial
-        foreach (SymbolicToken nT in nonTerminals) {
-            //Create first set
-            firstSet.Add(nT, new List<SymbolicToken>());
-            //create follow set
-            followSet.Add(nT, new List<SymbolicToken>());
-
-            //for each Rule featuring this token as the NonTerminal, add the first token in tokens to the First set
-            foreach (TokenMap map in rules)
-                if (map.nonTerminal == nT)
-                    if (firstSet[nT].Contains(map.tokens[0]) == false) firstSet[nT].Add(map.tokens[0]);
-
-            //Check each rule, and for each instance of this nonTerminal, record what follows immediatly after it.
-            foreach (TokenMap map in rules) {
-                for (int i = map.tokens.Length - 1; i >= 0; i--) {
-                    if (map.tokens[i] == nT) {
-                        //Dont add EOF
-                        if (i == map.tokens.Length - 1)
-                            continue;
-                        //Since we are looping backwards and skip EOF, we know that there exists a token at this spot + 1 
-                        if (followSet[nT].Contains(map.tokens[i+1]) == false) followSet[nT].Add(map.tokens[i+1]);
-                    }
-                }
-            }
-
-            //Debug.Log(System.Enum.GetName(typeof(Token), nT) + " first: " + PrintList(firstSet[nT]));
-            //Debug.Log(System.Enum.GetName(typeof(Token), nT) + " follow: " + PrintList(followSet[nT]));
-        }
-
-		//Create the States.
+    public IEnumerator<object> Build() {
+		if (System.Enum.GetNames(typeof(SymbolicToken)).Length != nonTerminals.Count + terminals.Count) {
+			Debug.LogError("Count mismatch between total SymbolicTokens ("+ System.Enum.GetNames(typeof(SymbolicToken)).Length + ") and Terminals("+ terminals.Count+")/NonTermioals("+ nonTerminals.Count+").");
+			//yield break;
+		}
 
 
-		List<SymbolicToken> unexapndedList = new List<SymbolicToken>();
-		List<SymbolicToken> seenList = new List<SymbolicToken>();
-		List<TokenMap> stateRules = new List<TokenMap>();
-		unexapndedList.Add(SymbolicToken.ScriptPrime);
-		seenList.Add(SymbolicToken.ScriptPrime);
+		int stateIter = 0;
+		List<ParserInstruction[]> parseTable = new List<ParserInstruction[]>();
 
-		while (unexapndedList.Count > 0) {
-			yield return null;
+		List<ParserState> stateList = new List<ParserState>();
+		stateList.Add(new ParserState(new ParserState.StateRule[] { new ParserState.StateRule(0, productionRules[0])}));
+		ParserState.count++; //Count the init state.
 
-			SymbolicToken target = unexapndedList[0];
-			//Debug.Log(PrintList(seenList));
-			//Debug.Log(System.Enum.GetName(typeof(Token), target));
-			unexapndedList.RemoveAt(0);
+		while (stateIter < stateList.Count) {
+			//TODO, start a row for this parser state.
+			//Create states for our leads.
+			Debug.Log(stateList[stateIter].ToString());
+			Debug.Log(stateList[stateIter].TransitionString());
 
-			//For each token, add this rule to the state.
-			for (int i = 0; i < rules.Length; i++) {
-				//If this token has the rule 
-				if (rules[i].nonTerminal == target)
-					stateRules.Add(rules[i]);
-				yield return null;
+			ParserInstruction[] parseTableRow = GenerateEmptyRow(terminals.Count + nonTerminals.Count);
+
+			foreach (SymbolicToken key in stateList[stateIter].transitionSet.Keys) {
+				//Do not do anything if this leads nowhere.
+				if (stateList[stateIter].transitionSet[key].Count == 0)
+					continue;
+
+				//Check if this state matches an already exiting one.
+				ParserState newState = new ParserState(stateList[stateIter].transitionSet[key].ToArray());
+				if (stateList.Contains(newState) == false) {
+					//Add it
+					newState.ID = ParserState.count++;
+					stateList.Add(newState);
+					//TODO build row
+				}
+				else {
+					//TODO, Make this (toExapnd) row link back to the old matching set.
+					newState = stateList.Find(x => x.Equals(newState));
+					Debug.LogWarning("Discarding redundant generated state.");
+				}
+
+				int column = (terminals.Contains(key) == true) ? terminals.IndexOf(key) : terminals.Count + nonTerminals.IndexOf(key);
+				ParserInstruction.Instruction instruction = (nonTerminals.Contains(key)) ? ParserInstruction.Instruction.GOTO : ParserInstruction.Instruction.SHIFT;
+				parseTableRow[column] = new ParserInstruction(newState.ID, instruction);
+
 			}
-			//Go through the first set for this token
-			if (firstSet.ContainsKey(target) == false)
-				continue;
-			foreach (SymbolicToken t in firstSet[target]) {
-				yield return null;
 
-				//If we have not seen this token before.
-				if (seenList.Contains(t) == false) {
-					unexapndedList.Add(t);
-					seenList.Add(t);
+			//For each rule that has ended, add a reduce or goto
+			for (int i = 0; i < stateList[stateIter].rules.Count; i++) {
+				ParserState.StateRule sRule = stateList[stateIter].rules[i];
+				if (sRule.dotPosition >= sRule.rule.tokens.Length) {
+					if (sRule.rule.Equals(productionRules[0])) {
+						//Add Accept token at EOF
+						parseTableRow[terminals.Count - 1] = new ParserInstruction(0, ParserInstruction.Instruction.ACCEPT);
+						continue;
+					}
+					for (int k = 0; k < terminals.Count; k++) {
+						parseTableRow[k] = new ParserInstruction(GetRuleIndex(sRule.rule), ParserInstruction.Instruction.REDUCE);
+					}
 				}
 			}
+
+
+			parseTable.Add(parseTableRow);
+			yield return null;
+			Debug.Log(stateIter);
+			stateIter++;
 		}
 
-		string toPrint = "";
-		foreach (TokenMap map in stateRules) {
-			toPrint += map.ToString();
-			toPrint += "\n";
+		Debug.Log("!!!________!!!!_________!!!");
+		int sCount = 0;
+		foreach (ParserState p in stateList)
+			Debug.Log("S" + (sCount++) + ": " + p.ToString());
+
+		Debug.Log(GetTableString(parseTable));
+		WriteTableOut(parseTable);
+
+	}
+
+	private int GetRuleIndex(GrammarRule rule) {
+		for (int i = 0; i < productionRules.Length; i++) {
+			if (productionRules[i].Equals(rule))
+				return i;
 		}
-		Debug.Log(toPrint);
-    }
+		return -1;
+	}
+
+
+	private string GetTableString(List<ParserInstruction[]> table) {
+		string ret = "\t";
+		for (int i = 0; i < terminals.Count; i++) {
+			ret += "" + System.Enum.GetName(typeof(SymbolicToken), terminals[i]) + "\t";
+		}
+
+		for (int i = 0; i < nonTerminals.Count; i++) {
+			ret += "" + System.Enum.GetName(typeof(SymbolicToken), nonTerminals[i]) + "\t";
+		}
+
+		ret += "\n";
+
+		for (int i = 0; i < table.Count; i++) {
+			ret += "S" + i + ":\t";
+			for (int k = 0; k < table[i].Length; k++) {
+				ret += table[i][k].ToString() + "\t";
+			}
+			ret += "\n";
+		}
+
+		return ret;
+	}
+
+
+	private void WriteTableOut(List<ParserInstruction[]> table) {
+		string ret = ",";
+		for (int i = 0; i < terminals.Count; i++) {
+			ret += "" + System.Enum.GetName(typeof(SymbolicToken), terminals[i]) + ",";
+		}
+
+		for (int i = 0; i < nonTerminals.Count; i++) {
+			ret += "" + System.Enum.GetName(typeof(SymbolicToken), nonTerminals[i]) + ",";
+		}
+
+		ret += "\n";
+
+		for (int i = 0; i < table.Count; i++) {
+			ret += "S" + i + ":,";
+			for (int k = 0; k < table[i].Length; k++) {
+				ret += table[i][k].ToString() + ",";
+			}
+			ret += "\n";
+		}
+		System.IO.File.WriteAllText(Application.persistentDataPath + "/BuiltTable.csv", ret);
+	}
+
+	/// <summary>
+	/// Generates a row of empty instructions (ERR default)
+	/// </summary>
+	/// <param name="count"></param>
+	/// <returns></returns>
+	private ParserInstruction[] GenerateEmptyRow(int count) {
+		ParserInstruction[] instructions = new ParserInstruction[count];
+		for (int i = 0; i < instructions.Length; i++) {
+			instructions[i] = new ParserInstruction(0, ParserInstruction.Instruction.ERR);
+		}
+
+		return instructions;
+	}
 
     private static string PrintList(List<SymbolicToken> list) {
         string rt = "";
@@ -312,29 +388,242 @@ public static class CSL {
 
 	public static object Box(SymbolicToken token, string text) {
 		//Debug.Log(token + " | " + text);
-		switch (token) {
-			case SymbolicToken.INTCON:
-				return (object)System.Convert.ToInt32(text);
-			case SymbolicToken.STRINGCON:
-				string retString = text.Substring(1,text.Length-1);
-				return (object)retString;
-			default:
+		//switch (token) {
+		//	case SymbolicToken.INTCON:
+		//		return (object)System.Convert.ToInt32(text);
+		//	case SymbolicToken.STRINGCON:
+		//		string retString = text.Substring(1,text.Length-1);
+		//		return (object)retString;
+		//	default:
 				return (object)text;
+		//}
+	}
+
+	private static List<GrammarRule> GetRules(SymbolicToken token) {
+		List<GrammarRule> rules = new List<GrammarRule>();
+		for (int i = 0; i < productionRules.Length; i++) {
+			if (productionRules[i].nonTerminal == token)
+				rules.Add(productionRules[i]);
 		}
+
+		return rules;
 	}
 
 	#endregion
 
 	#region Structs
-	public struct TokenMap {
+	/// <summary>
+	/// A self constructing parsing state based on some initial rules
+	/// </summary>
+	private class ParserState {
+		/// <summary>
+		/// Internat count of the number of states. 
+		/// </summary>
+		public static int count = 0;
+
+		/// <summary>
+		/// The ID of this state.
+		/// </summary>
+		public int ID;
+
+		public Dictionary<SymbolicToken, List<StateRule>> transitionSet = new Dictionary<SymbolicToken, List<StateRule>>();
+		public List<StateRule> rules = new List<StateRule>();
+
+		public ParserState(StateRule[] initialRules) {
+
+
+			//For each InitialRules
+			//Add them to the rules list
+			//Based on DOT position, if this rule has a NON terminal to the right of DOT, add those rules to this state.
+			//Only if they have not been added before. (Research shows that it uses obj.Equals for this, so since those are overridden in to allow for State and Grammar rules to be equal.
+			Queue<StateRule> toExpand = new Queue<StateRule>(initialRules);
+			Debug.Log("Creating new state with " + toExpand.Count + " starting rules.");
+			Debug.Log(initialRules[0]);
+			while (toExpand.Count > 0) { 
+				StateRule targetRule = toExpand.Dequeue();
+
+				rules.Add(targetRule);
+				//So on a transition we consume a token, so when adding to our transition set make sure to advance the dot one space.
+				if (targetRule.dotPosition >= targetRule.rule.tokens.Length) {
+					continue;
+				}
+				else {
+
+				}
+				SymbolicToken dotTarget = targetRule.rule.tokens[targetRule.dotPosition];
+
+				if (transitionSet.ContainsKey(dotTarget) == false)
+					transitionSet.Add(dotTarget, new List<StateRule>());
+				transitionSet[dotTarget].Add(new StateRule(targetRule.dotPosition + 1, targetRule.rule));
+
+
+
+
+
+				//Check to see if dotPosition is a nonTerminal
+				if (nonTerminals.Contains(dotTarget)) {
+					//Debug.Log(System.Enum.GetName(typeof(SymbolicToken), dotTarget));
+
+					//If it is, add the necessary production rules.
+					List<GrammarRule> tokenRules = GetRules(dotTarget);
+					//Debug.Log(tokenRules.Count);
+					foreach (GrammarRule r in tokenRules) {
+						StateRule nR = new StateRule(0, r);
+						if (rules.Contains(nR) == false && toExpand.Contains(nR) == false) {
+							toExpand.Enqueue(nR);
+						}
+					}
+				}
+			}
+				
+		}
+
+		public string TransitionString() {
+			string ret = "";
+			foreach (SymbolicToken token in transitionSet.Keys) {
+				ret += System.Enum.GetName(typeof(SymbolicToken), token) + " --> \n";
+				foreach (StateRule r in transitionSet[token]) {
+					ret += "\t\t " + r.ToString() + "\n";
+				}
+
+				ret += "\n--------------\n";
+			}
+
+			return ret;
+		}
+
+		public override string ToString() {
+			string ret = "{\n";
+			for (int i = 0; i < rules.Count; i++) {
+				ret += rules[i].ToString() + "\n";
+			}
+			ret += "}";
+			return ret;
+		}
+
+		public override int GetHashCode() {
+			return ToString().GetHashCode();
+		}
+
+		public override bool Equals(object obj) {
+			//We need to a comparison where as long as the set is the same we are good, but the order doesnt matter
+			//Sort?
+			//Dynamic Comparison?
+			if (obj.GetType() == typeof(ParserState)) {
+				ParserState converted = (ParserState)obj;
+
+				//We do not match if we have a different number of rules.
+				if (converted.rules.Count != this.rules.Count)
+					return false;
+
+				//For each of our rules (x), there is a matching rule in the other objects. (Containment checks Equality)
+				return this.rules.TrueForAll(x => converted.rules.Contains(x));
+			}
+			else {
+				return false;
+			}
+
+		}
+
+		/// <summary>
+		/// A rule that is in the process of having a match found.
+		/// </summary>
+		public struct StateRule {
+			/// <summary>
+			/// The position in this state rule representing our progress towards finding a match for this rule.
+			/// </summary>
+			public int dotPosition;
+			/// <summary>
+			/// The rule we are attempting to make a match for.
+			/// </summary>
+			public GrammarRule rule;
+			
+			public StateRule(int dotPosition, GrammarRule rule) {
+				this.dotPosition = dotPosition;
+				this.rule = rule;
+			}
+
+			public override int GetHashCode() {
+				return ToString().GetHashCode();
+			}
+
+			public override bool Equals(object obj) {
+				if (obj.GetType() == typeof(StateRule)) {
+					StateRule converted = (StateRule)obj;
+					return converted.dotPosition == this.dotPosition && converted.rule.Equals(this.rule);
+				}
+				/*else if (obj.GetType() == typeof(GrammarRule)) {
+					GrammarRule converted = (GrammarRule)obj;
+					return converted.Equals(this.rule);
+				}*/
+				else {
+					return false;
+				}
+			}
+
+			public override string ToString() {
+				string ret = "";
+				ret += System.Enum.GetName(typeof(SymbolicToken), rule.nonTerminal);
+				ret += " -> ";
+				for (int i = 0; i < rule.tokens.Length; i++) {
+					if (i == dotPosition)
+						ret += "•";
+					ret += System.Enum.GetName(typeof(SymbolicToken), rule.tokens[i]);
+					ret += " ";
+				}
+				if (rule.tokens.Length == dotPosition)
+					ret += "•";
+				return ret;
+			}
+		}
+	}
+
+	/// <summary>
+	/// A grammar production rule. Maps a NonTerminal SymbolicToken to a sequence of other SymbolicTokens.
+	/// </summary>
+	public struct GrammarRule {
+		/// <summary>
+		/// The LeftHandSide NonTerminal that is produced by this rule.
+		/// </summary>
 		public SymbolicToken nonTerminal;
+
+		/// <summary>
+		/// The list of RightHandSide SymbolicTokens that are required to produce the NonTerminal
+		/// </summary>
 		public SymbolicToken[] tokens;
-		public TokenMap(SymbolicToken nonTerminal, SymbolicToken[] tokens) {
+		public GrammarRule(SymbolicToken nonTerminal, SymbolicToken[] tokens) {
 			this.nonTerminal = nonTerminal;
 			this.tokens = tokens;
 		}
 
-		public string ToString() {
+		public override int GetHashCode() {
+			return ToString().GetHashCode();
+		}
+
+		public override bool Equals(object obj) {
+			if (obj.GetType() == typeof(GrammarRule)) {
+				GrammarRule converted = (GrammarRule)obj;
+				//We already know that this cannot be equal if the lhs is different or if they do not have the same length of rhs tokens 
+				if (converted.nonTerminal != this.nonTerminal || converted.tokens.Length != this.tokens.Length)
+					return false;
+
+				//Assume true until we find a mismatch
+				bool sameFlag = true;
+				for (int i = 0; i < this.tokens.Length; i++) {
+					if (this.tokens[i] != converted.tokens[i]) {
+						sameFlag = false;
+						break;
+					}
+				}
+
+				return sameFlag;
+			}
+			else {
+				return false;
+			}
+		}
+
+		public override string ToString() {
 			string ret = "";
 			ret += System.Enum.GetName(typeof(SymbolicToken), nonTerminal);
 			ret += " -> ";
@@ -346,6 +635,39 @@ public static class CSL {
 		}
 	}
 
+	/// <summary>
+	/// An instruction for the Parse table to store.
+	/// </summary>
+	public struct ParserInstruction {
+		public enum Instruction { SHIFT, REDUCE, GOTO, ERR, ACCEPT }
+		public Instruction instruction;
+		public int value;
+		public ParserInstruction(int value, Instruction instruction) {
+			this.value = value;
+			this.instruction = instruction;
+		}
+
+		public override string ToString() {
+			switch (instruction) {
+				case Instruction.SHIFT:
+					return "s" + value;
+				case Instruction.REDUCE:
+					return "r" + value;
+				case Instruction.GOTO:
+					return "" + value;
+				case Instruction.ERR:
+					return "";
+				case Instruction.ACCEPT:
+					return "!";
+				default:
+					return "";
+			}
+		}
+	}
+
+	/// <summary>
+	/// A SymbolicToken and its related Regex String
+	/// </summary>
 	public struct TokenRegexPair {
 		public SymbolicToken token;
 		public string sample;
@@ -358,6 +680,9 @@ public static class CSL {
 	}
 
 
+	/// <summary>
+	/// A parsed Script
+	/// </summary>
 	public struct Script {
 		public List<ParsedToken> tokens;
 		public Script(List<ParsedToken> tokens) {
@@ -365,6 +690,9 @@ public static class CSL {
 		}
 	}
 
+	/// <summary>
+	/// A token that has been read by the scanner. Contains its SymbolicToken and it's parsed data.
+	/// </summary>
 	public struct ParsedToken {
 		public SymbolicToken token;
 		public object data;
