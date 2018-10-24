@@ -1,0 +1,132 @@
+SoftwareSystem {
+    Startup {
+        Load files - Saves, Card Files, images
+        ¿Connect online server? - ¿Update from server?
+        Initialize CSL - Connect to Card Database
+        Load Graphics, Audio, and Controls options
+        Transition to : MainMenu; When : Load Complete;
+    }
+
+    MainMenu{
+        Exit System - Exit game
+        Options - Controls/graphics
+        ¿Social Media? - Twitter/Reddit/Kickstarter/Tumblr/Facebook/Reddit/Imgur/Instagram/SnapChat/Linkden/Discord/Email/Website/PublisherPage
+        Play - New/Load - Local/Online; RESET Game Sub Machine
+
+        Transition to : Options | Game; When : Selection is made;
+    }
+
+    Options {
+        IF NETWORKED: FORWARD GAME MESSAGES TO GAME.GAMEPLAY STATE (IF NOT NULL).
+
+        NOTE: How to handle options menu while still updated Game state.
+        Back
+        ApplyChanges - Confirmation Dialogue?
+        Options -
+            Graphics
+            Audio
+            Controls
+            Online
+            Gameplay
+
+        Transition to : MainMenu; When : Back is pressed;
+    }
+
+    GameSystem {
+        Enter: Iniizalise sub machine to NetworkInitalizationAndConnction if null
+        RESET: Delete sub machine states, return to null
+
+
+        ¿NetworkInitalizationAndConnction? {
+            Connect to online session
+
+            Transition to : LoadGame; When: The session is a loaded game;
+            Transition to : CreateGame; When: The session is a new game;
+        }
+
+        CreateGame {
+            RESET Gameplay Sub Machine
+            Generation - Decks, players, StoryTellingEngine
+            Player Character Dialogue
+            Load starting area
+            Transition to: Gameplay/Turn; When : Begin on player dialogue pressed && Loading Complete;
+        }
+        CloneOf:SoftwareSystem.Options {
+            BASE EXCEPT
+
+            Transition to : Pause When: back is pressed.
+        }
+        LoadGame {
+            RESET Gameplay Sub Machine
+            Load Decks, Players, Board, StortellingEngine
+            Transition to : Gameplay; When: Loading is complete;
+        }
+
+        SaveGame {
+            Show FileOptions
+            Create File
+            Write Decks, Players, Board, StoryellingEngine to File
+            Transition to : Pause; When: Save UI element is activated;
+        }
+
+        PauseGame {
+            IF NETWORKED: FORWARD GAME MESSAGES TO GAMEPLAY STATE (IF NOT NULL).
+
+            Transition to : System.Options; When: Option button pressed
+            Transition to : LoadGame; When: Load Button is pressed
+            Transition to : SaveGame; When: Save Button is pressed
+            Transition to : GameplayState; When: Resume button pressed
+            Transition to : ExitGame; When: MainMenu button pressed
+        }
+
+        ExitGame {
+            Save Option Dialogue
+            RESET Gameplay Sub Machine.`
+            ¿Disconnect from online session?
+
+            Transition to : System.MainMenu; When: Exit Game UI element is acivated;
+        }
+
+        Gameplay {
+            Transition to : Pause; When: Pause button is pressed;
+            Enter: ¿Add listeners for UI Elements? Initialize sub machine state to ChangePlayer if null
+            Exit: ¿Remove listeners for UI Elements?
+
+            Reset: Flush Board, Players, Decks, StorytellingEngine, ¿Scene?
+
+            ChangePlayer {
+                Select Correct player to change to
+                PostNotification/Update UI Elements
+
+                Transition to : StartOfTurn; When: Player is chosen;
+            }
+            StartOfTurn {
+                PostNotification/Update UI Elements
+                Start of Turn Effects
+                Every Turn Effects
+                Transition to : Main ; When: Effects are finished;
+            }
+            Main {
+                PostNotification/Update UI Elements
+                Load list of Items/Actions/RoomActions/¿HauntActions?
+                Wait for player action selection
+                Transition to : Action | EndofTurn; When : Action Selected;
+            }
+            Action {
+                PostNotification/Update UI Elements
+                Load and Execute CSL Script
+                ¿Internal State machine ran by CSL execution?
+
+                Transition to : Main | EndOfTurn; When: action is complete;
+            }
+            EndOfTurn {
+                End of Turn Effects
+                PostNotification/Update UI Elements
+
+                Transition to: ChangePlayer; When: end of turn effects are complete;
+            }
+
+
+        }
+    }
+}
