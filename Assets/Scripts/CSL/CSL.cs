@@ -1,17 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using System.Xml;
+using System.Xml.Serialization;
+using System.IO;
 
 /// <summary>
 /// A grammer and rules specification for a Card Scripting Language
 /// </summary>
 public static class CSL {
-
-	public enum ScriptType {Room, Item, Artifact, Event, Effect }
-	public enum Timing {Immediate, Delayed, Static }
-	public enum Enforcement { Optional, Required }
-
+	private static readonly bool debugParseOutput = false;
 	private static List<ParserInstruction[]> ParseTable = null;
+	//private static Dictionary<SymbolicToken, List<SymbolicToken>> firstSet = new Dictionary<SymbolicToken, List<SymbolicToken>>();
+	//private static Dictionary<SymbolicToken, List<SymbolicToken>> followSet = new Dictionary<SymbolicToken, List<SymbolicToken>>();
+
+	private static Dictionary<string, object> variableDictionary;
 
 	#region Token
 	/// <summary>
@@ -19,13 +22,13 @@ public static class CSL {
 	/// </summary>
 	public enum SymbolicToken {
 		//NEVER REMOVE SCRIPTPRIME or EOF
-		ScriptPrime, EOF, 
+		ScriptPrime, EOF, Script,
 
 
 		//Non Temrinals
-		 Script, EffectList, ChoiceList, EffectSet, ChoiceSet, Effect, Choice, StatementList, Statement,
+		StatementList, Statement,
 		Assignment, IfStatement, TestStatement, Test, WhileStatement, IOStatement, DiscardStatement, CompoundStatement,
-		Expr, SimpleExpr, AddExpr, MullExpr, Factor, Variable, Timing, Enforcement, NumConstant, Type, CompleteEffectSet, CompleteChoiceSet, ScriptHeading,
+		Expr, SimpleExpr, AddExpr, MullExpr, Factor, Variable, Timing, Enforcement, NumConstant, Type, VariableDeclaration,
 
 		//Terminals
 		COMMENT, IMAGE, IMMEDIATE, STATIC, NAME, TEXT, OPTIONAL, REQUIRED, ROOM, ITEM, EVENT, ARTIFACT, WHITESP,
@@ -42,7 +45,7 @@ public static class CSL {
     static public List<SymbolicToken> TERMINALS = new List<SymbolicToken>(new SymbolicToken[] {
 		SymbolicToken.COMMENT, SymbolicToken.IMAGE, SymbolicToken.IMMEDIATE, SymbolicToken.STATIC, SymbolicToken.NAME, SymbolicToken.TEXT, SymbolicToken.OPTIONAL, SymbolicToken.REQUIRED, SymbolicToken.ROOM, SymbolicToken.ITEM, SymbolicToken.EVENT, SymbolicToken.ARTIFACT, SymbolicToken.WHITESP,
 		SymbolicToken.NEWLN, SymbolicToken.WHILE, SymbolicToken.ELSE, SymbolicToken.IF, SymbolicToken.VAR, SymbolicToken.TRUE, SymbolicToken.FALSE, SymbolicToken.LEFTBRACE, SymbolicToken.LEFTSQR, SymbolicToken.LEFTPAREN,
-		SymbolicToken.CHOICEIDEN, SymbolicToken.EFFECTIDEN, SymbolicToken.DISCARD, SymbolicToken.THIS, SymbolicToken.DELAYED,
+		SymbolicToken.DISCARD, SymbolicToken.THIS, SymbolicToken.DELAYED,
 		SymbolicToken.RIGHTBRACE, SymbolicToken.RIGHTSQR, SymbolicToken.RIGHTPAREN, SymbolicToken.AND, SymbolicToken.OR, SymbolicToken.NOT, SymbolicToken.XOR, SymbolicToken.COMMA, SymbolicToken.PERIOD, SymbolicToken.EQUAL,
 		SymbolicToken.NOTEQUAL, SymbolicToken.GREATEQUAL, SymbolicToken.LESSEQUAL, SymbolicToken.GREATTHAN, SymbolicToken.LESSTHAN, SymbolicToken.ASSIGN, SymbolicToken.ADD, SymbolicToken.SUB, SymbolicToken.DIV, SymbolicToken.MUL, SymbolicToken.SEMICOLON,
 		SymbolicToken.IDENTIFIER, SymbolicToken.FLOATCON, SymbolicToken.STRINGCON, SymbolicToken.INTCON, SymbolicToken.ERR, SymbolicToken.IDENERR, SymbolicToken.EOF
@@ -52,14 +55,17 @@ public static class CSL {
 	/// The set of NonTerminal SymbolicTokens
 	/// </summary>
     static public List<SymbolicToken> nonTerminals = new List<SymbolicToken>( new SymbolicToken[] {
-		SymbolicToken.ScriptPrime,
-		SymbolicToken.Script, SymbolicToken.EffectList, SymbolicToken.ChoiceList, SymbolicToken.EffectSet, SymbolicToken.ChoiceSet, SymbolicToken.Effect, SymbolicToken.Choice, SymbolicToken.StatementList, SymbolicToken.Statement,
+		SymbolicToken.ScriptPrime, SymbolicToken.VariableDeclaration,
+		SymbolicToken.Script, SymbolicToken.StatementList, SymbolicToken.Statement,
 		SymbolicToken.Assignment, SymbolicToken.IfStatement, SymbolicToken.TestStatement, SymbolicToken.Test, SymbolicToken.WhileStatement, SymbolicToken.IOStatement, SymbolicToken.DiscardStatement, SymbolicToken.CompoundStatement,
-		SymbolicToken.Expr, SymbolicToken.SimpleExpr, SymbolicToken.AddExpr, SymbolicToken.MullExpr, SymbolicToken.Factor, SymbolicToken.Variable, SymbolicToken.Timing, SymbolicToken.Enforcement, SymbolicToken.NumConstant, SymbolicToken.Type, SymbolicToken.CompleteEffectSet, SymbolicToken.CompleteChoiceSet, SymbolicToken.ScriptHeading
+		SymbolicToken.Expr, SymbolicToken.SimpleExpr, SymbolicToken.AddExpr, SymbolicToken.MullExpr, SymbolicToken.Factor, SymbolicToken.Variable, SymbolicToken.Timing, SymbolicToken.Enforcement, SymbolicToken.NumConstant, SymbolicToken.Type
 	} );
 	#endregion
 
 	#region Rules
+	/// <summary>
+	/// A mapping of terminal tokens to regex
+	/// </summary>
     public static TokenRegexPair[] terminalTokenRegexPair = new TokenRegexPair[] {
 
 		new TokenRegexPair(SymbolicToken.COMMENT,	"/*Goodbye*/",  @"^(/\*(.*)\*/)$"),
@@ -131,98 +137,420 @@ public static class CSL {
 
 		new TokenRegexPair(SymbolicToken.ERR,       "`",			@"^.*$")
 	};
+
+	/// <summary>
+	/// Rules used convert tokens into higher order tokens
+	/// </summary>
 	public static GrammarRule[] productionRules = new GrammarRule[] {
 		new GrammarRule(SymbolicToken.ScriptPrime, new SymbolicToken[] { SymbolicToken.Script }),
 
-        new GrammarRule(SymbolicToken.Script, new SymbolicToken[] { SymbolicToken.ScriptHeading }),
-        new GrammarRule(SymbolicToken.Script, new SymbolicToken[] { SymbolicToken.ScriptHeading, SymbolicToken.EffectList }),
-        new GrammarRule(SymbolicToken.Script, new SymbolicToken[] { SymbolicToken.ScriptHeading, SymbolicToken.ChoiceList }),
-        new GrammarRule(SymbolicToken.Script, new SymbolicToken[] { SymbolicToken.ScriptHeading, SymbolicToken.EffectList, SymbolicToken.ChoiceList }),
+		new GrammarRule(SymbolicToken.Script, new SymbolicToken[] { SymbolicToken.StatementList }, 
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Script -> StatementList)");
+				tokens[0].GetData(); //Execute the statement list
+				return null;
+				}
+			),
 
-		new GrammarRule(SymbolicToken.ScriptHeading, new SymbolicToken[] { SymbolicToken.Type, SymbolicToken.SEMICOLON, SymbolicToken.NAME, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.IMAGE, SymbolicToken.SEMICOLON, SymbolicToken.TEXT, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON }),
-		new GrammarRule(SymbolicToken.ScriptHeading, new SymbolicToken[] { SymbolicToken.Type, SymbolicToken.SEMICOLON, SymbolicToken.NAME, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.IMAGE, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.TEXT, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON }),
+		new GrammarRule(SymbolicToken.StatementList, new SymbolicToken[] { SymbolicToken.Statement },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (StatementList -> Statement)");
+				tokens[0].GetData();//Execute the statement 
+				return null;
+				}
+			),
+		new GrammarRule(SymbolicToken.StatementList, new SymbolicToken[] { SymbolicToken.StatementList, SymbolicToken.Statement },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (StatementList -> StatementList  Statement)");
+				tokens[0].GetData();//Execute the statement List 
+				tokens[1].GetData();//Execute the statement
+				return null;
+				}
+			),
 
-		new GrammarRule(SymbolicToken.EffectList, new SymbolicToken[] { SymbolicToken.CompleteEffectSet } ),
-		new GrammarRule(SymbolicToken.EffectList, new SymbolicToken[] { SymbolicToken.EffectList, SymbolicToken.CompleteEffectSet } ),
+		new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.Assignment },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Statement -> Assignment)");
+				return tokens[0].GetData();//Execute the statement List 
+				}
+			),
+		new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.VariableDeclaration },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Statement -> VariableDeclaration)");
+				return tokens[0].GetData();//Execute the statement List 
+				}
+			),
+		new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.IfStatement },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Statement -> IfStatement)");
+				return tokens[0].GetData();//Execute the statement List 
+				}
+			),
+		new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.WhileStatement },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Statement -> WhileStatement)");
+				return tokens[0].GetData();//Execute the statement List 
+				}
+			),
+		//new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.IOStatement } ),
+		new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.CompoundStatement },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Statement -> CompoundStatement)");
+				return tokens[0].GetData();//Execute the statement List 
+				}
+			),
+		new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.DiscardStatement },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Statement -> DiscardStatement)");
+				return tokens[0].GetData();//Execute the statement List 
+				}
+			),
 
-		new GrammarRule(SymbolicToken.ChoiceList, new SymbolicToken[] { SymbolicToken.CompleteChoiceSet } ),
-		new GrammarRule(SymbolicToken.ChoiceList, new SymbolicToken[] { SymbolicToken.ChoiceList, SymbolicToken.CompleteChoiceSet } ),
+		new GrammarRule(SymbolicToken.Assignment, new SymbolicToken[] { SymbolicToken.IDENTIFIER, SymbolicToken.ASSIGN, SymbolicToken.Expr, SymbolicToken.SEMICOLON },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Assignment -> VariableDeclaration ASSIGN Expr SEMICOLON)");
+				string name = (string)tokens[0].GetData();
+				object data = tokens[2].GetData();
+				variableDictionary[name] = data;
+				return data;//Execute the statement List 
+				}
+			),
 
-		new GrammarRule(SymbolicToken.CompleteEffectSet, new SymbolicToken[] { SymbolicToken.Timing, SymbolicToken.LEFTBRACE, SymbolicToken.EffectSet, SymbolicToken.RIGHTBRACE } ),
+		new GrammarRule(SymbolicToken.Assignment, new SymbolicToken[] { SymbolicToken.IDENTIFIER, SymbolicToken.LEFTSQR, SymbolicToken.Factor, SymbolicToken.RIGHTSQR, SymbolicToken.ASSIGN, SymbolicToken.Expr, SymbolicToken.SEMICOLON },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Assignment -> IDENTIFIER LEFTSQR Factor RIGHTSQR ASSIGN Expr SEMICOLON)");
+				object data = tokens[5].GetData();
+				int location = (int)tokens[2].GetData();
+				string name = (string)tokens[0].GetData();
+				object item = variableDictionary[name];
+				((List<object>)item)[location] = data;
+				return data;
+				}
+			),
 
+		new GrammarRule(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement, SymbolicToken.ELSE, SymbolicToken.IfStatement },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (IfStatement -> IF TestStatement ELSE IfStatement)");
+				bool resultOfTest = (bool)tokens[1].GetData();
+				if (resultOfTest == false)
+					return tokens[3].GetData();
+				
+				return null;
+				}
+			),
+		new GrammarRule(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement, SymbolicToken.ELSE, SymbolicToken.CompoundStatement },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (IfStatement -> IF TestStatement ELSE CompoundStatement)");
+				bool resultOfTest = (bool)tokens[1].GetData();
+				if (resultOfTest == false)
+					return tokens[3].GetData();
+				
+				return null;
+				}
+			),
+		new GrammarRule(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement, SymbolicToken.ELSE, SymbolicToken.Statement },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (IfStatement -> IF TestStatement ELSE Statement)");
+				bool resultOfTest = (bool)tokens[1].GetData();
+				if (resultOfTest == false)
+					return tokens[3].GetData();
 
-		new GrammarRule(SymbolicToken.EffectSet, new SymbolicToken[] { SymbolicToken.Effect} ),
-		new GrammarRule(SymbolicToken.EffectSet, new SymbolicToken[] { SymbolicToken.EffectSet, SymbolicToken.Effect} ),
+				return null;
+				}
+			),
+		new GrammarRule(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (IfStatement -> IF TestStatement)");
+					return tokens[1].GetData();
+				}
+			),
 
-		new GrammarRule(SymbolicToken.CompleteChoiceSet, new SymbolicToken[] { SymbolicToken.Timing, SymbolicToken.Enforcement, SymbolicToken.LEFTBRACE, SymbolicToken.ChoiceSet, SymbolicToken.RIGHTBRACE } ),
+		new GrammarRule(SymbolicToken.TestStatement, new SymbolicToken[] { SymbolicToken.Test, SymbolicToken.CompoundStatement },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (TestStatement -> Test CompoundStatement)");
+				bool resultOfTest = (bool)tokens[0].GetData();
+				if (resultOfTest == true)
+					tokens[1].GetData();
+				return resultOfTest;
+				}
+			),
 
-		new GrammarRule(SymbolicToken.ChoiceSet, new SymbolicToken[] {  SymbolicToken.Choice } ),
-		new GrammarRule(SymbolicToken.ChoiceSet, new SymbolicToken[] { SymbolicToken.ChoiceSet, SymbolicToken.Choice } ),
+		new GrammarRule(SymbolicToken.Test, new SymbolicToken[] { SymbolicToken.LEFTPAREN, SymbolicToken.Expr, SymbolicToken.RIGHTPAREN },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Test -> LEFTPAREN Expr RIGHTPAREN)");
+				return tokens[1].GetData();
+				}
+			),
 
-		new GrammarRule(SymbolicToken.Effect, new SymbolicToken[] { SymbolicToken.EFFECTIDEN, SymbolicToken.LEFTBRACE, SymbolicToken.StatementList, SymbolicToken.RIGHTBRACE } ),
+		new GrammarRule(SymbolicToken.WhileStatement, new SymbolicToken[] { SymbolicToken.WHILE, SymbolicToken.LEFTPAREN, SymbolicToken.Expr, SymbolicToken.RIGHTPAREN, SymbolicToken.CompoundStatement },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (WhileStatement -> WHILE LEFTPAREN Expr RIGHTPAREN CompoundStatement)");
+				int safteyIter = 0;
+				while (safteyIter < 10000 && ((bool)tokens[2].GetData())) {
+					tokens[4].GetData();//Execute the compound statement
+				}
+				if (safteyIter >= 10000) {
+					Debug.LogError("While statement broke due to running too long.");
+				}
+				return null;
+				}
+			),
+		new GrammarRule(SymbolicToken.WhileStatement, new SymbolicToken[] { SymbolicToken.WHILE, SymbolicToken.LEFTPAREN, SymbolicToken.Expr, SymbolicToken.RIGHTPAREN, SymbolicToken.Statement },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (WhileStatement -> WHILE LEFTPAREN Expr RIGHTPAREN Statement)");
+				int safteyIter = 0;
+				while (safteyIter < 10000 && ((bool)tokens[2].GetData())) {
+					tokens[4].GetData();//Execute the compound statement
+				}
+				if (safteyIter >= 10000) {
+					Debug.LogError("While statement broke due to running too long.");
+				}
+				return null;
+				}
+			),
 
-		new GrammarRule(SymbolicToken.Choice, new SymbolicToken[] { SymbolicToken.CHOICEIDEN, SymbolicToken.LEFTBRACE, SymbolicToken.NAME, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.Test, SymbolicToken.LEFTBRACE, SymbolicToken.TEXT, SymbolicToken.STRINGCON, SymbolicToken.SEMICOLON, SymbolicToken.EffectList, SymbolicToken.RIGHTBRACE, SymbolicToken.RIGHTBRACE } ),
+		//new GrammarRule(SymbolicToken.IOStatement, new SymbolicToken[] { SymbolicToken.WHILE, SymbolicToken.Expr, SymbolicToken.Statement } ),
 
+		new GrammarRule(SymbolicToken.DiscardStatement, new SymbolicToken[] {SymbolicToken.DISCARD, SymbolicToken.IDENTIFIER, SymbolicToken.SEMICOLON },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (DiscardStatement -> DISCARD IDENTIFIER SEMICOLON)");
+				Debug.Log("Discard was called on ("+tokens[1].GetData()+"), though it did nothing.");
+				return null;
+				}
+			),
+		new GrammarRule(SymbolicToken.DiscardStatement, new SymbolicToken[] {SymbolicToken.DISCARD, SymbolicToken.THIS, SymbolicToken.SEMICOLON },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (DiscardStatement -> DISCARD THIS SEMICOLON)");
+				Debug.Log("Discard was called on ("+tokens[1].GetData()+"), though it did nothing.");
+				return null;
+				}
+			),
 
-		new GrammarRule(SymbolicToken.StatementList, new SymbolicToken[] { SymbolicToken.Statement } ),
-        new GrammarRule(SymbolicToken.StatementList, new SymbolicToken[] { SymbolicToken.StatementList, SymbolicToken.Statement } ),
+		new GrammarRule(SymbolicToken.CompoundStatement, new SymbolicToken[] { SymbolicToken.LEFTBRACE, SymbolicToken.StatementList, SymbolicToken.RIGHTBRACE },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (CompoundStatement -> LEFTBRACE StatementList RIGHTBRACE)");
+				tokens[1].GetData();
+				return null;
+				}
+			),
 
-        new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.Assignment } ),
-        new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.IfStatement } ),
-        new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.WhileStatement } ),
-        new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.IOStatement } ),
-        new GrammarRule(SymbolicToken.Statement, new SymbolicToken[] { SymbolicToken.CompoundStatement } ),
+		new GrammarRule(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.SimpleExpr },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Expr -> SimpleExpr)");
+				return tokens[0].GetData();;
+				}
+			),
+		new GrammarRule(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.Expr, SymbolicToken.AND, SymbolicToken.SimpleExpr },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Expr -> Expr AND SimpleExpr)");
+				return (bool)tokens[0].GetData() && (bool)tokens[2].GetData();
+				}
+			),
+		new GrammarRule(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.Expr, SymbolicToken.OR, SymbolicToken.SimpleExpr },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Expr -> Expr OR SimpleExpr)");
+				return (bool)tokens[0].GetData() || (bool)tokens[2].GetData();
+				}
+			),
+		new GrammarRule(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.Expr, SymbolicToken.XOR, SymbolicToken.SimpleExpr },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Expr -> Expr XOR SimpleExpr)");
+				bool r1 = (bool)tokens[0].GetData();
+				bool r2 = (bool)tokens[2].GetData();
 
+				return (!r1&&r2) || (r1&&r2);
+				}
+			),
+		new GrammarRule(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.NOT, SymbolicToken.SimpleExpr },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Expr -> NOT SimpleExpr)");
+				bool r1 = (bool)tokens[1].GetData();
+				return !r1;
+				}
+			),
 
-        new GrammarRule(SymbolicToken.Assignment, new SymbolicToken[] { SymbolicToken.Variable, SymbolicToken.ASSIGN, SymbolicToken.Expr, SymbolicToken.SEMICOLON } ),
+		new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.AddExpr },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (SimpleExpr -> AddExpr)");
+				return tokens[0].GetData();
+				}
+			),
+		new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.EQUAL, SymbolicToken.AddExpr },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (SimpleExpr -> SimpleExpr EQUAL AddExpr)");
+				object d1 = tokens[0].GetData();
+				object d2 =  tokens[2].GetData();
+				return d1.Equals(d2);
+				}
+			),
+		new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.NOTEQUAL, SymbolicToken.AddExpr },
+						(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (SimpleExpr -> SimpleExpr NOTEQUAL AddExpr)");
+				object d1 = tokens[0].GetData();
+				object d2 =  tokens[2].GetData();
+				return !d1.Equals(d2);
+				}
+			),
+		new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.LESSEQUAL, SymbolicToken.AddExpr },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (SimpleExpr -> SimpleExpr LESSEQUAL AddExpr)");
+				object d1 = tokens[0].GetData();
+				object d2 = tokens[2].GetData();
+				float f1 = System.Convert.ToSingle(d1);
+				float f2 =  System.Convert.ToSingle(d2);
+				return f1 <= f2;
+				}
+			),
+		new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.LESSTHAN, SymbolicToken.AddExpr },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (SimpleExpr -> SimpleExpr LESSTHAN AddExpr)");
+				object d1 = tokens[0].GetData();
+				object d2 = tokens[2].GetData();
+				float f1 = System.Convert.ToSingle(d1);
+				float f2 =  System.Convert.ToSingle(d2);
+				return f1 < f2;
+				}
+			),
+		new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.GREATEQUAL, SymbolicToken.AddExpr },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (SimpleExpr -> SimpleExpr GREATEQUAL AddExpr)");
+				object d1 = tokens[0].GetData();
+				object d2 = tokens[2].GetData();
+				float f1 = System.Convert.ToSingle(d1);
+				float f2 =  System.Convert.ToSingle(d2);
+				return f1 >= f2;
+				}
+			),
+		new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.GREATTHAN, SymbolicToken.AddExpr },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (SimpleExpr -> SimpleExpr GREATTHAN AddExpr)");
+				object d1 = tokens[0].GetData();
+				object d2 = tokens[2].GetData();
+				float f1 = System.Convert.ToSingle(d1);
+				float f2 =  System.Convert.ToSingle(d2);
+				return f1 > f2;
+				}
+			),
 
-        new GrammarRule(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement, SymbolicToken.ELSE, SymbolicToken.IfStatement } ),
-        new GrammarRule(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement, SymbolicToken.ELSE, SymbolicToken.CompoundStatement } ),
-		new GrammarRule(SymbolicToken.IfStatement, new SymbolicToken[] { SymbolicToken.IF, SymbolicToken.TestStatement } ),
+		new GrammarRule(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.MullExpr },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (AddExpr -> MullExpr  )");
+				return tokens[0].GetData();
+				}
+			),
+		new GrammarRule(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.AddExpr, SymbolicToken.ADD, SymbolicToken.MullExpr },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (AddExpr -> AddExpr ADD MullExpr)");
+				object d1 = tokens[0].GetData();
+				object d2 = tokens[2].GetData();
+				float f1 = System.Convert.ToSingle(d1);
+				float f2 =  System.Convert.ToSingle(d2);
+				return f1 + f2;
+				}
+			),
+		new GrammarRule(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.AddExpr, SymbolicToken.SUB, SymbolicToken.MullExpr },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (AddExpr -> AddExpr SUB MullExpr)");
+				object d1 = tokens[0].GetData();
+				object d2 = tokens[2].GetData();
+				float f1 = System.Convert.ToSingle(d1);
+				float f2 =  System.Convert.ToSingle(d2);
+				return f1 - f2;
+				}
+			),
 
+		new GrammarRule(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.Factor },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (MullExpr -> Factor)");
+				return tokens[0].GetData();
+				}
+			),
+		new GrammarRule(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.MullExpr, SymbolicToken.MUL, SymbolicToken.Factor },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (MullExpr -> MullExpr MUL Factor)");
+				object d1 = tokens[0].GetData();
+				object d2 = tokens[2].GetData();
+				float f1 = System.Convert.ToSingle(d1);
+				float f2 =  System.Convert.ToSingle(d2);
+				return f1 * f2;
+				}
+			),
+		new GrammarRule(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.MullExpr, SymbolicToken.DIV, SymbolicToken.Factor },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (MullExpr -> MullExpr SUB Factor)");
+				object d1 = tokens[0].GetData();
+				object d2 = tokens[2].GetData();
+				float f1 = System.Convert.ToSingle(d1);
+				float f2 =  System.Convert.ToSingle(d2);
+				return f1 / f2;
+				}
+			),
 
-		new GrammarRule(SymbolicToken.TestStatement, new SymbolicToken[] { SymbolicToken.Test, SymbolicToken.CompoundStatement } ),
+		new GrammarRule(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.Variable },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Factor -> Variable)");
+				return tokens[0].GetData();
+				}
+			),
+		new GrammarRule(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.NumConstant },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Factor -> NumConstant)");
+				return tokens[0].GetData();
+				}
+			),
+        //new GrammarRule(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.IDENTIFIER, SymbolicToken.LEFTPAREN, SymbolicToken.RIGHTPAREN } ), // Factor provided by exterior method call.
+        new GrammarRule(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.LEFTPAREN, SymbolicToken.Expr, SymbolicToken.RIGHTPAREN },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Factor -> LEFTPAREN Expr RIGHTPAREN)");
+				return tokens[1].GetData();
+				}
+			),
 
-		new GrammarRule(SymbolicToken.Test, new SymbolicToken[] { SymbolicToken.LEFTPAREN, SymbolicToken.Expr, SymbolicToken.RIGHTPAREN } ),
+		new GrammarRule(SymbolicToken.VariableDeclaration, new SymbolicToken[] { SymbolicToken.VAR, SymbolicToken.IDENTIFIER, SymbolicToken.SEMICOLON},
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (VariableDeclaration -> VAR IDENTIFIER)");
+				string identifier = (string)tokens[1].GetData(); // Get the string from identifier
+				variableDictionary.Add(identifier, null); // Log a spot for this identifier
+				return identifier; // Pass this name upwards
+				}
+			),
+		new GrammarRule(SymbolicToken.VariableDeclaration, new SymbolicToken[] { SymbolicToken.VAR, SymbolicToken.IDENTIFIER, SymbolicToken.LEFTSQR, SymbolicToken.Factor, SymbolicToken.RIGHTSQR, SymbolicToken.SEMICOLON},
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (VariableDeclaration -> VAR IDENTIFIER LEFTSQR INTCON RIGHTSQR)");
+				string identifier = (string)tokens[2].GetData(); // Get the string from identifier
+				variableDictionary.Add(identifier, new List<object>((int)tokens[3].GetData())); // Log a spot for this identifier
+				return identifier; // Pass this name upwards
+				}
+			),
 
-		new GrammarRule(SymbolicToken.WhileStatement, new SymbolicToken[] { SymbolicToken.WHILE, SymbolicToken.Expr, SymbolicToken.Statement, SymbolicToken.SEMICOLON } ),
+		new GrammarRule(SymbolicToken.Variable, new SymbolicToken[] { SymbolicToken.IDENTIFIER },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Variable -> IDENTIFIER)");
+				string iden = (string)tokens[0].GetData();
+				return variableDictionary[iden];
+				}
+			),
+        new GrammarRule(SymbolicToken.Variable, new SymbolicToken[] { SymbolicToken.IDENTIFIER, SymbolicToken.LEFTSQR, SymbolicToken.Expr, SymbolicToken.RIGHTSQR },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (Variable -> IDENTIFIER LEFTSQR Expr RIGHTSQR)");
+				string iden = (string)tokens[0].GetData();
+				int loc = (int)tokens[2].GetData();
+				return ((List<object>)variableDictionary[iden])[loc];
+				}
+			),
 
-		new GrammarRule(SymbolicToken.IOStatement, new SymbolicToken[] { SymbolicToken.WHILE, SymbolicToken.Expr, SymbolicToken.Statement } ),
-
-		new GrammarRule(SymbolicToken.DiscardStatement, new SymbolicToken[] {SymbolicToken.DISCARD, SymbolicToken.IDENTIFIER }),
-		new GrammarRule(SymbolicToken.DiscardStatement, new SymbolicToken[] {SymbolicToken.DISCARD, SymbolicToken.THIS }),
-
-		new GrammarRule(SymbolicToken.CompoundStatement, new SymbolicToken[] { SymbolicToken.LEFTBRACE, SymbolicToken.StatementList, SymbolicToken.RIGHTBRACE } ),
-
-        new GrammarRule(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.Expr, SymbolicToken.ADD, SymbolicToken.SimpleExpr } ),
-        new GrammarRule(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.Expr, SymbolicToken.OR, SymbolicToken.SimpleExpr } ),
-        new GrammarRule(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.SimpleExpr } ),
-        new GrammarRule(SymbolicToken.Expr, new SymbolicToken[] { SymbolicToken.NOT, SymbolicToken.SimpleExpr } ),
-
-        new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.EQUAL, SymbolicToken.AddExpr } ),
-        new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.NOTEQUAL, SymbolicToken.AddExpr } ),
-        new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.LESSEQUAL, SymbolicToken.AddExpr } ),
-        new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.LESSTHAN, SymbolicToken.AddExpr } ),
-        new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.GREATEQUAL, SymbolicToken.AddExpr } ),
-        new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.SimpleExpr, SymbolicToken.GREATTHAN, SymbolicToken.AddExpr } ),
-        new GrammarRule(SymbolicToken.SimpleExpr, new SymbolicToken[] { SymbolicToken.AddExpr } ),
-
-
-        new GrammarRule(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.AddExpr, SymbolicToken.ADD, SymbolicToken.AddExpr } ),
-        new GrammarRule(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.AddExpr, SymbolicToken.SUB, SymbolicToken.MullExpr } ),
-        new GrammarRule(SymbolicToken.AddExpr, new SymbolicToken[] { SymbolicToken.MullExpr } ),
-
-        new GrammarRule(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.MullExpr, SymbolicToken.MUL, SymbolicToken.Factor } ),
-        new GrammarRule(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.MullExpr, SymbolicToken.SUB, SymbolicToken.Factor } ),
-        new GrammarRule(SymbolicToken.MullExpr, new SymbolicToken[] { SymbolicToken.Factor } ),
-
-        new GrammarRule(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.Variable } ),
-        new GrammarRule(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.NumConstant } ),
-        new GrammarRule(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.IDENTIFIER, SymbolicToken.LEFTPAREN, SymbolicToken.RIGHTPAREN } ),
-        new GrammarRule(SymbolicToken.Factor, new SymbolicToken[] { SymbolicToken.LEFTPAREN, SymbolicToken.Expr, SymbolicToken.RIGHTPAREN } ),
-
-        new GrammarRule(SymbolicToken.Variable, new SymbolicToken[] { SymbolicToken.IDENTIFIER } ),
-        new GrammarRule(SymbolicToken.Variable, new SymbolicToken[] { SymbolicToken.IDENTIFIER, SymbolicToken.LEFTSQR, SymbolicToken.Expr, SymbolicToken.RIGHTSQR } ),
+		new GrammarRule(SymbolicToken.NumConstant, new SymbolicToken[] { SymbolicToken.INTCON },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (NumConstant -> INTCON)");
+				return tokens[0].GetData();
+				}
+			),
+        new GrammarRule(SymbolicToken.NumConstant, new SymbolicToken[] { SymbolicToken.FLOATCON },
+			(List<ScannedToken> tokens) => {
+				if (debugParseOutput) Debug.Log("Rule applied: (NumConstant -> FLOATCON)");
+				return tokens[0].GetData();
+				}
+			),
 
 		new GrammarRule(SymbolicToken.Timing, new SymbolicToken[] { SymbolicToken.IMMEDIATE } ),
 		new GrammarRule(SymbolicToken.Timing, new SymbolicToken[] { SymbolicToken.DELAYED } ),
@@ -230,10 +558,6 @@ public static class CSL {
 
 		new GrammarRule(SymbolicToken.Enforcement, new SymbolicToken[] { SymbolicToken.OPTIONAL } ),
 		new GrammarRule(SymbolicToken.Enforcement, new SymbolicToken[] { SymbolicToken.REQUIRED } ),
-
-
-		new GrammarRule(SymbolicToken.NumConstant, new SymbolicToken[] { SymbolicToken.INTCON } ),
-        new GrammarRule(SymbolicToken.NumConstant, new SymbolicToken[] { SymbolicToken.FLOATCON } ),
 
 		new GrammarRule(SymbolicToken.Type, new SymbolicToken[] { SymbolicToken.ITEM }),
 		new GrammarRule(SymbolicToken.Type, new SymbolicToken[] { SymbolicToken.ROOM }),
@@ -289,9 +613,12 @@ public static class CSL {
 				else if (token == SymbolicToken.NEWLN) {
 					nl++;
 				}
+				else if (token == SymbolicToken.COMMENT) {
+					//Dont add the comments.
+				}
 				else {
 					//Debug.Log(text + " | " + System.Enum.GetName(typeof(SymbolicToken), token));
-					tokens.Add(new ScannedToken(token, Box(token, text)));
+					tokens.Add(new ScannedToken(token, Box(token, text), ScannedToken.Type.Terminal));
 				}
 				//Debug.Log("Pre<"+remainder+">");
 				remainder = remainder.Substring(text.Length);
@@ -303,7 +630,7 @@ public static class CSL {
 				Debug.LogError("Syntax Read Error: '" + text + "'");
 			}
 		}
-		tokens.Add(new ScannedToken(SymbolicToken.EOF, null));
+		tokens.Add(new ScannedToken(SymbolicToken.EOF, null, ScannedToken.Type.Terminal));
 		return tokens;
 	}
 
@@ -313,19 +640,19 @@ public static class CSL {
 	/// <param name="tokens"></param>
 	/// <param name="generateScript"></param>
 	/// <returns></returns>
-	public static IEnumerator<object> Parse(List<ScannedToken> tokens, bool generateScript = false) {
+	public static IEnumerator<object> Execute(List<ScannedToken> tokens) {
 		//If we do not have a parsing table generated, do so.
 		if (ParseTable == null)
 			yield return BuildParseTable();
 
+		variableDictionary = new Dictionary<string, object>(); // Reset the variable dictionary
+
 		//The parsing stack
 		List<ParseStackElement> parsingStack = new List<ParseStackElement>();
-		//PrintList(tokens);
+		PrintList(tokens);
 
 		//Place state 0 onto the stack
 		parsingStack.Add(new ParseStackElement(ParseStackElement.Type.State, 0));
-
-		Script script = (generateScript) ? new Script() : null;
 
 		//The current location in the parse
 		int currencyIndicator = 0;
@@ -334,8 +661,8 @@ public static class CSL {
 		while (true) {
 			yield return null;
 
-			//PrintList(parsingStack);
-			//Debug.Log(""+ tokens[currencyIndicator]);
+			
+			//Debug.Log(PrintList(parsingStack, false) + "|\\|/| -> " + tokens[currencyIndicator]);
 
 			ParseStackElement top = parsingStack[parsingStack.Count -1];
 			//Look at top of stack, if it is a Token, then we need to do a GoTo,
@@ -376,8 +703,7 @@ public static class CSL {
 				ParserInstruction targetInstruction = ParseTable[top.parserStateIndex][tokenColumn];
 
 				if (targetInstruction.instruction == ParserInstruction.Instruction.ACCEPT) {
-					//Debug.Log("Parsing Accepted.");
-					//Do something with the script here?
+					Debug.Log(parsingStack[parsingStack.Count - 2].scannedToken.GetData() ?? "Execution completed with no debug output.");
 					break;
 				}
 				else if (targetInstruction.instruction == ParserInstruction.Instruction.SHIFT) {
@@ -407,13 +733,17 @@ public static class CSL {
 							scannedTokensList.Add(poppedList[i].scannedToken);
 					}
 
-					//Call the appropriate operation (Perform the Reduction)
-					ScannedToken resultingToken = new ScannedToken(productionRules[targetInstruction.value].nonTerminal, productionRules[targetInstruction.value].operate(scannedTokensList, script));
-
+					//Call the appropriate operation (Performi the Reduction)
+					ScannedToken resultingToken = new ScannedToken(productionRules[targetInstruction.value].nonTerminal, scannedTokensList, ScannedToken.Type.NonTerminal, targetInstruction.value);
+					//Debug.Log(resultingToken);
 					//Put the resulting LHS token onto the stack.
 					parsingStack.Add(new ParseStackElement(ParseStackElement.Type.Token, 0, resultingToken));
 				}
 				else {
+					PrintList(parsingStack);
+					Debug.Log(currentInputToken);
+					tokens.RemoveRange(0, currencyIndicator);
+					PrintList(tokens);
 					Debug.LogError("Stack parsing has broken due to invalid Instruction: " + System.Enum.GetName(typeof(ParserInstruction.Instruction), targetInstruction.instruction));
 					yield break;
 				}
@@ -424,14 +754,19 @@ public static class CSL {
 
 	}
 
-
-	public static void PrintList<T>(List<T> list) {
+	/// <summary>
+	/// Prints a formatted list of items using its ToString method
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	/// <param name="list"></param>
+	public static string PrintList<T>(List<T> list, bool printList = true) {
 		string ret = "";
 		for (int i = 0; i < list.Count; i++) {
 			ret += list[i].ToString() + " | ";
 		}
 
-		Debug.Log(ret);
+		if (printList) Debug.Log(ret);
+		return ret;
 	}
 
 	/// <summary>
@@ -440,9 +775,41 @@ public static class CSL {
 	/// <returns></returns>
     public static IEnumerator<object> BuildParseTable() {
 		if (System.Enum.GetNames(typeof(SymbolicToken)).Length != nonTerminals.Count + TERMINALS.Count) {
-			Debug.LogError("Count mismatch between total SymbolicTokens ("+ System.Enum.GetNames(typeof(SymbolicToken)).Length + ") and Terminals("+ TERMINALS.Count+")/NonTerminals("+ nonTerminals.Count+").");
+			//Debug.LogError("Count mismatch between total SymbolicTokens ("+ System.Enum.GetNames(typeof(SymbolicToken)).Length + ") and Terminals("+ TERMINALS.Count+")/NonTerminals("+ nonTerminals.Count+").");
 			//yield break;
 		}
+
+
+		/*{
+			//Follow Set storage
+			//Create the first and follow set for each non termial
+			foreach (SymbolicToken nT in nonTerminals) {
+				//Create first set
+				firstSet.Add(nT, new List<SymbolicToken>());
+				//create follow set
+				followSet.Add(nT, new List<SymbolicToken>());
+				//for each Rule featuring this token as the NonTerminal, add the first token in tokens to the First set
+				foreach (GrammarRule rule in productionRules)
+					if (rule.nonTerminal == nT)
+						if (firstSet[nT].Contains(rule.tokens[0]) == false) firstSet[nT].Add(rule.tokens[0]);
+				//Check each rule, and for each instance of this nonTerminal, record what follows immediatly after it.
+				foreach (GrammarRule rule in productionRules) {
+					for (int i = rule.tokens.Length - 1; i >= 0; i--) {
+						if (rule.tokens[i] == nT) {
+							//Dont add EOF
+							if (i == rule.tokens.Length - 1)
+								continue;
+							//Since we are looping backwards and skip EOF, we know that there exists a token at this spot + 1 
+							if (followSet[nT].Contains(rule.tokens[i + 1]) == false) followSet[nT].Add(rule.tokens[i + 1]);
+						}
+					}
+				}
+				//Debug.Log(System.Enum.GetName(typeof(Token), nT) + " first: " + PrintList(firstSet[nT]));
+				//Debug.Log(System.Enum.GetName(typeof(Token), nT) + " follow: " + PrintList(followSet[nT]));
+			}
+
+
+		}*/
 
 
 		int stateIter = 0;
@@ -496,7 +863,10 @@ public static class CSL {
 						continue;
 					}
 					for (int k = 0; k < TERMINALS.Count; k++) {
-						parseTableRow[k] = new ParserInstruction(GetRuleIndex(sRule.rule), ParserInstruction.Instruction.REDUCE);
+						ParserInstruction newRule = new ParserInstruction(GetRuleIndex(sRule.rule), ParserInstruction.Instruction.REDUCE);
+							//Debug.LogError("Parsing Conflict. ("+ parseTableRow[k] + ")->("+ newRule + ")");
+						if (parseTableRow[k].instruction == ParserInstruction.Instruction.ERR)
+							parseTableRow[k] = newRule;
 					}
 				}
 			}
@@ -598,20 +968,6 @@ public static class CSL {
 
 		return instructions;
 	}
-
-	/// <summary>
-	/// Prints a list of Symbolic tokens
-	/// </summary>
-	/// <param name="list"></param>
-	/// <returns></returns>
-    private static string PrintList(List<SymbolicToken> list) {
-        string rt = "";
-        for (int i = 0; i < list.Count; i++)
-        {
-            rt += System.Enum.GetName(typeof(SymbolicToken), list[i]) + ", ";
-        }
-        return rt;
-    }
 
 	/// <summary>
 	/// Used to convert a string of text to the appropriate data based on the token type
@@ -852,15 +1208,13 @@ public static class CSL {
 		/// </summary>
 		public SymbolicToken[] tokens;
 
-
-
 		/// <summary>
 		/// A frame for Rule Reduction Operations.
 		/// </summary>
 		/// <param name="parsedTokens"></param>
 		/// <param name="script"></param>
 		/// <returns></returns>
-		public delegate object Operate(List<ScannedToken> parsedTokens, Script script);
+		public delegate object Operate(List<ScannedToken> parsedTokens);
 
 		/// <summary>
 		/// The operation to perfrom when this rule is used.
@@ -872,7 +1226,7 @@ public static class CSL {
 			this.tokens = tokens;
 			//Set it to the passed operation otherwise use the default statement. the Default statement mentions the default rule was used and shows the form for the rule
 			this.operate = operate ?? 
-				((List<ScannedToken> parsedTokens, Script script) => {
+				((List<ScannedToken> parsedTokens) => {
 					string ret = "";
 					ret += System.Enum.GetName(typeof(SymbolicToken), nonTerminal);
 					ret += " -> ";
@@ -972,11 +1326,111 @@ public static class CSL {
 	/// A parsed Script
 	/// </summary>
 	public class Script {
+
+		private static string defaultSavePath = Application.persistentDataPath + "/Scripts/";
+		private static string fileExtension = ".xml";
+
+		/// <summary>
+		/// Types of supported scripts
+		/// </summary>
+		public enum ScriptType { Room, Item, Artifact, Event, Effect }
+
+		/// <summary>
+		/// Timings for choices and effects
+		/// </summary>
+		public enum Timing { Immediate, Delayed, Static }
+
+		/// <summary>
+		/// The enforcement level for a choice
+		/// </summary>
+		public enum Enforcement { Optional, Required }
+
+		/// <summary>
+		/// The type of card this is.
+		/// </summary>
 		public ScriptType type;
+
+		/// <summary>
+		/// The name for this card
+		/// </summary>
 		public string name;
+
+		/// <summary>
+		/// The base image for this card
+		/// </summary>
 		public Sprite image;
+
+		/// <summary>
+		/// Aditional icons to place on the card. Will get assumed based on CSL statements
+		/// </summary>
+		public List<Sprite> additionalIcons;
+
+		/// <summary>
+		/// List of effects that this room applies
+		/// </summary>
 		public List<EffectSet> effectList;
+
+		/// <summary>
+		/// List of choices that can be made in this room
+		/// </summary>
 		public List<ChoiceSet> choiceList;
+
+		/// <summary>
+		/// Creates a unique UID for the filename
+		/// </summary>
+		/// <returns></returns>
+		public bool TestForUniqueFilename(string filename, out string UID) {
+			string filePath;
+			int num = 0;
+			do {
+				num++;
+				filePath = defaultSavePath + filename + ((num == 1) ? "" : "" + num) + fileExtension;
+			} while (System.IO.File.Exists(filePath));
+			UID = "";
+			return num == 1;
+		}
+
+		/// <summary>
+		/// Saves a card to the file base.
+		/// </summary>
+		public static void SaveCard(Script cardToSave, string filename) {
+			XmlSerializer serializer = new XmlSerializer(typeof(Script));
+			string filePath = defaultSavePath + filename + fileExtension;
+			System.IO.TextWriter textWriter = new System.IO.StreamWriter(filePath);
+			serializer.Serialize(textWriter, cardToSave);
+		}
+
+		/// <summary>
+		/// Loads all cards from a using a filepath
+		/// </summary>
+		/// <param name="filename"></param>
+		/// <returns></returns>
+		public static Script LoadCard(string filePath) {
+			XmlSerializer serializer = new XmlSerializer(typeof(Script));
+			FileStream fs = new FileStream(filePath, FileMode.Open);
+			Script script = (Script)serializer.Deserialize(fs);
+			return script;
+		}
+
+		/// <summary>
+		/// Loads all scripts from the scripts folder.
+		/// </summary>
+		/// <param name="dirPath"></param>
+		/// <returns></returns>
+		public static List<Script> LoadAllScripts(string dirPath) {
+			List<string> filePaths = new List<string>(Directory.GetFiles(dirPath));
+			List<Script> scripts = new List<Script>();
+
+			for (int i = filePaths.Count - 1; i >= 0; i--) {
+				string filePath = filePaths[i];
+				if (filePath.Contains(fileExtension)) {
+					scripts.Add(LoadCard(filePath));
+					filePaths.RemoveAt(i);
+				}
+			}
+
+			return scripts;
+		}
 
 		/// <summary>
 		/// A player set of choices, with a level of Enforcemment.
@@ -1054,6 +1508,7 @@ public static class CSL {
 		/// A set of statements that have an effect on the game.
 		/// </summary>
 		public struct Effect {
+
 			/// <summary>
 			/// The tokens that generate an effect when parsed.
 			/// </summary>
@@ -1068,15 +1523,42 @@ public static class CSL {
 	/// A token that has been read by the scanner. Contains its SymbolicToken and it's parsed data.
 	/// </summary>
 	public struct ScannedToken {
+		public enum Type { Terminal, NonTerminal }
+		public List<ScannedToken> scannedTokens;
+		public Type type;
 		public SymbolicToken token;
-		public object data;
-		public ScannedToken(SymbolicToken token, object data) {
+		public int rule;
+		private readonly object data;
+		public ScannedToken(SymbolicToken token, object data, Type type, int rule = -1) {
 			this.token = token;
-			this.data = data;
+			this.type = type;
+			this.rule = rule;
+			if (type == Type.NonTerminal) {
+				this.data = null;
+				this.scannedTokens = (List<ScannedToken>)data;
+			}
+			else {
+				this.data = data;
+				this.scannedTokens = null;
+			}
+			//Debug.Log("New Token:(" + System.Enum.GetName(typeof(SymbolicToken), token) + ") type:(" + System.Enum.GetName(typeof(Type), type) + ") rule:(" + rule + ") data:(" + ((type == Type.Terminal) ? data : PrintList(scannedTokens, false)) + ")");
+		}
+
+		public object GetData() {
+			if (type == Type.Terminal) {
+				return data;
+			}
+			else {
+				return productionRules[rule].operate(scannedTokens);
+			}
+		}
+
+		public string ToStringVerbose() {
+			return "Token:(" + System.Enum.GetName(typeof(SymbolicToken), token)+ ") type:(" +System.Enum.GetName(typeof(Type),type)+") rule:("+rule+ ") data:("+ ((type == Type.Terminal) ? data : PrintList(scannedTokens, false)) + ")";
 		}
 
 		public override string ToString() {
-			return System.Enum.GetName(typeof(SymbolicToken), token);
+			return type+"."+System.Enum.GetName(typeof(SymbolicToken), token);// "Token:(" + System.Enum.GetName(typeof(SymbolicToken), token)+ ") type:(" +System.Enum.GetName(typeof(Type),type)+") rule:("+rule+ ") data:("+ ((type == Type.Terminal) ? data : PrintList(scannedTokens, false)) + ")";
 		}
 	}
 	#endregion

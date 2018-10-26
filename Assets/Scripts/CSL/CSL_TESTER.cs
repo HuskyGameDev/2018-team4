@@ -8,17 +8,12 @@ public class CSL_TESTER : MonoBehaviour {
 
 	#region Testing
 	private void Start() {
-		string testRoom =
-		"room ;\n" +
-		"name \"TestingRoom\" ;" +
-		"image ;" +
-		"text \"This is a default testing room that does nothing.\" ;" +
-		"immediate { effect { 7+2 } }";
+		string testStatement = "var t; t = 0; if (1 > 2.333) { while (t<10) { discard this; t = t+1; } } else discard nothing; ";
 
 
 		//CSL.PrintList(CSL.Scan(testRoom));
 
-		StartCoroutine(CSL.Parse(CSL.Scan(testRoom), true));
+		StartCoroutine(CSL.Execute(CSL.Scan(testStatement)));
 	}
 
 
