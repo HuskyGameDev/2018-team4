@@ -1,7 +1,8 @@
 using UnityEngine;
+using System.Collections.Generic;
 
-namespace CSL {
-  public class GrammarElement {
+namespace CSLg {//This needs to be fixed, something to do with another script and gloabl stuff
+  public abstract class GrammarElement {
     /// <summary>
     /// The type of Grammar possible grammer elements
     /// </summary>
@@ -11,7 +12,7 @@ namespace CSL {
     /// <summary>
     /// The list of supported productionRules
     /// </summary>
-    public abstract List<List<Type>> productionRules; 
+    public List<List<Type>> productionRules; 
 
     /// <summary>
     /// The list of Processed elements for a NonTerminal on the LHS of it's production rule
@@ -26,7 +27,7 @@ namespace CSL {
     /// <summary>
     /// Returns the type of grammar element this is
     /// </summary>
-    public abstract Type GetType();
+    public abstract Type GetTokenType();
 
     /// <summary>
     /// Returns the LHS regex string for this Terminal Grammar Element
@@ -36,27 +37,27 @@ namespace CSL {
     /// <summary>
     /// Returns the LHS sequnce of tokens for this NonTerminal Grammar Element
     /// </summary>
-    public virtual List<GrammarElement> GetExpression();
+    public abstract List<GrammarElement> GetExpression();
 
-    public delegate Callback(object data);
+    public delegate void Callback(object data);
 
     /// <summary>
     /// Execution of this rule, base definition executes the LHS and prepares it for use.
     /// </summary>
-    public virtual IEnumerator<object> Execute(Script script, Callback callback) {
+    public virtual IEnumerator<object> Execute(CSL.Script script, Callback callback) {
       //Create a list the size of tokens
       List<object> expressionResults = new List<object>(expressionElements.Count);
-      for (int i = 0; i < elements.Count; i++) {
-        if (elements[i].GetType() == Type.Terminal) {
+      for (int i = 0; i < expressionElements.Count; i++) {
+        if (expressionElements[i].GetTokenType() == Type.Terminal) {
           expressionResults[i] = expressionElements[i].data;
         }
         else {
           //This means is a non terminal, so we must yield to its results, and pass it a llamda expression callback that assigns this specific member
-          yield return StartCoroutine(elements[i].Execute(script, (object data) => { expressionResults[i] = data; }));
+          //yield return StartCoroutine(expressionElements[i].Execute(script, (object data) => { expressionResults[i] = data; }));
         }
       }
-      //expressionResults is now compilied
-      
+            //expressionResults is now compilied
+            yield return null;
     }
   }
 }

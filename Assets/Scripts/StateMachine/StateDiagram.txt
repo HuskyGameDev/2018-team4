@@ -76,7 +76,7 @@ SoftwareSystem {
             Transition to : LoadGame; When: Load Button is pressed
             Transition to : SaveGame; When: Save Button is pressed
             Transition to : GameplayState; When: Resume button pressed
-            Transition to : ExitGame; When: MainMenu button pressed
+            PostNotification("GameSystem->SwitchToMainMenu") When back button pressed;
         }
 
         ExitGame {

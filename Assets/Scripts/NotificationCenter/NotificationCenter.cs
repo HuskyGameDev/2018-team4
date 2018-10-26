@@ -182,5 +182,16 @@ public class NotificationCenter
 			_invoking.Remove(handlers);
 		}
 	}
-	#endregion
+    public List<string> GetNotificationKeys()
+    {
+        Clean();
+        List<string> keys = new List<string>();
+        foreach (string itm in _table.Keys)
+        {
+            //if (_table[itm].Count > 0)
+             keys.Add(itm);
+        }
+        return keys;
+    }
+    #endregion
 }
