@@ -182,6 +182,22 @@ public class NotificationCenter
 			_invoking.Remove(handlers);
 		}
 	}
+    /// <summary>
+    /// Yields a coroutine until a message is recieved by the Notification center
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    public IEnumerator<object> WaitForMessage(string message)
+    {
+        bool messageFlag = false;
+        Handler callback = (object sender, object args) => { messageFlag = true; };
+        AddObserver(callback, message);
+        while (messageFlag == false)
+            yield return null;
+
+        RemoveObserver(callback, message);
+    }
+
     public List<string> GetNotificationKeys()
     {
         Clean();

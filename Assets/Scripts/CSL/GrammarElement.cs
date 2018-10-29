@@ -53,7 +53,7 @@ namespace CSLg {//This needs to be fixed, something to do with another script an
         }
         else {
           //This means is a non terminal, so we must yield to its results, and pass it a llamda expression callback that assigns this specific member
-          //yield return StartCoroutine(expressionElements[i].Execute(script, (object data) => { expressionResults[i] = data; }));
+                    yield return GameManager._instance.StartCoroutine(expressionElements[i].Execute(script, (object data) => { expressionResults[i] = data; }));
         }
       }
             //expressionResults is now compilied
