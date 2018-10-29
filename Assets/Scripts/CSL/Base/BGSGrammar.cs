@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using System.Xml;
-using System.Xml.Serialization;
-using System.IO;
-using ScriptSegment = List<GrammarElement>;
+using System.Reflection;
+using ScriptSegment = System.Collections.Generic.List<BoardGameScripting.GrammarElement>;
 
 namespace BoardGameScripting {
 	/// <summary>
@@ -12,11 +10,12 @@ namespace BoardGameScripting {
 	/// </summary>
 	public static class BGSGrammar {
 		public delegate void Callback(object data);
-		private static readonly bool debugParseOutput = false;
+		public static readonly bool debugParseOutput = false;
 		private static List<ParserInstruction[]> ParseTable = null;
-		private static List<Type> terminals;
-		private static List<Type> nonTerminals;
-		private static Dictionary<string, object> variableDictionary;
+		private static List<System.Type> TERMINALS;
+		private static List<System.Type> nonTerminals;
+		public static Dictionary<string, object> variableDictionary;
+		private static readonly IBGSLangauge language;
 
 		#region Methods
 		/// <summary>
@@ -31,17 +30,18 @@ namespace BoardGameScripting {
 			Regex regex;
 			while (remainder.Length > 0) {
 
-				GrammarElement? token = null;
+				GrammarElement token = null;
 
-				for (int i = 0; i < terminalTokenRegexPair.Length; i++) {
+				for (int i = 0; i < TERMINALS.Count; i++) {
 					text = "";
 					string testingText = ""; // Track the current testing string.
-					regex = new Regex(terminalTokenRegexPair[i].regex);
+					regex = new Regex(GrammarElement.GetRegexFromType(TERMINALS[i]));
 					for (int k = 0; k < remainder.Length; k++) {
 						testingText += remainder[k];
 						if (regex.IsMatch(testingText)) {
 							text = testingText; // Store our string since we know that this is the valid string.
-							token = terminalTokenRegexPair[i].token;
+							token = GrammarElement.GetInstanceFromType(TERMINALS[i]);
+							token.data = text;
 						}
 					}
 
@@ -57,7 +57,7 @@ namespace BoardGameScripting {
 					}
 					else {
 						//Debug.Log(text + " | " + System.Enum.GetName(typeof(SymbolicToken), token));
-						tokens.Add(new ScannedToken(token, Box(token, text), ScannedToken.Type.Terminal));
+						tokens.Add(token);
 					}
 					//Debug.Log("Pre<"+remainder+">");
 					remainder = remainder.Substring(text.Length);
@@ -73,7 +73,7 @@ namespace BoardGameScripting {
 				yield return null;
 			}
 
-			//tokens.Add(new ScannedToken(SymbolicToken.EOF, null, ScannedToken.Type.Terminal));
+			tokens.Add(GrammarElement.GetInstanceFromType(typeof(EOF)));
 			callback(tokens);
 		}
 
@@ -122,31 +122,27 @@ namespace BoardGameScripting {
 					}
 
 					//Calculate the column for the Token that is on top of the stack.
-					//Debug.Log("Top " + System.Enum.GetName(typeof(SymbolicToken), top.scannedToken.token));
-					//Debug.Log("nT index " + nonTerminals.FindIndex(x => x.Equals(top.scannedToken)));
-					//Debug.Log(top.scannedToken);
-					int tokenColumn = TERMINALS.Count + nonTerminals.FindIndex(x => x.Equals(top.scannedToken.token));
-					//Debug.Log(tokenColumn);
-					//Debug.Log(ParseTable[previousState.parserStateIndex][tokenColumn].value);
+					int tokenColumn = TERMINALS.Count + nonTerminals.FindIndex(x => x.Equals(top.scannedToken));
 
 					//Push onto the stack the state we are supposed to GoTo.
-					parsingStack.Add(new ParseStackElement(ParseStackElement.Type.State, ParseTable[previousState.parserStateIndex][tokenColumn].value) );
+					parsingStack.Add(new ParseStackElement(ParseStackElement.Type.State, (int)ParseTable[previousState.parserStateIndex][tokenColumn].value));
+
 
 				}
 				else {
 					//Otherwise we look at the current state and the currency indiciator
 
 					//Get the input token we are looking at
-					ScannedToken currentInputToken = tokens[currencyIndicator];
+					GrammarElement currentInputToken = tokens[currencyIndicator];
 
 					//It can (should) only be a non terminal, so calculate its column on the parse table.
-					int tokenColumn = TERMINALS.FindIndex(x => x.Equals(currentInputToken.token));
+					int tokenColumn = TERMINALS.FindIndex(x => x.Equals(currentInputToken.GetType()));
 					//Debug.Log(currentInputToken.token);
 					//Debug.Log(tokenColumn+"/"+(nonTerminals.Count+TERMINALS.Count));
 					ParserInstruction targetInstruction = ParseTable[top.parserStateIndex][tokenColumn];
 
 					if (targetInstruction.instruction == ParserInstruction.Instruction.ACCEPT) {
-						Debug.Log(parsingStack[parsingStack.Count - 2].scannedToken.GetData() ?? "Execution completed with no debug output.");
+						parsingStack[parsingStack.Count - 2].scannedToken.Prepare((object data) => { });
 						break;
 					}
 					else if (targetInstruction.instruction == ParserInstruction.Instruction.SHIFT) {
@@ -158,27 +154,30 @@ namespace BoardGameScripting {
 						currencyIndicator++;
 
 						//then the new state on the stack.
-						parsingStack.Add(new ParseStackElement(ParseStackElement.Type.State, targetInstruction.value));
+						parsingStack.Add(new ParseStackElement(ParseStackElement.Type.State, (int)targetInstruction.value));
 
 					}
 					else if (targetInstruction.instruction == ParserInstruction.Instruction.REDUCE) {
-						//Debug.Log("Reduce");
 						//If it is reduce, we... reduce
-						int removalCount = productionRules[targetInstruction.value].tokens.Length * 2;
+
+						GrammarElement.ProductionRule productionRule = (GrammarElement.ProductionRule)targetInstruction.value;
+						int removalCount = productionRule.GetRHSElements().Count * 2;
 						//We pop off twice as many tokens as the rhs of the reduce instruction.
 						List<ParseStackElement> poppedList = parsingStack.GetRange(parsingStack.Count - removalCount, removalCount);
 						parsingStack.RemoveRange(parsingStack.Count - removalCount, removalCount);
 
 						//Create a list of all of the ScannedTokens
-						List<ScannedToken> scannedTokensList = new List<ScannedToken>();
+						List<GrammarElement> scannedTokensList = new List<GrammarElement>();
 						for (int i = 0; i < poppedList.Count; i++) {
 							if (poppedList[i].type == ParseStackElement.Type.Token)
 								scannedTokensList.Add(poppedList[i].scannedToken);
 						}
 
 						//Call the appropriate operation (Performi the Reduction)
-						ScannedToken resultingToken = new ScannedToken(productionRules[targetInstruction.value].nonTerminal, scannedTokensList, ScannedToken.Type.NonTerminal, targetInstruction.value);
-						//Debug.Log(resultingToken);
+						GrammarElement resultingToken = GrammarElement.GetInstanceFromType(productionRule.GetNonTerminal());
+						resultingToken.expressionElements = scannedTokensList;
+						resultingToken.productionRule = productionRule;;
+
 						//Put the resulting LHS token onto the stack.
 						parsingStack.Add(new ParseStackElement(ParseStackElement.Type.Token, 0, resultingToken));
 					}
@@ -216,77 +215,79 @@ namespace BoardGameScripting {
 		/// Builds a ParseTable for the Grammar
 		/// </summary>
 		/// <returns></returns>
-	    public static IEnumerator<object> BuildParseTable(BGSLangauge language) {
+	    public static IEnumerator<object> BuildParseTable() {
 
+			TERMINALS = language.GetOrderedTerminals();
+			nonTerminals = language.GetOrderedNonTerminals();
 
-				int stateIter = 0;
-				ParseTable = new List<ParserInstruction[]>();
+			int stateIter = 0;
+			ParseTable = new List<ParserInstruction[]>();
 
-				List<ParserState> stateList = new List<ParserState>();
-				stateList.Add(new ParserState(new ParserState.StateRule[] { new ParserState.StateRule(0, productionRules[0])}));
-				ParserState.count++; //Count the init state.
+			List<ParserState> stateList = new List<ParserState>();
+			stateList.Add(new ParserState(new ParserState.StateRule[] { new ParserState.StateRule(0, GrammarElement.GetRulesFromType(typeof(ScriptPrime))[0] ) } ));
+			ParserState.count++; //Count the init state.
 
-				while (stateIter < stateList.Count) {
-					//TODO, start a row for this parser state.
-					//Create states for our leads.
-					//Debug.Log(stateList[stateIter].ToString());
-					//Debug.Log(stateList[stateIter].TransitionString());
+			while (stateIter < stateList.Count) {
+				//TODO, start a row for this parser state.
+				//Create states for our leads.
+				//Debug.Log(stateList[stateIter].ToString());
+				//Debug.Log(stateList[stateIter].TransitionString());
 
-					ParserInstruction[] parseTableRow = GenerateEmptyRow(TERMINALS.Count + nonTerminals.Count);
+				ParserInstruction[] parseTableRow = GenerateEmptyRow(TERMINALS.Count + nonTerminals.Count);
 
-					foreach (SymbolicToken key in stateList[stateIter].transitionSet.Keys) {
-						//if (key == SymbolicToken.Type) PrintList(stateList[stateIter].transitionSet[key]);
-						//Do not do anything if this leads nowhere.
-						if (stateList[stateIter].transitionSet[key].Count == 0)
-							continue;
+				foreach (System.Type key in stateList[stateIter].transitionSet.Keys) {
+					//if (key == SymbolicToken.Type) PrintList(stateList[stateIter].transitionSet[key]);
+					//Do not do anything if this leads nowhere.
+					if (stateList[stateIter].transitionSet[key].Count == 0)
+						continue;
 
-						//Check if this state matches an already exiting one.
-						ParserState newState = new ParserState(stateList[stateIter].transitionSet[key].ToArray());
-						if (stateList.Contains(newState) == false) {
-							//Add it
-							newState.ID = ParserState.count++;
-							stateList.Add(newState);
-							//TODO build row
-						}
-						else {
-							//TODO, Make this (toExapnd) row link back to the old matching set.
-							newState = stateList.Find(x => x.Equals(newState));
-							//Debug.LogWarning("Discarding redundant generated state.");
-						}
-
-						int column = (TERMINALS.Contains(key) == true) ? TERMINALS.IndexOf(key) : TERMINALS.Count + nonTerminals.IndexOf(key);
-						ParserInstruction.Instruction instruction = (nonTerminals.Contains(key)) ? ParserInstruction.Instruction.GOTO : ParserInstruction.Instruction.SHIFT;
-						parseTableRow[column] = new ParserInstruction(newState.ID, instruction);
-
+					//Check if this state matches an already exiting one.
+					ParserState newState = new ParserState(stateList[stateIter].transitionSet[key].ToArray());
+					if (stateList.Contains(newState) == false) {
+						//Add it
+						newState.ID = ParserState.count++;
+						stateList.Add(newState);
+						//TODO build row
+					}
+					else {
+						//TODO, Make this (toExapnd) row link back to the old matching set.
+						newState = stateList.Find(x => x.Equals(newState));
+						//Debug.LogWarning("Discarding redundant generated state.");
 					}
 
-					//For each rule that has ended, add a reduce or goto
-					for (int i = 0; i < stateList[stateIter].rules.Count; i++) {
-						ParserState.StateRule sRule = stateList[stateIter].rules[i];
-						if (sRule.dotPosition >= sRule.rule.tokens.Length) {
-							if (sRule.rule.Equals(productionRules[0])) {
-								//Add Accept token at EOF
-								parseTableRow[TERMINALS.Count - 1] = new ParserInstruction(0, ParserInstruction.Instruction.ACCEPT);
-								continue;
-							}
-							for (int k = 0; k < TERMINALS.Count; k++) {
-								ParserInstruction newRule = new ParserInstruction(GetRuleIndex(sRule.rule), ParserInstruction.Instruction.REDUCE);
-									//Debug.LogError("Parsing Conflict. ("+ parseTableRow[k] + ")->("+ newRule + ")");
-								if (parseTableRow[k].instruction == ParserInstruction.Instruction.ERR)
-									parseTableRow[k] = newRule;
-							}
-						}
-					}
+					int column = (TERMINALS.Contains(key) == true) ? TERMINALS.IndexOf(key) : TERMINALS.Count + nonTerminals.IndexOf(key);
+					ParserInstruction.Instruction instruction = (nonTerminals.Contains(key)) ? ParserInstruction.Instruction.GOTO : ParserInstruction.Instruction.SHIFT;
+					parseTableRow[column] = new ParserInstruction(newState.ID, instruction);
 
-
-					ParseTable.Add(parseTableRow);
-					yield return null;
-					//Debug.Log(stateIter);
-					stateIter++;
 				}
 
-				//Save the Parse table for later
-				WriteTableOut(ParseTable);
+				//For each rule that has ended, add a reduce or goto
+				for (int i = 0; i < stateList[stateIter].rules.Count; i++) {
+					ParserState.StateRule sRule = stateList[stateIter].rules[i];
+					if (sRule.dotPosition >= sRule.rule.GetRHSElements().Count) {
+						if (sRule.rule.GetType() == typeof(ScriptPrime)) {
+							//Add Accept token at EOF
+							parseTableRow[TERMINALS.Count - 1] = new ParserInstruction(0, ParserInstruction.Instruction.ACCEPT);
+							continue;
+						}
+						for (int k = 0; k < TERMINALS.Count; k++) {
+							ParserInstruction newRule = new ParserInstruction(sRule.rule, ParserInstruction.Instruction.REDUCE);
+								//Debug.LogError("Parsing Conflict. ("+ parseTableRow[k] + ")->("+ newRule + ")");
+							if (parseTableRow[k].instruction == ParserInstruction.Instruction.ERR)
+								parseTableRow[k] = newRule;
+						}
+					}
+				}
+
+
+				ParseTable.Add(parseTableRow);
+				yield return null;
+				//Debug.Log(stateIter);
+				stateIter++;
+			}
+
+			//Save the Parse table for later
+			WriteTableOut(ParseTable);
 		}
 
 		/// <summary>
@@ -296,11 +297,11 @@ namespace BoardGameScripting {
 		private static void WriteTableOut(List<ParserInstruction[]> table) {
 			string ret = ",";
 			for (int i = 0; i < TERMINALS.Count; i++) {
-				ret += "" + System.Enum.GetName(typeof(SymbolicToken), TERMINALS[i]) + ",";
+				ret += "" + TERMINALS[i].Name + ",";
 			}
 
 			for (int i = 0; i < nonTerminals.Count; i++) {
-				ret += "" + System.Enum.GetName(typeof(SymbolicToken), nonTerminals[i]) + ",";
+				ret += "" + nonTerminals[i].Name + ",";
 			}
 
 			ret += "\n";
@@ -338,10 +339,9 @@ namespace BoardGameScripting {
 
 			public Type type;
 			public int parserStateIndex;
-			public ScannedToken scannedToken;
+			public GrammarElement scannedToken;
 
-
-			public ParseStackElement(Type type, int parserState, ScannedToken token = default(ScannedToken)) {
+			public ParseStackElement(Type type, int parserState, GrammarElement token = default(GrammarElement)) {
 				this.type = type;
 				this.parserStateIndex = parserState;
 				this.scannedToken = token;
@@ -367,7 +367,7 @@ namespace BoardGameScripting {
 			/// </summary>
 			public int ID;
 
-			public Dictionary<Type, List<StateRule>> transitionSet = new Dictionary<Type, List<StateRule>>();
+			public Dictionary<System.Type, List<StateRule>> transitionSet = new Dictionary<System.Type, List<StateRule>>();
 			public List<StateRule> rules = new List<StateRule>();
 
 			public ParserState(StateRule[] initialRules) {
@@ -384,13 +384,11 @@ namespace BoardGameScripting {
 
 					rules.Add(targetRule);
 					//So on a transition we consume a token, so when adding to our transition set make sure to advance the dot one space.
-					if (targetRule.dotPosition >= targetRule.rule.tokens.Length) {
+					if (targetRule.dotPosition >= targetRule.rule.GetRHSElements().Count) {
 						continue;
 					}
-					else {
 
-					}
-					SymbolicToken dotTarget = targetRule.rule.tokens[targetRule.dotPosition];
+					System.Type dotTarget = targetRule.rule.GetRHSElements()[targetRule.dotPosition];
 
 					if (transitionSet.ContainsKey(dotTarget) == false)
 						transitionSet.Add(dotTarget, new List<StateRule>());
@@ -401,9 +399,9 @@ namespace BoardGameScripting {
 						//Debug.Log(System.Enum.GetName(typeof(SymbolicToken), dotTarget));
 
 						//If it is, add the necessary production rules.
-						List<GrammarRule> tokenRules = GetRules(dotTarget);
+						List<GrammarElement.ProductionRule> tokenRules = GrammarElement.GetRulesFromType(dotTarget);
 						//Debug.Log(tokenRules.Count);
-						foreach (GrammarRule r in tokenRules) {
+						foreach (GrammarElement.ProductionRule r in tokenRules) {
 							StateRule nR = new StateRule(0, r);
 							if (rules.Contains(nR) == false && toExpand.Contains(nR) == false) {
 								toExpand.Enqueue(nR);
@@ -414,10 +412,11 @@ namespace BoardGameScripting {
 
 			}
 
+			/*
 			public string TransitionString() {
 				string ret = "";
-				foreach (SymbolicToken token in transitionSet.Keys) {
-					ret += System.Enum.GetName(typeof(SymbolicToken), token) + " --> \n";
+				foreach (System.Type token in transitionSet.Keys) {
+					ret += System.Enum.GetName(typeof(System.Type), token) + " --> \n";
 					foreach (StateRule r in transitionSet[token]) {
 						ret += "\t\t " + r.ToString() + "\n";
 					}
@@ -426,7 +425,7 @@ namespace BoardGameScripting {
 				}
 
 				return ret;
-			}
+			}*/
 
 			public override string ToString() {
 				string ret = "{\n";
@@ -472,9 +471,9 @@ namespace BoardGameScripting {
 				/// <summary>
 				/// The rule we are attempting to make a match for.
 				/// </summary>
-				public GrammarElement rule;
+				public GrammarElement.ProductionRule rule;
 
-				public StateRule(int dotPosition, GrammarRule rule) {
+				public StateRule(int dotPosition, GrammarElement.ProductionRule rule) {
 					this.dotPosition = dotPosition;
 					this.rule = rule;
 				}
@@ -488,10 +487,6 @@ namespace BoardGameScripting {
 						StateRule converted = (StateRule)obj;
 						return converted.dotPosition == this.dotPosition && converted.rule.Equals(this.rule);
 					}
-					/*else if (obj.GetType() == typeof(GrammarRule)) {
-						GrammarRule converted = (GrammarRule)obj;
-						return converted.Equals(this.rule);
-					}*/
 					else {
 						return false;
 					}
@@ -499,15 +494,15 @@ namespace BoardGameScripting {
 
 				public override string ToString() {
 					string ret = "";
-					ret += rule.nonTerminal.GetType().name;
+					ret += rule.GetNonTerminal().Name;
 					ret += " -> ";
-					for (int i = 0; i < rule.tokens.Length; i++) {
+					for (int i = 0; i < rule.GetRHSElements().Count; i++) {
 						if (i == dotPosition)
 							ret += "•";
-						ret += rule.tokens[i].nonTerminal.GetType().name;
+						ret += rule.GetRHSElements()[i].GetType().Name;
 						ret += " ";
 					}
-					if (rule.tokens.Length == dotPosition)
+					if (rule.GetRHSElements().Count == dotPosition)
 						ret += "•";
 					return ret;
 				}
@@ -520,8 +515,8 @@ namespace BoardGameScripting {
 		public struct ParserInstruction {
 			public enum Instruction { SHIFT, REDUCE, GOTO, ERR, ACCEPT }
 			public Instruction instruction;
-			public int value;
-			public ParserInstruction(int value, Instruction instruction) {
+			public object value;
+			public ParserInstruction(object value, Instruction instruction) {
 				this.value = value;
 				this.instruction = instruction;
 			}

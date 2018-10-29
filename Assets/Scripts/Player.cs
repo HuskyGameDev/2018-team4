@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Card = BoardGameScripting.BGSScript;
 
 /// <summary>
 /// Player object. Holds player stats, the number of dice to roll for stats, the player's location, items, artifacts, status effects, etc.
@@ -371,21 +372,21 @@ public class Player : MonoBehaviour {
 	/// <param name="type">Which deck to get from: Item, Artifact, Event, or Effect, with "U_" at the begining for used</param>
 	/// <param name="used">true if cards should be added to used part of inventory</param>
 	/// <returns></returns>
-	public CardDeck GetInventory(CSL.Script.ScriptType type, bool used) {
+	public CardDeck GetInventory(Card.ScriptType type, bool used) {
 		if (!used) {
 			switch (type) {
-				case CSL.Script.ScriptType.Item: return playerItems;
-				case CSL.Script.ScriptType.Artifact: return playerArtifacts;
-				case CSL.Script.ScriptType.Event: return playerEvents;
-				case CSL.Script.ScriptType.Effect: return playerEffects;
+				case Card.ScriptType.Item: return playerItems;
+				case Card.ScriptType.Artifact: return playerArtifacts;
+				case Card.ScriptType.Event: return playerEvents;
+				case Card.ScriptType.Effect: return playerEffects;
 				default: return null;
 			}
 		} else {
 			switch (type) {
-				case CSL.Script.ScriptType.Item: return playerItemsUsed;
-				case CSL.Script.ScriptType.Artifact: return playerArtifactsUsed;
-				case CSL.Script.ScriptType.Event: return playerEventsUsed;
-				case CSL.Script.ScriptType.Effect: return playerEffectsUsed;
+				case Card.ScriptType.Item: return playerItemsUsed;
+				case Card.ScriptType.Artifact: return playerArtifactsUsed;
+				case Card.ScriptType.Event: return playerEventsUsed;
+				case Card.ScriptType.Effect: return playerEffectsUsed;
 				default: return null;
 			}
 		}
@@ -399,35 +400,35 @@ public class Player : MonoBehaviour {
 	/// <param name="type">Part of inventory to add card to</param>
 	/// <param name="used">true if cards should be added to used part of inventory</param>
 	/// <param name="card">Card to add</param>
-	public void AddCard(CSL.Script.ScriptType type, bool used, /*CSL.Script*/ CardDeck.Card card) {
+	public void AddCard(Card.ScriptType type, bool used, /*CSL.Script*/ Card card) {
 		//TODO: Automatically detect which part of inventory to put card in
 		if (!used) {
 			switch (type) {
-				case CSL.Script.ScriptType.Item:
+				case Card.ScriptType.Item:
 					playerItems.AddCard(card);
 					break;
-				case CSL.Script.ScriptType.Artifact:
+				case Card.ScriptType.Artifact:
 					playerArtifacts.AddCard(card);
 					break;
-				case CSL.Script.ScriptType.Event:
+				case Card.ScriptType.Event:
 					playerEvents.AddCard(card);
 					break;
-				case CSL.Script.ScriptType.Effect:
+				case Card.ScriptType.Effect:
 					playerEffects.AddCard(card);
 					break;
 			}
 		} else {
 			switch (type) {
-				case CSL.Script.ScriptType.Item:
+				case Card.ScriptType.Item:
 					playerItemsUsed.AddCard(card);
 					break;
-				case CSL.Script.ScriptType.Artifact:
+				case Card.ScriptType.Artifact:
 					playerArtifactsUsed.AddCard(card);
 					break;
-				case CSL.Script.ScriptType.Event:
+				case Card.ScriptType.Event:
 					playerEventsUsed.AddCard(card);
 					break;
-				case CSL.Script.ScriptType.Effect:
+				case Card.ScriptType.Effect:
 					playerEffectsUsed.AddCard(card);
 					break;
 			}
@@ -440,35 +441,35 @@ public class Player : MonoBehaviour {
 	/// <param name="type">Part of inventory to add cards to</param>
 	/// <param name="used">true if cards should be added to used part of inventory</param>
 	/// <param name="cards">Cards to add</param>
-	public void AddCards(CSL.Script.ScriptType type, bool used, /*List<CSL.Script>*/ List<CardDeck.Card> cards) {
+	public void AddCards(Card.ScriptType type, bool used, /*List<Card>*/ List<Card> cards) {
 		//TODO: Automatically detect which part of inventory to put cards in
 		if (!used) {
 			switch (type) {
-				case CSL.Script.ScriptType.Item:
+				case Card.ScriptType.Item:
 					playerItems.AddCards(cards);
 					break;
-				case CSL.Script.ScriptType.Artifact:
+				case Card.ScriptType.Artifact:
 					playerArtifacts.AddCards(cards);
 					break;
-				case CSL.Script.ScriptType.Event:
+				case Card.ScriptType.Event:
 					playerEvents.AddCards(cards);
 					break;
-				case CSL.Script.ScriptType.Effect:
+				case Card.ScriptType.Effect:
 					playerEffects.AddCards(cards);
 					break;
 			}
 		} else {
 			switch (type) {
-				case CSL.Script.ScriptType.Item:
+				case Card.ScriptType.Item:
 					playerItemsUsed.AddCards(cards);
 					break;
-				case CSL.Script.ScriptType.Artifact:
+				case Card.ScriptType.Artifact:
 					playerArtifactsUsed.AddCards(cards);
 					break;
-				case CSL.Script.ScriptType.Event:
+				case Card.ScriptType.Event:
 					playerEventsUsed.AddCards(cards);
 					break;
-				case CSL.Script.ScriptType.Effect:
+				case Card.ScriptType.Effect:
 					playerEffectsUsed.AddCards(cards);
 					break;
 			}
@@ -481,35 +482,35 @@ public class Player : MonoBehaviour {
 	/// <param name="type"></param>
 	/// <param name="used"></param>
 	/// <param name="cards"></param>
-	public void DiscardCard(CSL.Script.ScriptType type, bool used, /*CSL.Script*/ CardDeck.Card card) {
+	public void DiscardCard(Card.ScriptType type, bool used, /*Card*/ Card card) {
 		// TODO: detect card type
 		if (!used) {
 			switch (type) {
-				case CSL.Script.ScriptType.Item:
+				case Card.ScriptType.Item:
 					playerItems.TakeCard(card);
 					break;
-				case CSL.Script.ScriptType.Artifact:
+				case Card.ScriptType.Artifact:
 					playerArtifacts.TakeCard(card);
 					break;
-				case CSL.Script.ScriptType.Event:
+				case Card.ScriptType.Event:
 					playerEvents.TakeCard(card);
 					break;
-				case CSL.Script.ScriptType.Effect:
+				case Card.ScriptType.Effect:
 					playerEffects.TakeCard(card);
 					break;
 			}
 		} else {
 			switch (type) {
-				case CSL.Script.ScriptType.Item:
+				case Card.ScriptType.Item:
 					playerItemsUsed.TakeCard(card);
 					break;
-				case CSL.Script.ScriptType.Artifact:
+				case Card.ScriptType.Artifact:
 					playerArtifactsUsed.TakeCard(card);
 					break;
-				case CSL.Script.ScriptType.Event:
+				case Card.ScriptType.Event:
 					playerEventsUsed.TakeCard(card);
 					break;
-				case CSL.Script.ScriptType.Effect:
+				case Card.ScriptType.Effect:
 					playerEffectsUsed.TakeCard(card);
 					break;
 			}

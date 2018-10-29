@@ -1,24 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Card = BoardGameScripting.BGSScript; // Add an alias for a card to be a BoardGameScript
 
 public class CardDeck {
-
-    public class Card //Card Defines what a card is, code taken from SybolicToken script
-    {
-        private List<CSL.SymbolicToken> tokens = new List<CSL.SymbolicToken>();
-
-        public Card (List<CSL.SymbolicToken> tokens)
-        {
-            this.tokens = tokens;
-        }
-        public List<CSL.SymbolicToken> GetTokens()
-        {
-            return tokens;
-
-        }
-    }
-
 
     private List<Card> _deck = new List<Card>(); //List that will store cards
 

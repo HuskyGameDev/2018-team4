@@ -187,6 +187,7 @@ public static GrammarRule[] productionRules = new GrammarRule[] {
       return tokens[0].GetData();//Execute the statement List
       }
     ),
+	-----TODO: FINISH BELOW
 
   new GrammarRule(SymbolicToken.Assignment, new SymbolicToken[] { SymbolicToken.IDENTIFIER, SymbolicToken.ASSIGN, SymbolicToken.Expr, SymbolicToken.SEMICOLON },
     (List<ScannedToken> tokens) => {
@@ -197,6 +198,8 @@ public static GrammarRule[] productionRules = new GrammarRule[] {
       return data;//Execute the statement List
       }
     ),
+
+
 
   new GrammarRule(SymbolicToken.Assignment, new SymbolicToken[] { SymbolicToken.IDENTIFIER, SymbolicToken.LEFTSQR, SymbolicToken.Factor, SymbolicToken.RIGHTSQR, SymbolicToken.ASSIGN, SymbolicToken.Expr, SymbolicToken.SEMICOLON },
     (List<ScannedToken> tokens) => {
