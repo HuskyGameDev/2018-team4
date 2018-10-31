@@ -14,7 +14,7 @@ public class Orbit : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		counter += (Time.deltaTime) / orbitTime;
-		if (counter >= 2 * Mathf.PI) counter -= 2 * Mathf.PI;
+		if (counter >= 1.0f) counter -= 1.0f;
 		pos.Set(0.0f, 0.0f, 0.0f);
 		pos += center;
 		pos.x += Mathf.Cos(2 * Mathf.PI * counter);

@@ -5,15 +5,11 @@ using UnityEngine;
 public class CameraController : MonoBehaviour {
 
 	/*
-	 Getting something together that allows dynamic camera movement and the ability to focus on some things. 
-		Get it to work like stage directions, eg: look at this thing for this long, then go back to what doing before
-		1 camera for scene(board), 1 camera for UI
-		Smart enough to guess what zoom level to use(look-up table?)
-
+	 * Add: look at for x time,
+	 * Add: pan/zoom acceleration
+	 * 
 		Camera shake		<-- later
 			Random.unitcircle
-
-		Add action Que?
 	 */
 
 	private Camera thisCamera;
@@ -27,16 +23,85 @@ public class CameraController : MonoBehaviour {
 
 	public Vector3 cameraOffset = new Vector3(0.0f, 0.0f, -10.0f);
 
-	enum MoveMode {still, moving, follow};
-	enum ZoomMode {still, changing};
+	public enum MoveMode {still, moving, follow};
+	public enum ZoomMode {still, changing};
+	public enum QueType {wait, forceFocus, moveFocus, followFocus, forceZoom, changeZoom};
 
+	//private Queue<QueCard> queue;
+
+	public class QueCard {
+		public CameraController.QueType type;
+		public GameObject _object;	// target object
+		public float _float1;	// time, if applicable
+		public float _float2;	// zoom, if applicable
+
+		public QueCard(CameraController.QueType type, GameObject _object, float _float1, float _float2) {
+			this.type = type;
+			this._object = _object;
+			this._float1 = _float1;
+			this._float2 = _float2;
+		}
+	}
+
+	public class CameraQueue {
+		private Queue<QueCard> queue;
+
+		public CameraQueue () {
+			queue = new Queue<QueCard>();
+		}
+
+		/*
+		private void Enqueue(CameraController.QueType type, GameObject _object, float _float1, float _float2) {
+			queue.Enqueue(new QueCard(type, _object, _float1, _float2));
+		}*/
+
+		public QueCard Dequeue() {
+			return queue.Dequeue();
+		}
+
+		public bool Empty() {
+			return (queue.Count == 0);
+		}
+
+		//wait, lookForce, lookMove, lookFollow, zoomForce, zoomChange
+		//float1: time
+		//float2: zoom
+
+		public void AddWait(float waitTime) {
+			queue.Enqueue(new QueCard(QueType.wait, null, waitTime, 0.0f));
+			//queue.Enqueue(new QueCard(type, _object, _float1, _float2));
+			//queue.Enqueue(new QueCard(QueType., null, 0.0f, 0.0f));
+		}
+
+		public void AddForceFocus(GameObject newFocus) {
+			queue.Enqueue(new QueCard(QueType.forceFocus, newFocus, 0.0f, 0.0f));
+		}
+
+		public void AddMoveFocus(GameObject newFocus, float moveTime) {
+			queue.Enqueue(new QueCard(QueType.moveFocus, newFocus, moveTime, 0.0f));
+		}
+
+		public void AddFollowFocus(GameObject newFocus, float followTime) {
+			queue.Enqueue(new QueCard(QueType.followFocus, newFocus, followTime, 0.0f));
+		}
+
+		public void AddForceZoom(float newZoom) {
+			queue.Enqueue(new QueCard(QueType.forceZoom, null, 0.0f, newZoom));
+		}
+
+		public void AddChangeZoom(float newZoom, float zoomTime) {
+			queue.Enqueue(new QueCard(QueType.changeZoom, null, zoomTime, newZoom));
+		}
+	}
 
 	private MoveMode moveMode = MoveMode.still;
 	private ZoomMode zoomMode = ZoomMode.still;
-	private bool cameraShake = false;
+	private bool sequenceMode = false;
+	//private bool cameraShake = false;
 	private int numMoveCoroutine = 0;
 	private int numFollowCoroutine = 0;
 	private int numZoomCoroutine = 0;
+	private int numCamSequence = 0;
 
 	public GameObject[] testObject;
 
@@ -47,7 +112,8 @@ public class CameraController : MonoBehaviour {
 		//set UI & scene camera heights, set to orthographic
 		thisCamera.orthographic = true;
 		//thisCamera.orthographicSize = FindZoom(5.0f);
-		//StartCoroutine(followTest());
+		//sequenceTest();
+		StartCoroutine(TestSequence());
 	}
 
 	/* Testing
@@ -105,14 +171,59 @@ public class CameraController : MonoBehaviour {
 	}
 	*/
 
+		IEnumerator<object> TestSequence() {
+		sequenceTest();
+
+		yield return new WaitForSeconds(4.0f);
+
+		Debug.Log("Testing sequence interupt");
+		StartCoroutine(MoveFocus(testObject[3], 2.0f, false));
+
+		yield break;
+	}
+
+	public void sequenceTest() {
+		CameraQueue testQueue1 = new CameraQueue();
+		testQueue1.AddForceZoom(6.0f);
+		/*testQueue1.AddChangeZoom(2.0f, 5.0f);
+		testQueue1.AddWait(5.0f);*/
+
+		testQueue1.AddChangeZoom(2.0f, 8.0f);
+		testQueue1.AddForceFocus(testObject[0]);
+		testQueue1.AddMoveFocus(testObject[1], 8.0f);
+		testQueue1.AddWait(8.0f);
+
+		/*
+		testQueue1.AddMoveFocus(testObject[3], 5.0f);
+		testQueue1.AddChangeZoom(2.0f, 5.0f);
+		testQueue1.AddWait(2.5f);
+		testQueue1.AddMoveFocus(testObject[2], 2.5f);
+		testQueue1.AddWait(2.5f);*/
+
+		/*
+		testQueue1.AddFollowFocus(testObject[4], 4.0f);
+		for (int i = 0; i < 4; i++) {
+			testQueue1.AddForceZoom(5.0f);
+			testQueue1.AddWait(0.5f);
+			testQueue1.AddForceZoom(4.5f);
+			testQueue1.AddWait(0.5f);
+		}*/
+		
+		StartCoroutine(CameraSequence(testQueue1));
+	}
+	
 	/// <summary>
 	/// Makes camera instantly look at given object.
 	/// </summary>
 	/// <param name="newFocus"></param>
 	/// <param name="zoom"></param>
-	public void ForceFocus(GameObject newFocus) {
+	public void ForceFocus(GameObject newFocus, bool sequence = false) {
 		//Debug.Log("Forcing focus");
 		moveMode = MoveMode.still;
+		if (!sequence && sequenceMode) {
+			Stop();
+			sequenceMode = false;
+		}
 		cameraFocus = newFocus;
 		cameraTransform.position = newFocus.transform.position + cameraOffset;
 	}
@@ -125,7 +236,8 @@ public class CameraController : MonoBehaviour {
 	/// <param name="moveTime"></param>
 	/// <param name="zoom"></param>
 	/// <returns></returns>
-	IEnumerator<object> MoveFocus(GameObject newFocus, float moveTime = 1.0f) {
+	IEnumerator<object> MoveFocus(GameObject newFocus, float moveTime = 1.0f, bool sequence = false) {
+
 		int thisCoroutine;
 
 		if (numMoveCoroutine == 0) {
@@ -135,7 +247,12 @@ public class CameraController : MonoBehaviour {
 			numMoveCoroutine++;
 			thisCoroutine = numMoveCoroutine;
 		}
-		//Debug.Log("Starting coroutine: " + numCoroutine);
+
+		//Debug.Log("Starting MoveFocus: " + thisCoroutine);
+		if (!sequence && sequenceMode) {
+			Stop();
+			sequenceMode = false;
+		}
 
 		moveMode = MoveMode.moving;
 
@@ -179,7 +296,7 @@ public class CameraController : MonoBehaviour {
 	/// <param name="newFocus"></param>
 	/// <param name="followTime"></param>
 	/// <returns></returns>
-	IEnumerator<object> Follow(GameObject newFocus, float followTime = -1.0f) {
+	IEnumerator<object> FollowFocus(GameObject newFocus, float followTime = -1.0f, bool sequence = false) {
 		int thisCoroutine;
 
 		if (numFollowCoroutine == 0) {
@@ -188,6 +305,10 @@ public class CameraController : MonoBehaviour {
 		} else {
 			numFollowCoroutine++;
 			thisCoroutine = numFollowCoroutine;
+		}
+		if (!sequence && sequenceMode) {
+			Stop();
+			sequenceMode = false;
 		}
 		//Debug.Log("Starting Follow: " + thisCoroutine);
 
@@ -249,10 +370,14 @@ public class CameraController : MonoBehaviour {
 	/// Makes camera instantly go to given zoom level
 	/// </summary>
 	/// <param name="newZoom"></param>
-	public void ForceZoom(float newZoom) {
+	public void ForceZoom(float newZoom, bool sequence = false) {
 		//Debug.log("Forcing zoom");
 		zoomMode = ZoomMode.still;
 		cameraZoom = newZoom;
+		if (!sequence && sequenceMode) {
+			Stop();
+			sequenceMode = false;
+		}
 		thisCamera.orthographicSize = FindZoom(newZoom);
 	}
 
@@ -262,7 +387,7 @@ public class CameraController : MonoBehaviour {
 	/// <param name="newZoom"></param>
 	/// <param name="zoomTime"></param>
 	/// <returns></returns>
-	IEnumerator<object> ChangeZoom(float newZoom, float zoomTime = 1.0f) {
+	IEnumerator<object> ChangeZoom(float newZoom, float zoomTime = 1.0f, bool sequence = false) {
 		int thisCoroutine;
 
 		if (numZoomCoroutine == 0) {
@@ -271,6 +396,10 @@ public class CameraController : MonoBehaviour {
 		} else {
 			numZoomCoroutine++;
 			thisCoroutine = numZoomCoroutine;
+		}
+		if (!sequence && sequenceMode) {
+			Stop();
+			sequenceMode = false;
 		}
 		//Debug.Log("Start ChangeZoom: " + thisCoroutine);
 
@@ -315,4 +444,82 @@ public class CameraController : MonoBehaviour {
 		yield break;
 	}*/
 
+	public void Stop() {
+		moveMode = MoveMode.still;
+		zoomMode = ZoomMode.still;
+	}
+
+	IEnumerator<object> CameraSequence(CameraQueue queue) {
+		int thisCoroutine;
+
+		if (numCamSequence == 0) {
+			numCamSequence = 1;
+			thisCoroutine = 1;
+		} else {
+			numCamSequence++;
+			thisCoroutine = numCamSequence;
+		}
+
+		Debug.Log("Starting sequence: " + thisCoroutine);
+
+		Stop();	// stops any existing stuff that might mess up the sequence
+
+		sequenceMode = true;
+		bool loop = true;
+
+		while (loop && !queue.Empty()) {
+			if (!sequenceMode) {
+				loop = false;   // exit if: done moving, interupt
+				Debug.Log("Not sequence mode, exiting loop");
+			} else if (thisCoroutine != numCamSequence) { // if this is not the newest coroutine, end
+				loop = false;
+				Debug.Log("Not newest coroutine, exiting loop");
+			} else {
+				QueCard card = queue.Dequeue();
+				switch(card.type) {
+					case QueType.wait:
+						yield return new WaitForSeconds(card._float1);
+						Debug.Log("Wait");
+						break;
+					case QueType.forceFocus:
+						ForceFocus(card._object, true);
+						Debug.Log("ForceFocus");
+						yield return null;
+						break;
+					case QueType.moveFocus:
+						StartCoroutine(MoveFocus(card._object, card._float1, true));
+						Debug.Log("MoveFocus");
+						break;
+					case QueType.followFocus:
+						StartCoroutine(FollowFocus(card._object, card._float1, true));
+						Debug.Log("FollowFocus");
+						break;
+					case QueType.forceZoom:
+						ForceZoom(card._float2, true);
+						Debug.Log("ForceZoom");
+						yield return null;
+						break;
+					case QueType.changeZoom:
+						StartCoroutine(ChangeZoom(card._float2, card._float1, true));
+						Debug.Log("ChangeZoom");
+						break;
+					default:
+						yield return null;
+						break;
+				}
+			}
+		}
+		Debug.Log("Ending sequence: " + thisCoroutine);
+
+		if (thisCoroutine == numCamSequence) {    // only change mode back to still if this is the newest coroutine ending
+			numCamSequence = 0;
+			if (sequenceMode == true) {
+				sequenceMode = false;
+				Debug.Log("Ending last sequence: " + thisCoroutine);
+				//Debug.Log("Last MoveFocus closed");
+			}
+		}
+
+		yield break;
+	}
 }
