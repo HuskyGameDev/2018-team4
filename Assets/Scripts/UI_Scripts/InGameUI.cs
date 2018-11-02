@@ -28,9 +28,7 @@ public class InGameUI : MonoBehaviour
     private Text sanArray;
     [SerializeField]
     private Text intArray;
-    public GameObject PauseUI;
-    public GameObject SaveUI;
-    public GameObject OptionsUI; 
+
     //This is the player object and their scaling arrays that I use a lot
     private int[,] playerScale;
     public Player player;
@@ -41,7 +39,6 @@ public class InGameUI : MonoBehaviour
      */
     void Start()
     {
-        PauseUI.SetActive(false);
         GUIStyle style = new GUIStyle();
         style.richText = true;
         playerScale = player.StatScaling();
@@ -161,49 +158,5 @@ public class InGameUI : MonoBehaviour
         }
 
     }
-    public void PauseGame(){
-        
-        this.PostNotification("GameSystem->PauseGame");
-        PauseUI.SetActive(true);
 
-    }
-
-    public void Resume(){
-        this.PostNotification("GameplayButtonPressed");
-        PauseUI.SetActive(false);
-    }
-    public void SaveGame()
-    {
-        this.PostNotification("SaveGameButtonPressed");
-        SaveUI.SetActive(true);
-        PauseUI.SetActive(false);
-    }
-    public void LoadGame()
-    {
-        SaveUI.SetActive(true);
-        this.PostNotification("LoadGameButtonPressed");
-        PauseUI.SetActive(false);
-    }
-    public void Options(){
-        OptionsUI.SetActive(true);
-        this.PostNotification("OptionsButtonPressed");
-        PauseUI.SetActive(false);
-    }
-    public void Leave(){
-        this.PostNotification("MainMenuButtonPressed");
-        PauseUI.SetActive(false);
-        SceneManager.LoadScene("Dev_Richy");
-    }
-    public void LeaveSaveMenu(){
-        this.PostNotification("SaveFileBackButton");
-        PauseUI.SetActive(true);
-        SaveUI.SetActive(false);
-
-    }
-    public void LeaveOptionsMenu()
-    {
-        this.PostNotification("OptionsMenu -> MainMenu");
-        PauseUI.SetActive(true);
-        OptionsUI.SetActive(false);
-    }
 }
