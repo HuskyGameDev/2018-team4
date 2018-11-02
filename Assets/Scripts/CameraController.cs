@@ -113,9 +113,11 @@ public class CameraController : MonoBehaviour {
 		thisCamera.orthographic = true;
 		//thisCamera.orthographicSize = FindZoom(5.0f);
 		//sequenceTest();
-		StartCoroutine(TestSequence());
+		//StartCoroutine(TestSequence());
+		//lookReturnTest();
 	}
 
+	#region Testing
 	/* Testing
 	IEnumerator<object> zoomTest() {
 		yield return new WaitForSeconds(1);
@@ -171,7 +173,7 @@ public class CameraController : MonoBehaviour {
 	}
 	*/
 
-		IEnumerator<object> TestSequence() {
+	IEnumerator<object> TestSequence() {
 		sequenceTest();
 
 		yield return new WaitForSeconds(4.0f);
@@ -211,7 +213,15 @@ public class CameraController : MonoBehaviour {
 		
 		StartCoroutine(CameraSequence(testQueue1));
 	}
-	
+
+	public void lookReturnTest() {
+		ForceFocus(testObject[0]);
+		ForceZoom(6.0f);
+		StartCoroutine(LookAndReturn(testObject[1], 2.0f, 2.0f, 4.0f, 2.0f));
+	}
+
+	#endregion
+
 	/// <summary>
 	/// Makes camera instantly look at given object.
 	/// </summary>
@@ -438,12 +448,6 @@ public class CameraController : MonoBehaviour {
 		yield break;
 	}
 
-	/*
-	IEnumerator<object> LookAndReturn(GameObject tempFocus, float moveTime = 1.0f, float lookTime = 2.0f) {
-		//GameObject returnFocus = focus;
-		yield break;
-	}*/
-
 	public void Stop() {
 		moveMode = MoveMode.still;
 		zoomMode = ZoomMode.still;
@@ -520,6 +524,27 @@ public class CameraController : MonoBehaviour {
 			}
 		}
 
+		yield break;
+	}
+
+	IEnumerator<object> LookAndReturn(GameObject lookAtObject, float panTime, float lookZoom, float lookTime, float returnTime) {
+
+		CameraQueue lookAtQueue = new CameraQueue();
+
+		GameObject originalFocus = cameraFocus;
+		float originalZoom = cameraZoom;
+
+		lookAtQueue.AddChangeZoom(lookZoom, panTime);
+		lookAtQueue.AddMoveFocus(lookAtObject, panTime);
+		lookAtQueue.AddWait(panTime);
+
+		lookAtQueue.AddFollowFocus(lookAtObject, lookTime);
+		lookAtQueue.AddWait(lookTime);
+
+		lookAtQueue.AddChangeZoom(originalZoom, returnTime);
+		lookAtQueue.AddMoveFocus(originalFocus, returnTime);
+
+		StartCoroutine(CameraSequence(lookAtQueue));
 		yield break;
 	}
 }
