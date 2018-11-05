@@ -1,0 +1,19 @@
+%%Global %# C# code to be added to the global section #%
+#include UnityEngine;
+#include System.Collections.Generic;
+int _UNIQUENAMEPROBABLY = 0;
+
+%%
+%%Regex
+WS  : "\s"
+REGEXSTRING : "Regex"
+PRECENT : "%"
+COLON   : ":"
+LEFTBRACE : "{"
+RIGHTBRACE : "}"
+SEMICOLON : ";"
+
+%%
+%%Production
+Regex : PRERCENT PRECENT REGEXSTRING LEFTBRACE
+%%
