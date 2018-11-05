@@ -24,6 +24,7 @@ public class PlayerSetup : MonoBehaviour {
     public Image player3Image;
     public Image player4Image;
     public Image player5Image;
+    public int NumberofPlayers; 
     private List<string> availableCharacters,removedCharacters;
     private List<string> AllCharacters = new List<string> { "Select Character","White", "Green", "Yellow", "Purple", "Red", "Blue" };
     private Dictionary<string,string> Characters;
@@ -76,6 +77,11 @@ public class PlayerSetup : MonoBehaviour {
         SetSummary();
 
     }
+
+    public Dictionary<string, string> CharacterList(){
+        return Characters;
+    }
+
         public void SetSummary(){
        
 
@@ -171,21 +177,25 @@ public class PlayerSetup : MonoBehaviour {
                 StartCoroutine(PlayerInfo(2));
                 PlayerSelectionCanvas.SetActive(true);
                 PlayerNumberCanvas.gameObject.SetActive(false);
+                NumberofPlayers = 2;
                 break;
             case "3 Players":
                 StartCoroutine(PlayerInfo(3));
                 PlayerSelectionCanvas.SetActive(true);
                 PlayerNumberCanvas.gameObject.SetActive(false);
+                NumberofPlayers = 3;
                 break;
             case "4 Players":
                 StartCoroutine(PlayerInfo(4));
                 PlayerSelectionCanvas.SetActive(true);
                 PlayerNumberCanvas.gameObject.SetActive(false);
+                NumberofPlayers = 4;
                 break;
             case "5 Players":
                 StartCoroutine(PlayerInfo(5));
                 PlayerSelectionCanvas.SetActive(true);
                 PlayerNumberCanvas.gameObject.SetActive(false);
+                NumberofPlayers = 5;
                 break;
         }
     }
@@ -194,5 +204,9 @@ public class PlayerSetup : MonoBehaviour {
         this.PostNotification("GameSystem->GamePlay");
         SummaryCanvas.SetActive(false);
         MainGameUI.SetActive(true);
+    }
+
+    public int PlayerAmount(){
+        return NumberofPlayers;
     }
 }

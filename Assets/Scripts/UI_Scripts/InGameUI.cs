@@ -28,7 +28,12 @@ public class InGameUI : MonoBehaviour
     private Text sanArray;
     [SerializeField]
     private Text intArray;
-
+    public GameObject Player1InList;
+    public GameObject Player2InList;
+    public GameObject Player3InList;
+    public GameObject Player4InList; 
+    public GameObject Player5InList;
+    public PlayerSetup CharacterList;
     //This is the player object and their scaling arrays that I use a lot
     private int[,] playerScale;
     public Player player;
@@ -39,6 +44,11 @@ public class InGameUI : MonoBehaviour
      */
     void Start()
     {
+        Player1InList.SetActive(false);
+        Player2InList.SetActive(false);
+        Player3InList.SetActive(false);
+        Player4InList.SetActive(false);
+        Player5InList.SetActive(false);
         GUIStyle style = new GUIStyle();
         style.richText = true;
         playerScale = player.StatScaling();
@@ -46,6 +56,7 @@ public class InGameUI : MonoBehaviour
         UItext(6, strArray);
         UItext(7, sanArray);
         UItext(8, intArray);
+        GeneratePlayerListUI();
     }
 
     /*
@@ -60,6 +71,52 @@ public class InGameUI : MonoBehaviour
         UItext(4, Sanity);
 
     }
+
+    public void GeneratePlayerListUI(){
+        int PlayerNumber = CharacterList.PlayerAmount();
+        Dictionary<string,string> PlayerList = CharacterList.CharacterList();
+        switch(PlayerNumber){
+            case 2:
+                Player1InList.SetActive(true);
+                Player2InList.SetActive(true);
+                CharacterList.Setimage(Player1InList.GetComponent<Image>(),PlayerList["Player 1"]);
+                CharacterList.Setimage(Player2InList.GetComponent<Image>(), PlayerList["Player 2"]);
+                break;
+            case 3:
+                Player1InList.SetActive(true);
+                Player2InList.SetActive(true);
+                Player3InList.SetActive(true);
+                CharacterList.Setimage(Player1InList.GetComponent<Image>(), PlayerList["Player 1"]);
+                CharacterList.Setimage(Player2InList.GetComponent<Image>(), PlayerList["Player 2"]);
+                CharacterList.Setimage(Player3InList.GetComponent<Image>(), PlayerList["Player 3"]);
+                break; 
+            case 4:
+                Player1InList.SetActive(true);
+                Player2InList.SetActive(true);
+                Player3InList.SetActive(true);
+                Player4InList.SetActive(true);
+                CharacterList.Setimage(Player1InList.GetComponent<Image>(), PlayerList["Player 1"]);
+                CharacterList.Setimage(Player2InList.GetComponent<Image>(), PlayerList["Player 2"]);
+                CharacterList.Setimage(Player3InList.GetComponent<Image>(), PlayerList["Player 3"]);
+                CharacterList.Setimage(Player4InList.GetComponent<Image>(), PlayerList["Player 4"]);
+                break;
+            case 5:
+                Player1InList.SetActive(true);
+                Player2InList.SetActive(true);
+                Player3InList.SetActive(true); 
+                Player4InList.SetActive(true);
+                Player5InList.SetActive(true);
+                CharacterList.Setimage(Player1InList.GetComponent<Image>(), PlayerList["Player 1"]);
+                CharacterList.Setimage(Player2InList.GetComponent<Image>(), PlayerList["Player 2"]);
+                CharacterList.Setimage(Player3InList.GetComponent<Image>(), PlayerList["Player 3"]);
+                CharacterList.Setimage(Player4InList.GetComponent<Image>(), PlayerList["Player 4"]);
+                CharacterList.Setimage(Player5InList.GetComponent<Image>(), PlayerList["Player 5"]);
+                break;
+
+        }
+    }
+
+
 
     /*
      * This is where all the UI text gets set to their values
