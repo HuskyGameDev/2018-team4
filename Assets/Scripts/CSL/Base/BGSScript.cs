@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
-using ScriptSegment = System.Collections.Generic.List<BoardGameScripting.GrammarElement>;
+using ScriptSegment = System.Collections.Generic.List<OuroborosScripting.OuroborosInterpreter.ProcessedToken>;
 
 namespace BoardGameScripting {
 	/// <summary>
