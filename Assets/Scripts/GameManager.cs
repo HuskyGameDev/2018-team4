@@ -14,8 +14,8 @@ public class GameManager : MonoBehaviour {
 
         DontDestroyOnLoad(this.gameObject);
         //Create the state machine
-        systemStateMachine = StateMachineSystem.StateMachine.GenerateMachine(this.transform, "SoftwareSystemMachine");
+       // systemStateMachine = StateMachineSystem.StateMachine.GenerateMachine(this.transform, "SoftwareSystemMachine");
         //Change it to the startup state
-        systemStateMachine.ChangeState<StateMachineSystem.CreatedStates.StartupState>();
+      //  systemStateMachine.ChangeState<StateMachineSystem.CreatedStates.StartupState>();
     }
 }

@@ -10,6 +10,7 @@ namespace OuroborosScripting {
 	public static class OuroborosInterpreter {
 		public static readonly bool debugParseOutput = false;
 
+		public delegate IEnumerator<object> CoroutineMethod(CoroutineWrapper coroutineWrapper);
 
 		public delegate void Callback(object data);
 
@@ -29,20 +30,24 @@ namespace OuroborosScripting {
 
 			string remainder = input;
 			string text = "";
+			string testingText = "";
 			Regex regex;
 			while (remainder.Length > 0) {
-
+				Debug.Log("Top of While");
 				ProcessedToken? token = null;
 				int i = 0;
 				for (; i < TERMINALS.Count; i++) {
+					//Debug.Log("For1: " + tuples[i].str);
 					text = "";
-					string testingText = ""; // Track the current testing string.
+					testingText = ""; // Track the current testing string.
 					regex = new Regex(tuples[i].str);
+					//Debug.Log(regex);
 					for (int k = 0; k < remainder.Length; k++) {
+						//Debug.Log("For2: " + remainder.Length + " | " + k);
 						testingText += remainder[k];
 						if (regex.IsMatch(testingText)) {
 							text = testingText; // Store our string since we know that this is the valid string.
-
+							Debug.Log("Is Match: " + regex + " => " + testingText);
 							//Create the processedtoken
 							token = new ProcessedToken(i, null,  text);
 							//Execute the code for reading this token.
@@ -52,7 +57,7 @@ namespace OuroborosScripting {
 					}
 
 					if (token != null) {
-						//Debug.Log("Breaking.");
+						Debug.Log("Breaking.");
 						break;
 					}
 				}
@@ -62,17 +67,17 @@ namespace OuroborosScripting {
 						//We have ignored this section
 					}
 					else {
-						//Debug.Log(text + " | " + System.Enum.GetName(typeof(SymbolicToken), token));
+						Debug.Log(text + " | " + token);
 						tokens.Add(token);
 					}
-					//Debug.Log("Pre<"+remainder+">");
+					Debug.Log("Pre<"+remainder+">");
 					remainder = remainder.Substring(text.Length);
-					//Debug.Log("Post<" + remainder + ">");
+					Debug.Log("Post<" + remainder + ">");
 					text = "";
 				}
 				else {
 					//Log ERROR
-					Debug.LogError("Syntax Read Error: '" + text + "'");
+					Debug.LogError("Syntax Read Error: '" + testingText + "'");
 				}
 
 				//pause before continuing
@@ -90,12 +95,16 @@ namespace OuroborosScripting {
 		/// <param name="generateScript"></param>
 		/// <returns></returns>
 		public static IEnumerator<object> Execute<T>(string inputString) where T : IOuroborosLanguage {
+			Debug.Log("Execute");
 			//Create an instance of the language we are going to work with.
 			IOuroborosLanguage language = (IOuroborosLanguage)System.Activator.CreateInstance(typeof(T));
 			//Create a place to store out input tokens (nullable so null = EOF when processing)
 			List<ProcessedToken?> inputTokens = null;
 			//Call scan, to get our list of beginning tokens.
 			yield return Scan(language, inputString, (object d) => { inputTokens = (List<ProcessedToken?>)d; });
+			Debug.Log("Scanning Finished");
+
+			PrintList<ProcessedToken?>(inputTokens);
 
 			List<object> TERMINALS = language.GetTERMINALS();
 			List<object> nonTerminals = language.GetNonTerminals();
@@ -174,8 +183,8 @@ namespace OuroborosScripting {
 					else if (targetInstruction.instruction == ParserInstruction.Instruction.REDUCE) {
 						//If it is reduce, we... reduce
 
-						ProductionRule productionRule = (ProductionRule)targetInstruction.value;
-						int removalCount = productionRule.rhs.Count * 2;
+						ProductionRule productionRule = language.GetProductionRules()[targetInstruction.value];
+						int removalCount = productionRule.rhsSize * 2;
 						//We pop off twice as many tokens as the rhs of the reduce instruction.
 						List<ParseStackElement> poppedList = parsingStack.GetRange(parsingStack.Count - removalCount, removalCount);
 						parsingStack.RemoveRange(parsingStack.Count - removalCount, removalCount);
@@ -205,8 +214,8 @@ namespace OuroborosScripting {
 				}
 
 			}
-
-		}
+			Debug.Log("EndExecute");
+		}//-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------END EXECUTE
 
 		/// <summary>
 		/// Prints a formatted list of items using its ToString method
@@ -254,10 +263,14 @@ namespace OuroborosScripting {
 		public struct ParserInstruction {
 			public enum Instruction { SHIFT, REDUCE, GOTO, ERR, ACCEPT }
 			public Instruction instruction;
-			public object value;
-			public ParserInstruction(object value, Instruction instruction) {
+			public int value;
+			public ParserInstruction(int value, Instruction instruction) {
 				this.value = value;
 				this.instruction = instruction;
+			}
+
+			public string ToGetString() {
+				return "new ParserInstruction(" + value + ", ParserInstruction.Instruction." + System.Enum.GetName(typeof(Instruction), instruction) +")";
 			}
 
 			public override string ToString() {
@@ -285,8 +298,12 @@ namespace OuroborosScripting {
 			public List<ProcessedToken> rhs;
 			public bool terminal;
 			public int tokenSymbolLocation;
-			public string rule;
+			public CoroutineMethod rule;
 			public object data;
+
+			public override string ToString() {
+				return (data != null) ? data.ToString() : "EOF";
+			}
 
 			/// <summary>
 			/// Create a processed token for a NonTerminal
@@ -294,7 +311,7 @@ namespace OuroborosScripting {
 			/// <param name="tokenSymbol"></param>
 			/// <param name="rule"></param>
 			/// <param name="rhs"></param>
-			public ProcessedToken(int tokenSymbolLocation, string rule, List<ProcessedToken> rhs) {
+			public ProcessedToken(int tokenSymbolLocation, CoroutineMethod rule, List<ProcessedToken> rhs) {
 				this.rhs = rhs;
 				this.terminal = false;
 				this.tokenSymbolLocation = tokenSymbolLocation;
@@ -308,7 +325,7 @@ namespace OuroborosScripting {
 			/// <param name="tokenSymbol"></param>
 			/// <param name="rule"></param>
 			/// <param name="rhs"></param>
-			public ProcessedToken(int tokenSymbolLocation, string rule, object data) {
+			public ProcessedToken(int tokenSymbolLocation, CoroutineMethod rule, object data) {
 				this.rhs = null;
 				this.terminal = true;
 				this.tokenSymbolLocation = tokenSymbolLocation;
@@ -320,16 +337,26 @@ namespace OuroborosScripting {
 			/// Execution of this rule, base definition executes the LHS and prepares it for use.
 			/// </summary>
 			public IEnumerator<object> Prepare(IOuroborosLanguage enviroment, Callback callback) {
-				//Create a list the size of tokensT
-				List<object> expressionResults = new List<object>(rhs.Count);
-				for (int i = 0; i < rhs.Count; i++) {
-					if (rhs[i].terminal) {
-						expressionResults[i] = rhs[i].data;
+				//If this is a terminal, return the data found for the RHS
+
+
+				//Create a list the size of tokens
+				List<object> expressionResults = new List<object>();
+
+				if (!terminal) { 
+
+					for (int i = 0; i < rhs.Count; i++) {
+						if (rhs[i].terminal) {
+							expressionResults[i] = rhs[i].data;
+						}
+						else {
+							//This means it is a non terminal, so we must yield to its results, and pass it a llamda expression callback that assigns this specific member
+							yield return GameManager._instance.StartCoroutine(rhs[i].rule(new CoroutineWrapper(enviroment, rhs[i], (object data) => { expressionResults[i] = data; })));
+						}
 					}
-					else {
-						//This means it is a non terminal, so we must yield to its results, and pass it a llamda expression callback that assigns this specific member
-						yield return GameManager._instance.StartCoroutine(rhs[i].rule, new CoroutineWrapper(enviroment, rhs[i], (object data) => { expressionResults[i] = data; }));
-					}
+				}
+				else {
+					expressionResults.Add(data);
 				}
 
 				callback(expressionResults);
@@ -343,8 +370,8 @@ namespace OuroborosScripting {
 			public bool ignorable;
 			public int result;
 			public string str;
-			public string coroutineName;
-			public SymbolStringTuple(int result, string str, string coroutineName, bool ignorable = false) {
+			public CoroutineMethod coroutineName;
+			public SymbolStringTuple(int result, string str, CoroutineMethod coroutineName, bool ignorable = false) {
 				this.result = result;
 				this.str = str;
 				this.coroutineName = coroutineName;
@@ -357,12 +384,12 @@ namespace OuroborosScripting {
 		/// </summary>
 		public struct ProductionRule {
 			public int result;
-			public List<object> rhs;
-			public string coroutineName;
+			public int rhsSize;
+			public CoroutineMethod coroutineName;
 
-			public ProductionRule(int result, List<object> rhs, string coroutineName) {
+			public ProductionRule(int result, int rhsSize, CoroutineMethod coroutineName) {
 				this.result = result;
-				this.rhs = rhs;
+				this.rhsSize = rhsSize;
 				this.coroutineName = coroutineName;
 			}
 		}

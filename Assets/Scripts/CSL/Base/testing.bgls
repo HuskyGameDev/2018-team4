@@ -1,7 +1,7 @@
 %%Name{NewOuroborosLanguage}
 %%Ext{cs}
 %%Using
-{
+%+%
 	using System.IO;
 	using UnityEngine;
 	using System.Collections.Generic;
@@ -11,9 +11,9 @@
 	using Callback = OuroborosScripting.OuroborosInterpreter.Callback;
 	using ParserInstruction = OuroborosScripting.OuroborosInterpreter.ParserInstruction;
 	using CoroutineWrapper = OuroborosScripting.OuroborosInterpreter.CoroutineWrapper;
-}
+%+%
 %%Global 
-{
+%+%
 		static string fullIOPath = Application.dataPath + "/Scripts/";
 		static string tokenName = "SymbolicToken";
 		static string startCoroutineTarget = "GameManager._instance";
@@ -280,23 +280,23 @@
 				}
 			}
 		}
-}
+%+%
 
 %%Prod
-_WS 					:	"(\s)" 																		{ callback(rhs[0]); }
-_COMMENT				:	"(//.\n)"																	{ callback(rhs[0]); }
-_NEWLINE				:	"(\n)"																		{ callback(rhs[0]); }
-NAMESTRING				:	"(Name)"																	{ callback(rhs[0]); }
-EXTSTRING				:	"(Ext)"																		{ callback(rhs[0]); }
-GLOBALSTRING			:	"(Global)"																	{ callback(rhs[0]); }
-USINGSTRING				:	"(Using)"																	{ callback(rhs[0]); }
-PRODUCTIONSTRING		:	"(Prod)"																	{ callback(rhs[0]); }
-HEADERTAG				:	"(%%)"																		{ callback(rhs[0]); }
-COLON					:	"(:)"																		{ callback(rhs[0]); }
-DISCARDIDEN				:	"(_)([a-zA-Z]([a-zA-Z]|[0-9])*)" 											{ callback(rhs[0]); } 	//An identifier preceeded by %_ is an identifier that is read by the scanner but is discarded from use. (will not appear in token stream)
-IDENTIFIER				:	"([a-zA-Z]([a-zA-Z]|[0-9])*)"												{ callback(rhs[0]); } // A token name
-REGEX					:	"(\"([^\"]*)\")"															{ callback(rhs[0]); }					//String used for Regex matching
-CODE					:	"(\{.\})"																	{ string code = ((string)rhs[0]).Substring(1, ((string)rhs[0]).Length -2); /*chopoff the brackets*/ callback(code); }					//A code section to placed in the resulting language definition.
+_WS 					:	'(\s)' 																		{ callback(rhs[0]); }
+_COMMENT				:	'(//.\n)'																	{ callback(rhs[0]); }
+_NEWLINE				:	'(\n)'																		{ callback(rhs[0]); }
+NAMESTRING				:	'(Name)'																	{ callback(rhs[0]); }
+EXTSTRING				:	'(Ext)'																		{ callback(rhs[0]); }
+GLOBALSTRING			:	'(Global)'																	{ callback(rhs[0]); }
+USINGSTRING				:	'(Using)'																	{ callback(rhs[0]); }
+PRODUCTIONSTRING		:	'(Prod)'																	{ callback(rhs[0]); }
+HEADERTAG				:	'(%%)'																		{ callback(rhs[0]); }
+COLON					:	'(:)'																		{ callback(rhs[0]); }
+DISCARDIDEN				:	'(_)([a-zA-Z]([a-zA-Z]|[0-9])*)' 											{ callback(rhs[0]); } //An identifier preceeded by %_ is an identifier that is read by the scanner but is discarded from use. (will not appear in token stream)
+IDENTIFIER				:	'([a-zA-Z]([a-zA-Z]|[0-9])*)'												{ callback(rhs[0]); } // A token name
+REGEX					:	'((\')|[^']*)*'															{ callback(rhs[0]); } //String used for Regex matching
+CODE					:	'((%+%).(%+%))'																{ string code = ((string)rhs[0]).Substring(1, ((string)rhs[0]).Length -2); /*chopoff the brackets*/ callback(code); }					//A code section to placed in the resulting language definition.
 //WARNING: CODE NEEDS REGEX FOR FINDING MATCHING PAIRS NOT A DIRECT COMPARISON.
 
 LanguageDefinition		:	NameHeader ExtHeader UsingHeader GlobalHeader ProductionHeader				{
