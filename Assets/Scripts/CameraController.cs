@@ -5,7 +5,6 @@ using UnityEngine;
 public class CameraController : MonoBehaviour {
 
 	/*
-	 * Add: look at for x time,
 	 * Add: pan/zoom acceleration
 	 * 
 		Camera shake		<-- later
@@ -19,14 +18,18 @@ public class CameraController : MonoBehaviour {
 	// public Camera cameraUI;	// will need some sort of second camera for UI/mini-map
 	// public Transform cameraUITransform;
 
-	private GameObject cameraFocus;	// object camera is looking at currently/last
-	private float cameraZoom;	// current zoom level
+	private GameObject cameraFocus; // object camera is looking at currently/last
+	private Vector3 cameraEndLocation; // location of camera, ithout any offset
+	private float cameraZoom;   // current zoom level
+	private float intendedZoom;	// zoom level to end current action at
 
 	public Vector3 cameraOffset = new Vector3(0.0f, 0.0f, -10.0f);	// z-axis offset of 10 units should be fine.
+	private Vector3 shakeOffset = new Vector3(0.0f, 0.0f, 0.0f);
 
 	public enum MoveMode {still, moving, follow};	// used to tell if running coroutines should exit
-	public enum ZoomMode {still, changing}; // used to tell if running coroutines should exit
-	public enum QueType {wait, forceFocus, moveFocus, followFocus, forceZoom, changeZoom};	// type of command, used with QueCards and CameraSequence
+	//public enum ZoomMode {still, changing}; // used to tell if running coroutines should exit
+	//public enum ShakeMode {still, shaking};
+	public enum QueType {wait, forceFocus, moveFocus, followFocus, forceZoom, changeZoom, shakeCamera};	// type of command, used with QueCards and CameraSequence
 
 	/// <summary>
 	/// Hold information about a command to give to the camera, used with the CameraQueue and CameraSequence
@@ -35,7 +38,7 @@ public class CameraController : MonoBehaviour {
 		public CameraController.QueType type;
 		public GameObject _object;	// target object
 		public float _float1;	// time, if applicable
-		public float _float2;	// zoom, if applicable
+		public float _float2;	// zoom/shake, if applicable
 
 		public QueCard(CameraController.QueType type, GameObject _object, float _float1, float _float2) {
 			this.type = type;
@@ -124,18 +127,31 @@ public class CameraController : MonoBehaviour {
 		public void AddChangeZoom(float newZoom, float zoomTime) {
 			queue.Enqueue(new QueCard(QueType.changeZoom, null, zoomTime, newZoom));
 		}
+
+		/// <summary>
+		/// Adds a CameraShake command to the queue
+		/// </summary>
+		/// <param name="newZoom"></param>
+		/// <param name="zoomTime"></param>
+		public void AddCameraShake(float shakeStrength, float shakeTime) {
+			queue.Enqueue(new QueCard(QueType.shakeCamera, null, shakeTime, shakeStrength));
+		}
 	}
 
 	private MoveMode moveMode = MoveMode.still; // used to tell if running coroutines should exit
-	private ZoomMode zoomMode = ZoomMode.still; // used to tell if running coroutines should exit
+	//private ZoomMode zoomMode = ZoomMode.still;	// used to tell if running coroutines should exit
+	//private ShakeMode shakeMode = ShakeMode.still;  // used to tell if running coroutines should exit
+	private bool zoomMode = false;  // used to tell if running coroutines should exit
+	private bool shakeMode = false; // used to tell if running coroutines should exit
 	private bool sequenceMode = false;  // used to tell if running coroutines should exit
-	//private bool cameraShake = false;	// will be used if a camerashake method is added
+
 	private int numMoveCoroutine = 0;   // number of move coroutines called since last move coroutine could finish normally, is used to know which coroutines to shut-down when more coroutines are called when one is still running.
 	private int numFollowCoroutine = 0; // ditto
 	private int numZoomCoroutine = 0;   //ditto
+	private int numShakeCoroutine = 0;	//ditto
 	private int numCamSequence = 0;
 
-	//public GameObject[] testObject;	// used for testing
+	public GameObject[] testObject;	// used for testing
 	#endregion
 
 
@@ -211,28 +227,42 @@ public class CameraController : MonoBehaviour {
 
 		yield break;
 	}
-	/*
+	*/
 
-		/*
+	
 	public void sequenceTest() {
 		CameraQueue testQueue1 = new CameraQueue();
 		testQueue1.AddForceZoom(6.0f);
-		testQueue1.AddChangeZoom(2.0f, 5.0f);
-		testQueue1.AddWait(5.0f);
-
-		testQueue1.AddChangeZoom(2.0f, 8.0f);
 		testQueue1.AddForceFocus(testObject[0]);
-		testQueue1.AddMoveFocus(testObject[1], 8.0f);
+		testQueue1.AddChangeZoom(2.0f, 2.0f);
+		testQueue1.AddWait(2.0f);
+
+		testQueue1.AddCameraShake(1.0f, 0.2f);
+		testQueue1.AddWait(2.0f);
+
+		//testQueue1.AddChangeZoom(2.0f, 8.0f);
+		testQueue1.AddChangeZoom(3.0f, 2.0f);
+		testQueue1.AddMoveFocus(testObject[1], 1.0f);
+		testQueue1.AddCameraShake(0.5f, 0.2f);
+		testQueue1.AddWait(1.0f);
+		
+		testQueue1.AddMoveFocus(testObject[3], 1.0f);
+		testQueue1.AddChangeZoom(2.0f, 1.0f);
+		testQueue1.AddWait(1.0f);
+		//testQueue1.AddMoveFocus(testObject[2], 1.0f);
+		//testQueue1.AddWait(1.0f);
+
+		testQueue1.AddMoveFocus(testObject[4], 8.0f);
+		testQueue1.AddChangeZoom(10.0f, 8.0f);
+		testQueue1.AddCameraShake(0.2f, 4.0f);
 		testQueue1.AddWait(8.0f);
 
-		
-		testQueue1.AddMoveFocus(testObject[3], 5.0f);
-		testQueue1.AddChangeZoom(2.0f, 5.0f);
-		testQueue1.AddWait(2.5f);
-		testQueue1.AddMoveFocus(testObject[2], 2.5f);
-		testQueue1.AddWait(2.5f);
 
-		
+		testQueue1.AddFollowFocus(testObject[4], 4.0f);
+		testQueue1.AddChangeZoom(4.0f, 4.0f);
+		testQueue1.AddCameraShake(0.5f, 4.0f);
+		testQueue1.AddWait(4.0f);
+		/*
 		testQueue1.AddFollowFocus(testObject[4], 4.0f);
 		for (int i = 0; i < 4; i++) {
 			testQueue1.AddForceZoom(5.0f);
@@ -240,10 +270,13 @@ public class CameraController : MonoBehaviour {
 			testQueue1.AddForceZoom(4.5f);
 			testQueue1.AddWait(0.5f);
 		}
+		*/
+		if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "dev_Roge") {
+			StartCoroutine(CameraSequence(testQueue1));
+		}
 		
-		StartCoroutine(CameraSequence(testQueue1));
 	}
-	*/
+	
 
 		/*
 	public void lookReturnTest() {
@@ -259,6 +292,7 @@ public class CameraController : MonoBehaviour {
 		thisCamera = this.GetComponent<Camera>();	// set these if they haven't been set
 		cameraTransform = this.GetComponent<Transform>();
 		thisCamera.orthographic = true; // camera must be in orthographic mode
+		sequenceTest();
 	}
 
 	/// <summary>
@@ -273,7 +307,8 @@ public class CameraController : MonoBehaviour {
 			Stop();
 		}
 		cameraFocus = newFocus;
-		cameraTransform.position = newFocus.transform.position + cameraOffset;
+		cameraEndLocation = newFocus.transform.position;
+		cameraTransform.position = cameraEndLocation + cameraOffset;
 	}
 
 
@@ -303,9 +338,12 @@ public class CameraController : MonoBehaviour {
 
 		moveMode = MoveMode.moving;
 
-		Vector3 start = cameraTransform.position;
+		Vector3 start = cameraEndLocation;
 		cameraFocus = newFocus;
-		Vector3 end = cameraFocus.transform.position + cameraOffset;
+		//Vector3 end = cameraFocus.transform.position + cameraOffset;
+		//cameraEndLocation = cameraFocus.transform.position;
+		//Vector3 end = cameraFocus.transform.position;
+		Vector3 CenterPosition;
 
 		float counter = 0.0f;
 		bool loop = true;
@@ -320,7 +358,11 @@ public class CameraController : MonoBehaviour {
 				//Debug.Log("Extra coroutine: " + thisCoroutine + ", num: " + numCoroutine);
 			} else {
 				counter += (Time.deltaTime) / moveTime;
-				cameraTransform.position = Vector3.Lerp(start, end, counter);
+				//cameraTransform.position = Vector3.Lerp(start, end, counter);
+				//cameraTransform.position = Vector3.Lerp(start, end, Acceleration(counter));
+				cameraEndLocation = cameraFocus.transform.position;
+				CenterPosition = Vector3.Lerp(start, cameraEndLocation, Acceleration(counter));
+				cameraTransform.position = CenterPosition + shakeOffset;
 				yield return null; // waits until a frame has been rendered.
 			}
 		}
@@ -362,6 +404,8 @@ public class CameraController : MonoBehaviour {
 
 		cameraFocus = newFocus;
 
+		//cameraLocation
+
 		bool indefinite;
 		float counter = 0.0f;
 		bool loop = true;
@@ -380,7 +424,8 @@ public class CameraController : MonoBehaviour {
 				//Debug.Log("Extra coroutine: " + thisCoroutine + ", num: " + numCoroutine);
 			} else {
 				counter += Time.deltaTime;
-				cameraTransform.position = cameraFocus.transform.position + cameraOffset;
+				cameraEndLocation = cameraFocus.transform.position;
+				cameraTransform.position = cameraEndLocation + shakeOffset;
 				yield return null; // waits until a frame has been rendered.
 			}
 		}
@@ -418,8 +463,9 @@ public class CameraController : MonoBehaviour {
 	/// <param name="newZoom"></param>
 	public void ForceZoom(float newZoom, bool sequence = false) {
 		//Debug.log("Forcing zoom");
-		zoomMode = ZoomMode.still;
+		zoomMode = false;//ZoomMode.still;
 		cameraZoom = newZoom;
+		intendedZoom = newZoom;
 		if (!sequence && sequenceMode) {    // if this wasn't called by a sequence, it should interupt all active sequences
 			Stop();
 		}
@@ -447,24 +493,26 @@ public class CameraController : MonoBehaviour {
 		}
 		//Debug.Log("Start ChangeZoom: " + thisCoroutine);
 
-		zoomMode = ZoomMode.changing;
+		zoomMode = true;//ZoomMode.changing;
 
 		float startZoom = cameraZoom;
-		float endZoom = newZoom;
+		//float endZoom = newZoom;
+		intendedZoom = newZoom;
 
 		float counter = 0.0f;
 		bool loop = true;
 
 		while (loop) {
 
-			if ((counter > 1.0f) | (zoomMode != ZoomMode.changing)) { // if coroutine is running to long, or does not match current mode, end.
+			if ((counter > 1.0f) | (!zoomMode /*!= ZoomMode.changing*/)) { // if coroutine is running to long, or does not match current mode, end.
 				loop = false;   // exit if: done moving, interupt
 			} else if (thisCoroutine != numZoomCoroutine) { // if this is not the newest coroutine, end
 				loop = false;
 				//Debug.Log("Extra ChangeZoom: " + thisCoroutine + ", num: " + numZoomCoroutine);
 			} else {
 				counter += (Time.deltaTime) / zoomTime;
-				cameraZoom = Mathf.Lerp(startZoom, endZoom, counter);
+				//cameraZoom = Mathf.Lerp(startZoom, intendedZoom, counter);
+				cameraZoom = Mathf.Lerp(startZoom, intendedZoom, Acceleration(counter));
 				thisCamera.orthographicSize = FindZoom(cameraZoom);
 				yield return null; // waits until a frame has been rendered.
 			}
@@ -473,8 +521,8 @@ public class CameraController : MonoBehaviour {
 		//Debug.Log("Closing ChangeZoom: " + thisCoroutine);
 		if (thisCoroutine == numZoomCoroutine) {    // only change mode back to still if this is the newest coroutine ending
 			numZoomCoroutine = 0;
-			if (zoomMode == ZoomMode.changing) {    // only change mode back to still if 
-				zoomMode = ZoomMode.still;
+			if (zoomMode == true) {    // only change mode back to still if 
+				zoomMode = false;
 				//Debug.Log("LastChangeZoom closed");
 			}
 		}
@@ -483,12 +531,85 @@ public class CameraController : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// Makes camera shake with given intensity for given length of time.
+	/// </summary>
+	/// <param name="strength"></param>
+	/// <param name="shakeTime"></param>
+	/// <param name="sequence"></param>
+	/// <returns></returns>
+	IEnumerator<object> CameraShake(float strength, float shakeTime = 1.0f, bool sequence = false) {
+
+		int thisCoroutine;  // what number this move coroutine is since the last normal move coroutine end
+
+		if (numShakeCoroutine == 0) {    // set the number of move coroutines since the last normal coroutine end, and the number of this coroutine in particular
+			numShakeCoroutine = 1;
+			thisCoroutine = 1;
+		} else {
+			numShakeCoroutine++;
+			thisCoroutine = numShakeCoroutine;
+		}
+
+		//Debug.Log("Starting CameraShake: " + thisCoroutine);
+		if (!sequence && sequenceMode) {    // if this wasn't called by a sequence, it should interupt all active sequences
+			Stop();
+		}
+
+		shakeMode = true;
+		//cameraOffset
+		//shakeOffset
+		//zeroVector
+		//Random.insideUnitCircle
+		float shakeScale = 0.1f;
+		Vector3 offset;
+		float counter = 0.0f;
+		bool loop = true;
+
+		while (loop) {
+			if ((counter > 1.0f) | (!shakeMode)) { // if coroutine is at end location, running to long, or does not match current mode, end.
+				loop = false;   // exit if: done moving, interupt
+			} else if (thisCoroutine != numShakeCoroutine) { // if this is not the newest coroutine, end
+				loop = false;
+			} else {
+				counter += (Time.deltaTime) / shakeTime;
+				offset = Random.insideUnitCircle * strength * cameraZoom * shakeScale; // divide by 
+				shakeOffset = cameraOffset + offset;
+				//shakeOffset = lerp(  );
+				if (moveMode == MoveMode.still) {
+					cameraTransform.position = cameraEndLocation + shakeOffset;
+				}
+				yield return null; // waits until a frame has been rendered.
+			}
+		}
+
+		if (thisCoroutine == numShakeCoroutine) {    // only change mode back to still if this is the newest coroutine ending
+			numShakeCoroutine = 0;
+			if (shakeMode) {
+				shakeMode = false;
+				shakeOffset = cameraOffset;
+			}
+		}
+
+		yield break; // exit coroutine
+	}
+
+	/// <summary>
 	/// Stops whatever coroutines may be running
 	/// </summary>
 	public void Stop() {
 		moveMode = MoveMode.still;
-		zoomMode = ZoomMode.still;
+		zoomMode = false;//ZoomMode.still;
+		shakeMode = false;
 		sequenceMode = false;
+	}
+
+	/// <summary>
+	/// Adjusts linear progression from 0 to 1 to a smoothed progression
+	/// </summary>
+	/// <param name="input"></param>
+	/// <returns></returns>
+	private float Acceleration(float input) {
+		float clamped = Mathf.Clamp01(input);
+		return ((3.0f * clamped * clamped) - (2.0f * clamped * clamped * clamped));
 	}
 
 	/// <summary>
@@ -550,6 +671,10 @@ public class CameraController : MonoBehaviour {
 						StartCoroutine(ChangeZoom(card._float2, card._float1, true));
 						//Debug.Log("ChangeZoom");
 						break;
+					case QueType.shakeCamera:
+						StartCoroutine(CameraShake(card._float2, card._float1, true));
+						//Debug.Log("CameraShake");
+						break;
 					default:
 						yield return null;
 						break;
@@ -584,7 +709,8 @@ public class CameraController : MonoBehaviour {
 		CameraQueue lookAtQueue = new CameraQueue();
 
 		GameObject originalFocus = cameraFocus;
-		float originalZoom = cameraZoom;
+		//float originalZoom = cameraZoom;
+		float originalZoom = intendedZoom;
 
 		lookAtQueue.AddChangeZoom(lookZoom, panTime);	// pan to given object with given zoom, in given time
 		lookAtQueue.AddMoveFocus(lookAtObject, panTime);
