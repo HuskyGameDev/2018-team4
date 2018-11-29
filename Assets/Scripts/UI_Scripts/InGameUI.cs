@@ -129,17 +129,17 @@ public class InGameUI : MonoBehaviour
         {
             //1-4 is just the stat value. Gets updated each frame
             case 1:
-                text.text = "Spd = " + player.GetStatDice(Player.StatType.Spd);
+                text.text = "Spd = " + player.GetStatDiceTotal(Player.StatType.Spd);
                 break;
 
             case 2:
-                text.text = "Str = " + player.GetStatDice(Player.StatType.Str);
+                text.text = "Str = " + player.GetStatDiceTotal(Player.StatType.Str);
                 break;
             case 3:
-                text.text = "Int = " + player.GetStatDice(Player.StatType.Int);
+                text.text = "Int = " + player.GetStatDiceTotal(Player.StatType.Int);
                 break;
             case 4:
-                text.text = "San = " + player.GetStatDice(Player.StatType.San);
+                text.text = "San = " + player.GetStatDiceTotal(Player.StatType.San);
                 break;
             //5-8 is the stat array text. This gets called when the scene starts
             //Each has an if, and that if checks to see if the number its about to print, has the same index value  
@@ -148,7 +148,7 @@ public class InGameUI : MonoBehaviour
                 text.text = "Speed\n ";
                 for (int i = 0; i <= 7; i++)
                 {
-                    if (i == player.GetStat(Player.StatType.Spd))
+                    if (i == player.GetStatTotal(Player.StatType.Spd))
                     {
                         string currentValue = playerScale[0, i].ToString();
                         text.text += "<color=Green>" + currentValue + "</color>";
@@ -165,7 +165,7 @@ public class InGameUI : MonoBehaviour
                 text.text = "Strength\n ";
                 for (int i = 0; i <= 7; i++)
                 {
-                    if (i == player.GetStat(Player.StatType.Str))
+                    if (i == player.GetStatTotal(Player.StatType.Str))
                     {
                         string currentValue = playerScale[1, i].ToString();
                         text.text += "<color=Green>" + currentValue + "</color>";
@@ -182,7 +182,7 @@ public class InGameUI : MonoBehaviour
                 text.text = "Sanity\n ";
                 for (int i = 0; i <= 7; i++)
                 {
-                    if (i == player.GetStat(Player.StatType.San))
+                    if (i == player.GetStatTotal(Player.StatType.San))
                     {
                         string currentValue = playerScale[3, i].ToString();
                         text.text += "<color=Green>" + currentValue + "</color>";
@@ -199,7 +199,7 @@ public class InGameUI : MonoBehaviour
                 text.text = "Intelligence\n ";
                 for (int i = 0; i <= 7; i++)
                 {
-                    if (i == player.GetStat(Player.StatType.Int))
+                    if (i == player.GetStatTotal(Player.StatType.Int))
                     {
                         string currentValue = playerScale[2, i].ToString();
                         text.text += "<color=Green>" + currentValue + "</color>";

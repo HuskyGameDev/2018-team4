@@ -20,6 +20,9 @@ public class Player : MonoBehaviour {
 
     private int[] playerStatLevel; // Spd:0, Str:1, Int:2, San:3   Holds the level fir each stat
     private int[,] playerStatScaling; // Spd:0, Str:1, Int:2, San:3   Holds the scaling for each stat at each level
+	private int[] playerStatLevelMod = new int[] { 0, 0, 0, 0 };
+	private int[] playerStatScalingMod = new int[] { 0, 0, 0, 0};
+
     private bool playerDead = false;	// if the player is dead
     private HexCoordinate playerLocation;	// players location on the map
 	private List<string> playerFlags;   // flags on player
@@ -73,7 +76,7 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	public void StartTurn() {
 		//TODO : potential movement and attack modifications
-		playerMovement = GetStatDice(0);
+		playerMovement = GetStatDiceTotal(0);
 		playerAttack = 1;
 
 		/*
@@ -89,12 +92,88 @@ public class Player : MonoBehaviour {
 	}
 
 	#region Stats_&_Scaling
+
 	/// <summary>
-	/// Returns the value of the given stat.
+	/// Get the modifier for the given stat
+	/// </summary>
+	/// <param name="stat"></param>
+	/// <returns></returns>
+	public int GetStatMod(StatType stat) {
+		switch (stat) {
+			case StatType.Spd: return playerStatLevelMod[0];
+			case StatType.Str: return playerStatLevelMod[1];
+			case StatType.Int: return playerStatLevelMod[2];
+			case StatType.San: return playerStatLevelMod[3];
+			default: return -1;
+		}
+	}
+
+	/// <summary>
+	/// Set the modifier for the given stat to the given number
+	/// </summary>
+	/// <param name="stat"></param>
+	/// <param name="statModValue"></param>
+	/// <returns></returns>
+	public int SetStatMod(StatType stat, int statModValue) {
+		int oldValue = 0;
+		switch (stat) {
+			case StatType.Spd:
+				oldValue = playerStatLevelMod[0];
+				playerStatLevelMod[0] = statModValue;
+				break;
+			case StatType.Str:
+				oldValue = playerStatLevelMod[1];
+				playerStatLevelMod[1] = statModValue;
+				break;
+			case StatType.Int:
+				oldValue = playerStatLevelMod[2];
+				playerStatLevelMod[2] = statModValue;
+				break;
+			case StatType.San:
+				oldValue = playerStatLevelMod[3];
+				playerStatLevelMod[3] = statModValue;
+				break;
+		}
+		CheckDead();
+		return oldValue;
+	}
+
+	/// <summary>
+	/// Adjust the modifier for the given stat by the given amount
+	/// </summary>
+	/// <param name="stat"></param>
+	/// <param name="modifyValue"></param>
+	/// <returns></returns>
+	public int ModifyStatMod(StatType stat, int modifyValue) {
+		int oldValue = 0;
+		switch (stat) {
+			case StatType.Spd:
+				oldValue = playerStatLevelMod[0];
+				playerStatLevelMod[0] += modifyValue;
+				break;
+			case StatType.Str:
+				oldValue = playerStatLevelMod[1];
+				playerStatLevelMod[1] += modifyValue;
+				break;
+			case StatType.Int:
+				oldValue = playerStatLevelMod[2];
+				playerStatLevelMod[2] += modifyValue;
+				break;
+			case StatType.San:
+				oldValue = playerStatLevelMod[3];
+				playerStatLevelMod[3] += modifyValue;
+				break;
+		}
+		CheckDead();
+		return oldValue;
+	}
+
+	/// <summary>
+	/// Returns the base value of the given stat, without modifiers.
 	/// </summary>
 	/// <param name="stat">Stat to return the value of: Spd, Str, Int, or San</param>
 	/// <returns>The value of the given stat</returns>
-	public int GetStat(StatType stat) {
+	public int GetStatBase(StatType stat) {
         switch(stat)
         {
             case StatType.Spd: return playerStatLevel[0];
@@ -168,12 +247,44 @@ public class Player : MonoBehaviour {
         return oldValue;
     }
 
-    /// <summary>
-    /// Gets the number of dice that should be rolled for a given stat.
-    /// </summary>
-    /// <param name="stat">The stat for which to find the number of dice to roll</param>
-    /// <returns>The number of dice to roll</returns>
-    public int GetStatDice(StatType stat) {
+	/// <summary>
+	/// Returns the total value (base + modifier) for the given stat, clamped to -1 minimum or 7 maximum.
+	/// </summary>
+	/// <param name="stat"></param>
+	/// <returns></returns>
+	public int GetStatTotal(StatType stat) {
+		int value = 0;
+		switch (stat) {
+			case StatType.Spd:
+				value = playerStatLevel[0] + playerStatLevelMod[0];
+				break;
+			case StatType.Str:
+				value = playerStatLevel[1] + playerStatLevelMod[1];
+				break;
+			case StatType.Int:
+				value = playerStatLevel[2] + playerStatLevelMod[2];
+				break;
+			case StatType.San:
+				value = playerStatLevel[3] + playerStatLevelMod[3];
+				break;
+			default: value = -1;
+				break;
+		}
+		if (value < -1) {
+			return -1;
+		} else if (value < 8) {
+			return value;
+		} else {
+			return 7;
+		}
+	}
+
+	/// <summary>
+	/// Gets the base number of dice that should be rolled for a given stat, without mofifiers.
+	/// </summary>
+	/// <param name="stat">The stat for which to find the number of dice to roll</param>
+	/// <returns>The number of dice to roll</returns>
+	public int GetStatDiceBase(StatType stat) {
 		switch (stat)
         {
             case StatType.Spd:
@@ -205,6 +316,129 @@ public class Player : MonoBehaviour {
     }
 
 	/// <summary>
+	/// Gets the modifier for the number of dice that should be rolled for a stat.
+	/// </summary>
+	/// <param name="stat"></param>
+	/// <returns></returns>
+	public int GetStatDiceMod(StatType stat) {
+		switch (stat) {
+			case StatType.Spd:
+				if (playerStatLevel[0] >= 0) {
+					return playerStatScalingMod[0];
+				} else {
+					return 0;
+				}
+			case StatType.Str:
+				if (playerStatLevel[1] >= 0) {
+					return playerStatScalingMod[1];
+				} else {
+					return 0;
+				}
+			case StatType.Int:
+				if (playerStatLevel[2] >= 0) {
+					return playerStatScalingMod[2];
+				} else {
+					return 0;
+				}
+			case StatType.San:
+				if (playerStatLevel[3] >= 0) {
+					return playerStatScalingMod[3];
+				} else {
+					return 0;
+				}
+			default: return 0;
+		}
+	}
+
+	/// <summary>
+	/// Set the modifier for the number of dice that should be rolled for a stat.
+	/// </summary>
+	/// <param name="stat"></param>
+	/// <param name="statModValue"></param>
+	/// <returns></returns>
+	public int SetStatDiceMod(StatType stat, int statModValue) {
+		int oldValue = 0;
+		switch (stat) {
+			case StatType.Spd:
+				oldValue = playerStatScalingMod[0];
+				playerStatScalingMod[0] = statModValue;
+				break;
+			case StatType.Str:
+				oldValue = playerStatScalingMod[1];
+				playerStatScalingMod[1] = statModValue;
+				break;
+			case StatType.Int:
+				oldValue = playerStatScalingMod[2];
+				playerStatScalingMod[2] = statModValue;
+				break;
+			case StatType.San:
+				oldValue = playerStatScalingMod[3];
+				playerStatScalingMod[3] = statModValue;
+				break;
+		}
+		return oldValue;
+	}
+
+	/// <summary>
+	/// Adjust the modifier for the number of dice that should be rolled for a stat, by the given amount.
+	/// </summary>
+	/// <param name="stat"></param>
+	/// <param name="modifyValue"></param>
+	/// <returns></returns>
+	public int ModifyStatDiceMod(StatType stat, int modifyValue) {
+		int oldValue = 0;
+		switch (stat) {
+			case StatType.Spd:
+				oldValue = playerStatScalingMod[0];
+				playerStatScalingMod[0] += modifyValue;
+				break;
+			case StatType.Str:
+				oldValue = playerStatScalingMod[1];
+				playerStatScalingMod[1] += modifyValue;
+				break;
+			case StatType.Int:
+				oldValue = playerStatScalingMod[2];
+				playerStatScalingMod[2] += modifyValue;
+				break;
+			case StatType.San:
+				oldValue = playerStatScalingMod[3];
+				playerStatScalingMod[3] += modifyValue;
+				break;
+		}
+		return oldValue;
+	}
+
+	/// <summary>
+	/// Gets the total number (base + modifier) of dice that should be rolled for a given stat.
+	/// </summary>
+	/// <param name="stat"></param>
+	/// <returns></returns>
+	public int GetStatDiceTotal(StatType stat) {
+		int statNum = 0;
+		switch (stat) {
+			case StatType.Spd:
+				statNum = 0;
+				break;
+			case StatType.Str:
+				statNum = 1;
+				break;
+			case StatType.Int:
+				statNum = 2;
+				break;
+			case StatType.San:
+				statNum = 3;
+				break;
+		}
+		if ((playerStatLevel[statNum] + playerStatLevelMod[statNum]) < 0) {
+			return 0;
+		} else if ((playerStatLevel[statNum] + playerStatLevelMod[statNum]) < 7) {
+			return playerStatScaling[statNum, playerStatLevel[statNum] + playerStatLevelMod[statNum]] + playerStatScalingMod[0];
+		} else {
+			return playerStatScaling[statNum, 7] + playerStatScalingMod[statNum];
+		}
+	}
+
+	/// <summary>
 	/// Allows the UI Script to get the scaling for the user to see. 
 	/// </summary>
 	/// <returns></returns>
@@ -222,7 +456,7 @@ public class Player : MonoBehaviour {
 	/// </summary>
 	/// <returns>True is the player is dead, otherwise false</returns>
 	public bool IsDead() {
-        CheckDead();
+        //CheckDead();
         return playerDead;
     }
 
@@ -241,9 +475,11 @@ public class Player : MonoBehaviour {
     /// Checks if any of the player's stats are below zero and sets them as dead if they are, and clamps stats to 7 if they are higher than 7
     /// </summary>
     private void CheckDead() {
-        for (int i = 0; i < 4; i++) {
-            if (playerStatLevel[i] < 0) playerDead = true;
-        }
+		//if (mode == Mode.haunt) {
+			for (int i = 0; i < 4; i++) {
+				if ((playerStatLevel[i] + playerStatLevelMod[i]) < 0) playerDead = true;
+			}
+		//}
         for (int i = 0; i < 4; i++)
         {
             if (playerStatLevel[i] > 7) playerStatLevel[i] = 7;
