@@ -24,7 +24,7 @@ public class PlayerSetup : MonoBehaviour {
     public Image player3Image;
     public Image player4Image;
     public Image player5Image;
-    public int NumberofPlayers; 
+    public int NumberofPlayers;
     private List<string> availableCharacters,removedCharacters;
     private List<string> AllCharacters = new List<string> { "Select Character","White", "Green", "Yellow", "Purple", "Red", "Blue" };
     private Dictionary<string,string> Characters;
@@ -40,15 +40,9 @@ public class PlayerSetup : MonoBehaviour {
         player3.SetActive(false);
         player4.SetActive(false);
         player5.SetActive(false);
-        Green = Resources.Load<Sprite>("GreenHeasdshot");
-        Debug.Log(Resources.Load<Sprite>("GreenHeasdshot"));
         removedCharacters = new List<string>{};
     }
 	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
     public void AdvanceCharacterScreen(){
         this.PostNotification("CharacterAdvancedment");
@@ -77,7 +71,10 @@ public class PlayerSetup : MonoBehaviour {
         SetSummary();
 
     }
-
+    /// <summary>
+    /// This sets the character images on the UI for the characters to know whos turn it is
+    /// </summary>
+    /// <returns>The list.</returns>
     public Dictionary<string, string> CharacterList(){
         return Characters;
     }
@@ -130,14 +127,17 @@ public class PlayerSetup : MonoBehaviour {
         }
 
     }
-
+    /// <summary>
+    /// Set an image for UI work
+    /// </summary>
+    /// <param name="pic">Pic.</param>
+    /// <param name="name">Name.</param>
     public void Setimage(Image pic, string name){
         switch(name){
             case "Green":
                 Debug.Log("assinging Green");
-                pic.GetComponent<Image>().sprite = Green;
-                //pic.GetComponent<Image>().color = Color.green;
-                
+                pic.GetComponent<Image>().sprite = Resources.Load<Sprite>("GreenHeasdshot");
+
                 break;
             case "White":
                 Debug.Log("assinging White");
@@ -168,7 +168,9 @@ public class PlayerSetup : MonoBehaviour {
         }
     }
 
-
+    /// <summary>
+    /// Grabs data from dropdown for number of players, and passes it to a coroutine
+    /// </summary>
     public void CharacterNumber(){
         string value = dropdown1.options[dropdown1.value].text;
         Debug.Log(value);
@@ -199,13 +201,20 @@ public class PlayerSetup : MonoBehaviour {
                 break;
         }
     }
+
+    /// <summary>
+    /// Begins the game.
+    /// </summary>
     public void BeginTheGame()
     {
         this.PostNotification("GameSystem->GamePlay");
         SummaryCanvas.SetActive(false);
         MainGameUI.SetActive(true);
     }
-
+    /// <summary>
+    /// Players the amount.
+    /// </summary>
+    /// <returns>The amount.</returns>
     public int PlayerAmount(){
         return NumberofPlayers;
     }

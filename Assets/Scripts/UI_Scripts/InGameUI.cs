@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+
 /*
  * This is the class for the UI in game
  *
@@ -33,10 +34,22 @@ public class InGameUI : MonoBehaviour
     public GameObject Player3InList;
     public GameObject Player4InList; 
     public GameObject Player5InList;
+    public GameObject PlayerCharacterImages;
+    public Text CollapsePlayerCharacterImagesText;
     public PlayerSetup CharacterList;
+    public GameObject PauseUI;
+    public GameObject SaveUI;
+    public GameObject OptionsUI;
+    private string text; 
     //This is the player object and their scaling arrays that I use a lot
     private int[,] playerScale;
     public Player player;
+    public int CurrentPlayerTurn;
+    public int StartingPlayer;
+    Dictionary<string, string> PlayerList;
+    public int TurnNumber;
+    public Text TurnText; 
+
 
     /*
      * This is what gets set as soon as the scene loads. Right now, it's only funtion calls to edit text
@@ -49,21 +62,53 @@ public class InGameUI : MonoBehaviour
         Player3InList.SetActive(false);
         Player4InList.SetActive(false);
         Player5InList.SetActive(false);
+        PlayerList = CharacterList.CharacterList();
         GUIStyle style = new GUIStyle();
         style.richText = true;
+        GeneratePlayerListUI();
+        StartingPlayer = PlayerTurn();
+        CurrentPlayerTurn = StartingPlayer;
+        TurnNumber = 1;
+        StartTurn();
+    }
+
+    public void StartTurn(){
+        text = ("Player " + CurrentPlayerTurn);
+        Debug.Log(text);
+        CharacterList.Setimage(player.GetComponent<Image>(), PlayerList[text]);
         playerScale = player.StatScaling();
         UItext(5, speedArray);
         UItext(6, strArray);
         UItext(7, sanArray);
         UItext(8, intArray);
-        GeneratePlayerListUI();
+        UpdateStats();
+        TurnText.text = ("Turn " + TurnNumber.ToString());
+    }
+
+    public void EndTurn(){
+        if(CurrentPlayerTurn == PreviousPlayer(StartingPlayer)){
+            TurnNumber += 1;
+        }
+        CurrentPlayerTurn += 1;
+        if (CurrentPlayerTurn > CharacterList.PlayerAmount()){
+            CurrentPlayerTurn = 1; 
+        }
+        StartTurn();
+        this.PostNotification("Gameplay->EndOfTurnSwitch");
+    }
+
+    public int PreviousPlayer(int Current){
+        if(Current == 1){
+            return CharacterList.PlayerAmount();
+        }
+        return Current - 1; 
     }
 
     /*
      * This updates things every frame. I have the players stats here so they are always up to date. 
      * May be subject to change later in the future. 
      */ 
-    void Update()
+    public void UpdateStats()
     {
         UItext(1, speed);
         UItext(2, Strength);
@@ -74,12 +119,11 @@ public class InGameUI : MonoBehaviour
 
     public void GeneratePlayerListUI(){
         int PlayerNumber = CharacterList.PlayerAmount();
-        Dictionary<string,string> PlayerList = CharacterList.CharacterList();
         switch(PlayerNumber){
             case 2:
                 Player1InList.SetActive(true);
                 Player2InList.SetActive(true);
-                CharacterList.Setimage(Player1InList.GetComponent<Image>(),PlayerList["Player 1"]);
+                CharacterList.Setimage(Player1InList.GetComponent<Image>(), PlayerList["Player 1"]);
                 CharacterList.Setimage(Player2InList.GetComponent<Image>(), PlayerList["Player 2"]);
                 break;
             case 3:
@@ -215,5 +259,74 @@ public class InGameUI : MonoBehaviour
         }
 
     }
+
+    public void PauseGame()
+    {
+
+        this.PostNotification("GameSystem->PauseGame");
+        PauseUI.SetActive(true);
+
+    }
+
+    public void Resume()
+    {
+        this.PostNotification("GameplayButtonPressed");
+        PauseUI.SetActive(false);
+    }
+    public void SaveGame()
+    {
+        this.PostNotification("SaveGameButtonPressed");
+        SaveUI.SetActive(true);
+        PauseUI.SetActive(false);
+    }
+    public void LoadGame()
+    {
+        SaveUI.SetActive(true);
+        this.PostNotification("LoadGameButtonPressed");
+        PauseUI.SetActive(false);
+    }
+    public void Options()
+    {
+        OptionsUI.SetActive(true);
+        this.PostNotification("OptionsButtonPressed");
+        PauseUI.SetActive(false);
+    }
+    public void Leave()
+    {
+        this.PostNotification("MainMenuButtonPressed");
+        PauseUI.SetActive(false);
+        SceneManager.LoadScene("Dev_Richy");
+    }
+    public void LeaveSaveMenu()
+    {
+        this.PostNotification("SaveFileBackButton");
+        PauseUI.SetActive(true);
+        SaveUI.SetActive(false);
+
+    }
+    public void LeaveOptionsMenu()
+    {
+        this.PostNotification("OptionsMenu -> MainMenu");
+        PauseUI.SetActive(true);
+        OptionsUI.SetActive(false);
+    }
+
+    public int PlayerTurn(){
+        Random rnd = new Random();
+        int StartingTurn = Random.Range(1, CharacterList.PlayerAmount());
+        return StartingTurn;
+    }
+
+    public void HideOrUnHidePlayersUI(){
+        if(PlayerCharacterImages.activeSelf){
+            CollapsePlayerCharacterImagesText.text = "<";
+            PlayerCharacterImages.SetActive(false);
+            //Hide UI
+        }else{
+            CollapsePlayerCharacterImagesText.text = ">";
+            PlayerCharacterImages.SetActive(true);
+        }
+    }
+
 
 }
