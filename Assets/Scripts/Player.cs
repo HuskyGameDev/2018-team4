@@ -516,6 +516,12 @@ public class Player : MonoBehaviour {
 		return playerMovement;
 	}
 
+    public void MoveToZero()
+    {
+        playerMovement = 0;
+    }
+
+
 	/// <summary>
 	/// Moves player to given room
 	/// </summary>

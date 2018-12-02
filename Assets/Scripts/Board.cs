@@ -56,6 +56,8 @@ public class Board {
 
 		return true;
 	}
+
+
     public bool canMove(HexCoordinate hex1, HexCoordinate hex2)
     { //return if the two tiles are adjacent and have doors in the correct spots for movement
         BoardTile b1 = _map[hex1];

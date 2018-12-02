@@ -341,24 +341,27 @@ public class InGameUI : MonoBehaviour
     public void PlayerMove()
     {
         HexCoordinate hex = MousePostion();
-        if(Input.GetMouseButtonDown(0))//Waits for mouse click
-        {
-            if (!GameManager._instance.gameState.gameBoard.CanCreateRoom(hex))//Checks if room is there
+        HexCoordinate Phex = (HexCoordinate)player.GetLocation();
+        while (player.MoveRemaining() > 0) {
+            if (Input.GetMouseButtonDown(0))//Waits for mouse click
             {
-                if (true)//Room is there, check if there is a valid door
+                if (!GameManager._instance.gameState.gameBoard.CanCreateRoom(hex))//Checks if room is there
                 {
-
+                    if (GameManager._instance.gameState.gameBoard.canMove(Phex, hex))//Room is there, check if there is a valid door
+                    {
+                        player.MovePlayer(hex);
+                    }
                 }
-            }
-            else//
-            {
-                if (GameManager._instance.gameState.gameBoard.hasNeighbor(hex))//Checks if tile has valid neighbor 
+                else//create tile 
                 {
-                    GameManager._instance.gameState.gameBoard.CreateRoom(hex);
+                    if (GameManager._instance.gameState.gameBoard.hasNeighbor(hex))//Checks if tile has valid neighbor 
+                    {
+                        GameManager._instance.gameState.gameBoard.CreateRoom(hex);
+                        player.MoveToZero();
+                    }
                 }
             }
         }
-
     }
 
 
