@@ -5,20 +5,12 @@ using UnityEngine;
 public class Orbit : MonoBehaviour {
 	public float height = 1.0f;
 	public Vector3 center = new Vector3(0.0f, 0.0f, 0.0f);
+	private Vector3 pos;
 	public float orbitTime = 1.0f;
+	public GameObject target;
 	private float counter = 0.0f;
 
-	public GameObject target = null;
-	private Vector3 pos;
-
-	void Start() {
-		if (target == null) {
-			target = this.gameObject;
-		}
-		//pos = target.transform.position;
-	}
-
-
+	
 	// Update is called once per frame
 	void Update () {
 		counter += (Time.deltaTime) / orbitTime;
@@ -27,6 +19,7 @@ public class Orbit : MonoBehaviour {
 		pos += center;
 		pos.x += Mathf.Cos(2 * Mathf.PI * counter);
 		pos.y += Mathf.Sin(2 * Mathf.PI * counter);
+
 		target.transform.position = pos;
 	}
 }
