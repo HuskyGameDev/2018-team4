@@ -1,5 +1,5 @@
 ﻿//Switches between pointed and flattop system. (By commenting this line out)
-#define POINTED
+//#define POINTED
 
 using UnityEngine;
 using System.Collections.Generic;
@@ -369,6 +369,24 @@ public class HexCoordinate {
 
 		return returnCoordinates;
 	}
+
+    /// <summary>
+    /// return the direction of the offset
+    /// </summary>
+    /// <param name="_offset"></param>
+    /// <returns></returns>
+    public static Direction GetDirectionFromOffset(Vector2Int _offset)
+    {
+        for(int i = 0; i < offset.Length; i++)
+        {
+            if (offset[i] == _offset)
+            {
+                return (Direction)i;
+            }
+        }
+        Debug.Log("Invalid Offset");
+        return (Direction)0;
+    }
 	#endregion
 
 	#region Private
