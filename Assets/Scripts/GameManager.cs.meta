@@ -3,11 +3,7 @@ guid: 2fbac82b48d1e46238de0e396e34e31f
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences:
-  - systemStateMachine: {instanceID: 0}
-  - boardTilePrefab: {fileID: 1075345038028600, guid: 4da9ed00d363f4640aa869f80346aa1e,
-      type: 2}
-  - boardHolder: {instanceID: 0}
+  defaultReferences: []
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

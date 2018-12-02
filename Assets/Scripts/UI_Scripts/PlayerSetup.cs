@@ -5,8 +5,8 @@ using UnityEngine.UI;
 using StateMachineSystem;
 using System.Linq;
 
-
 public class PlayerSetup : MonoBehaviour {
+    public GameInformation script; 
     public Dropdown dropdown1;
     public Dropdown dropdown2;
     public GameObject PlayerSelectionCanvas;
@@ -60,12 +60,12 @@ public class PlayerSetup : MonoBehaviour {
             if (dropdown2.value == 0) i = i - 1;
             else
             {
-                GameManager._instance.gameState.AddPlayer(("Player " + (i + 1)), dropdown2.options[dropdown2.value].text);
+                script.AddPlayer(("Player " + (i + 1)), dropdown2.options[dropdown2.value].text);
                 dropdown2.options.RemoveAt(dropdown2.value);
                 dropdown2.value = 0;
             }
         }
-        Characters = GameManager._instance.gameState.ListPlayers();
+        Characters = script.ListPlayers();
         PlayerSelectionCanvas.SetActive(false);
         SummaryCanvas.SetActive(true);
         SetSummary();
@@ -82,7 +82,7 @@ public class PlayerSetup : MonoBehaviour {
         public void SetSummary(){
        
 
-        switch (GameManager._instance.gameState.PlayerCount())
+        switch (script.PlayerCount())
         {
             case 2:
                 player1.SetActive(true);

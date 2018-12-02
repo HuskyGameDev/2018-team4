@@ -73,7 +73,6 @@ public class InGameUI : MonoBehaviour
     }
 
     public void StartTurn(){
-        player.StartTurn();
         text = ("Player " + CurrentPlayerTurn);
         Debug.Log(text);
         CharacterList.Setimage(player.GetComponent<Image>(), PlayerList[text]);
@@ -326,71 +325,6 @@ public class InGameUI : MonoBehaviour
         }else{
             CollapsePlayerCharacterImagesText.text = ">";
             PlayerCharacterImages.SetActive(true);
-        }
-    }
-    /// <summary>
-    /// returns the hfexcoordinate the mouse is at
-    /// </summary>
-    /// <returns></returns>
-    public HexCoordinate MousePostion()
-    {
-        Vector2 pos = Input.mousePosition;
-		Ray ray = Camera.main.ScreenPointToRay(pos);
-
-		//Create a plane to represent our game grid
-		Plane plane = new Plane(Vector3.forward, 0.0f);
-
-		//Do a raycast to find on the ray where we intersect with our game board
-		float d;
-		plane.Raycast(ray, out d);
-
-		//Check if we collided
-		if (d > 0) {
-			//Get the position along the ray that we collided
-			Vector3 hitPoint = ray.GetPoint(d);
-			//Return the HexCoordinate Conversion
-			HexCoordinate hex = HexCoordinate.GetHexPositionFromWorld(hitPoint);
-			Debug.Log(hex);
-			return hex;
-		}
-		else {
-			Debug.LogError("Unable to decect mouse click on game board.");
-			return new HexCoordinate(0, 0);
-		}
-    }  
-
-    public void MoveButton(){
-        StartCoroutine(PlayerMove());
-    }
-
-
-    public IEnumerator<object> PlayerMove()
-    {
-        Debug.Log("Move has been clicked");
-        HexCoordinate Phex = (HexCoordinate)player.GetLocation();
-        Debug.Log(player.MoveRemaining());
-        while (player.MoveRemaining() > 0) {
-            while (Input.GetMouseButtonDown(0) == false) { Debug.Log("Please Work" + Input.GetMouseButtonDown(0)); yield return null; }
-            Debug.Log("MouseHasBeenClicked");
-                HexCoordinate hex = MousePostion();
-                if (!GameManager._instance.gameState.gameBoard.CanCreateRoom(hex))//Checks if room is there
-                {
-                    if (GameManager._instance.gameState.gameBoard.canMove(Phex, hex))//Room is there, check if there is a valid door
-                    {
-                    Debug.Log("I'm Moving from " + Phex.ToString() + " To " + hex.ToString());
-                    player.MovePlayer(hex);
-                    }
-                }
-                else//create tile 
-                {
-                    if (GameManager._instance.gameState.gameBoard.hasNeighbor(hex))//Checks if tile has valid neighbor 
-                    {
-                    Debug.Log("NewTilePlz");
-                        GameManager._instance.gameState.gameBoard.CreateRoom(hex);
-                        player.MoveToZero();
-                    }
-                }
-            yield return new WaitForEndOfFrame();   
         }
     }
 
