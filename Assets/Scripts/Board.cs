@@ -19,16 +19,7 @@ public class Board {
         return (hex1 - hex2).Magnitude()<=1;
     }
 
-    public bool canMove(HexCoordinate hex1, HexCoordinate hex2){ //return all the sides that both have doors
-
-        if (isNeighbor(hex1, hex2))
-        {
-           
-            return true;
-        }
-        else return false;
-
-    }
+    
 
     public bool hasNeighbor(HexCoordinate hex)
     {
@@ -65,4 +56,18 @@ public class Board {
 
 		return true;
 	}
+    public bool canMove(HexCoordinate hex1, HexCoordinate hex2)
+    { //return if the two tiles are adjacent and have doors in the correct spots for movement
+        BoardTile b1 = _map[hex1];
+        BoardTile b2 = _map[hex2];
+        if (isNeighbor(hex1, hex2)) {
+            Vector2Int offset = (Vector2Int)(hex2-hex1);
+            int dir = (int)HexCoordinate.GetDirectionFromOffset(offset);
+
+            return b2.doors[dir] && b1.doors[(int)HexCoordinate.inverseDirection[dir]];
+          
+        }
+        else return false;
+
+    }
 }
