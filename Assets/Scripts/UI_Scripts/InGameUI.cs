@@ -334,8 +334,28 @@ public class InGameUI : MonoBehaviour
     public HexCoordinate MousePostion()
     {
         Vector2 pos = Input.mousePosition;
-        
-        return HexCoordinate.GetHexPositionFromWorld(pos);
+		Ray ray = Camera.main.ScreenPointToRay(pos);
+
+		//Create a plane to represent our game grid
+		Plane plane = new Plane(Vector3.forward, 0.0f);
+
+		//Do a raycast to find on the ray where we intersect with our game board
+		float d;
+		plane.Raycast(ray, out d);
+
+		//Check if we collided
+		if (d > 0) {
+			//Get the position along the ray that we collided
+			Vector3 hitPoint = ray.GetPoint(d);
+			//Return the HexCoordinate Conversion
+			HexCoordinate hex = HexCoordinate.GetHexPositionFromWorld(hitPoint);
+			Debug.Log(hex);
+			return hex;
+		}
+		else {
+			Debug.LogError("Unable to decect mouse click on game board.");
+			return new HexCoordinate(0, 0);
+		}
     }  
 
     public void PlayerMove()
