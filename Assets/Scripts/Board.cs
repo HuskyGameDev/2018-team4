@@ -30,6 +30,20 @@ public class Board {
 
     }
 
+    public bool hasNeighbor(HexCoordinate hex)
+    {
+        HexCoordinate temp; 
+        foreach (Vector2Int offset in HexCoordinate.offset)
+        {
+            temp = hex + offset;
+            if (_map.ContainsKey(temp))
+            {
+                return true;
+            }
+        }
+       return false; 
+    }
+
 	public bool CanCreateRoom(HexCoordinate location) {
 		//If the map does not contain the key, then we can place here
 		return _map.ContainsKey(location) == false;

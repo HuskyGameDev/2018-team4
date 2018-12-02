@@ -327,6 +327,26 @@ public class InGameUI : MonoBehaviour
             PlayerCharacterImages.SetActive(true);
         }
     }
+    /// <summary>
+    /// returns the hfexcoordinate the mouse is at
+    /// </summary>
+    /// <returns></returns>
+    public HexCoordinate MousePostion()
+    {
+        Vector2 pos = Input.mousePosition;
+        
+        return HexCoordinate.GetHexPositionFromWorld(pos);
+    }  
+
+    public void PlayerMove()
+    {
+
+        if(Input.GetMouseButtonDown(0))
+        {
+            GameManager._instance.gameState.gameBoard.hasNeighbor(MousePostion());
+        }
+
+    }
 
 
 }
