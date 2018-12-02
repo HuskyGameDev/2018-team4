@@ -12,6 +12,8 @@ public class GameManager : MonoBehaviour {
         }
         _instance = this;
 
+		InputManager.LoadKeybinds();
+
         DontDestroyOnLoad(this.gameObject);
         //Create the state machine
        systemStateMachine = StateMachineSystem.StateMachine.GenerateMachine(this.transform, "SoftwareSystemMachine");
