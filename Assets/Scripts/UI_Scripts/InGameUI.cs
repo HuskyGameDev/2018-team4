@@ -73,6 +73,7 @@ public class InGameUI : MonoBehaviour
     }
 
     public void StartTurn(){
+        player.StartTurn();
         text = ("Player " + CurrentPlayerTurn);
         Debug.Log(text);
         CharacterList.Setimage(player.GetComponent<Image>(), PlayerList[text]);
@@ -358,30 +359,38 @@ public class InGameUI : MonoBehaviour
 		}
     }  
 
-    public void PlayerMove()
+    public void MoveButton(){
+        StartCoroutine(PlayerMove());
+    }
+
+
+    public IEnumerator<object> PlayerMove()
     {
         Debug.Log("Move has been clicked");
         HexCoordinate Phex = (HexCoordinate)player.GetLocation();
+        Debug.Log(player.MoveRemaining());
         while (player.MoveRemaining() > 0) {
-            if (Input.GetMouseButtonDown(0))//Waits for mouse click
-            {
+            while (Input.GetMouseButtonDown(0) == false) { Debug.Log("Please Work" + Input.GetMouseButtonDown(0)); yield return null; }
+            Debug.Log("MouseHasBeenClicked");
                 HexCoordinate hex = MousePostion();
                 if (!GameManager._instance.gameState.gameBoard.CanCreateRoom(hex))//Checks if room is there
                 {
                     if (GameManager._instance.gameState.gameBoard.canMove(Phex, hex))//Room is there, check if there is a valid door
                     {
-                        player.MovePlayer(hex);
+                    Debug.Log("I'm Moving from " + Phex.ToString() + " To " + hex.ToString());
+                    player.MovePlayer(hex);
                     }
                 }
                 else//create tile 
                 {
                     if (GameManager._instance.gameState.gameBoard.hasNeighbor(hex))//Checks if tile has valid neighbor 
                     {
+                    Debug.Log("NewTilePlz");
                         GameManager._instance.gameState.gameBoard.CreateRoom(hex);
                         player.MoveToZero();
                     }
                 }
-            }
+            yield return new WaitForEndOfFrame();   
         }
     }
 

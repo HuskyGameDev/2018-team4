@@ -8,7 +8,7 @@ using System.Collections.Generic;
 /// HexCoordinate manages the necessary mathmatics for a Hexagon based coordinate system.
 /// </summary>
 [System.Serializable]
-public class HexCoordinate {
+public struct HexCoordinate {
 
 #region Values
 	#region Orientation
@@ -191,10 +191,10 @@ public class HexCoordinate {
 	/// <summary>
 	/// Creates a HexCoordinate at position (0,0)
 	/// </summary>
-	public HexCoordinate() {
+	/*public HexCoordinate() {
 		this.X = 0;
 		this.Y = 0;
-	}
+	}*/
 
 	/// <summary>
 	/// Creates a HexCoordinate at position (x,y)
@@ -400,7 +400,8 @@ public class HexCoordinate {
                 return (Direction)i;
             }
         }
-        Debug.Log("Invalid Offset");
+        Debug.Log("Invalid Offset : " + _offset);
+        
         return (Direction)0;
     }
 	#endregion
