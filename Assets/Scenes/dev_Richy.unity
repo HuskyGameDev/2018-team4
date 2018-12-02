@@ -1215,7 +1215,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   systemStateMachine: {fileID: 0}
-  boardTilePrefab: {fileID: 0}
+  boardTilePrefab: {fileID: 1075345038028600, guid: 4da9ed00d363f4640aa869f80346aa1e,
+    type: 2}
   boardHolder: {fileID: 0}
 --- !u!4 &2115383257
 Transform:

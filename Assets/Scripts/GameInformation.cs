@@ -13,7 +13,7 @@ public class GameInformation {
 	public GameInformation() {
 		Players = new Dictionary<string, string>();
 		roomTileDeck = new CardDeck();
-
+        gameBoard = new Board();
 		//Add generic cards some cards to the deck
 		for (int i = 0; i < 50; i++) {
 			roomTileDeck.AddCard(new BoardGameScripting.BGSScript());

@@ -340,11 +340,12 @@ public class InGameUI : MonoBehaviour
 
     public void PlayerMove()
     {
-        HexCoordinate hex = MousePostion();
+        Debug.Log("Move has been clicked");
         HexCoordinate Phex = (HexCoordinate)player.GetLocation();
         while (player.MoveRemaining() > 0) {
             if (Input.GetMouseButtonDown(0))//Waits for mouse click
             {
+                HexCoordinate hex = MousePostion();
                 if (!GameManager._instance.gameState.gameBoard.CanCreateRoom(hex))//Checks if room is there
                 {
                     if (GameManager._instance.gameState.gameBoard.canMove(Phex, hex))//Room is there, check if there is a valid door

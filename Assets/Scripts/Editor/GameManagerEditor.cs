@@ -7,6 +7,8 @@ public class GameManagerEditor : Editor
 {
     public override void OnInspectorGUI()
     {
+        base.OnInspectorGUI();
+
         GameManager gM = (GameManager)target;
 
         EditorGUILayout.BeginVertical();

@@ -5,7 +5,7 @@ public class GameManager : MonoBehaviour {
     public StateMachine systemStateMachine;
     public static GameManager _instance = null;
 
-	public GameInformation gameState = new GameInformation();
+    public GameInformation gameState;
 
 	public GameObject boardTilePrefab;
 
@@ -19,8 +19,9 @@ public class GameManager : MonoBehaviour {
         _instance = this;
 
         DontDestroyOnLoad(this.gameObject);
+        gameState = new GameInformation();
         //Create the state machine
-       systemStateMachine = StateMachineSystem.StateMachine.GenerateMachine(this.transform, "SoftwareSystemMachine");
+        systemStateMachine = StateMachineSystem.StateMachine.GenerateMachine(this.transform, "SoftwareSystemMachine");
         //Change it to the startup state
       systemStateMachine.ChangeState<StateMachineSystem.CreatedStates.StartupState>();
     }
