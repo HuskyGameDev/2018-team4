@@ -212,9 +212,25 @@ public class HexCoordinate {
 		this.X = vector.x;
 		this.Y = vector.y;
 	}
-#endregion
 
-#region Methods
+	/// <summary>
+	/// implicit cast from Vector2Int to HexCoordinate
+	/// </summary>
+	/// <param name="hex"></param>
+	public static implicit operator Vector2Int(HexCoordinate hex) {
+		return new Vector2Int(hex.X, hex.Y);
+	}
+
+	/// <summary>
+	/// Implicite cast from HexCoordinate to Vector2Int
+	/// </summary>
+	/// <param name="vec"></param>
+	public static implicit operator HexCoordinate(Vector2Int vec) {
+		return new HexCoordinate(vec.x, vec.y);
+	}
+	#endregion
+
+	#region Methods
 	#region Public
 
 	/// <summary>
