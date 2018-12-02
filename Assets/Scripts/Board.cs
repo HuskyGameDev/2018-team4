@@ -4,15 +4,9 @@ using UnityEngine;
 
 public class Board {
 
-    public class Tile
-    {
+    Dictionary<HexCoordinate, BoardTile> _map = new Dictionary<HexCoordinate, BoardTile>();
 
-    }
-
-
-    Dictionary<HexCoordinate, Tile> _map = new Dictionary<HexCoordinate, Tile>();
-
-    public void AddTile(HexCoordinate hex,Tile tile)
+    public void AddTile(HexCoordinate hex, BoardTile tile)
     {
         _map.Add(hex, tile);
     }
@@ -36,6 +30,24 @@ public class Board {
 
     }
 
+	public bool CanCreateRoom(HexCoordinate location) {
+		//If the map does not contain the key, then we can place here
+		return _map.ContainsKey(location) == false;
+	}
 
 
+	public bool CreateRoom(HexCoordinate location) {
+		//Check if we can make a room here first
+		if (!CanCreateRoom(location))
+			//Break out if we cannot
+			return false;
+
+		BoardTile newTile = GameManager._instance.CreateRoomTilePrefab();
+
+		newTile.gameObject.transform.position = HexCoordinate.GetWorldPositionFromHex(location);
+
+		_map.Add(location, newTile);
+
+		return true;
+	}
 }

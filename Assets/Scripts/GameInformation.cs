@@ -2,19 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameInformation : MonoBehaviour {
+public class GameInformation {
     private int NumberOfPlayers;
+	private CardDeck roomTileDeck;
     private Dictionary<string, string> Players;
 
 	// Use this for initialization
-	void Start () {
-        Players = new Dictionary<string, string>();
-    }
-	
-	// Update is called once per frame
-	void Update () {
-		
+	public GameInformation() {
+		Players = new Dictionary<string, string>();
+		roomTileDeck = new CardDeck();
+
+		//Add generic cards some cards to the deck
+		for (int i = 0; i < 50; i++) {
+			roomTileDeck.AddCard(new BoardGameScripting.BGSScript());
+		}
 	}
+
     public void AddPlayer(string name, string character){
         Players.Add(name, character);
         NumberOfPlayers = NumberOfPlayers + 1; 
