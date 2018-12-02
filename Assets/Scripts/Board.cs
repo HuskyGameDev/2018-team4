@@ -49,6 +49,7 @@ public class Board {
 		return _map.ContainsKey(location) == false;
 	}
 
+   
 
 	public bool CreateRoom(HexCoordinate location) {
 		//Check if we can make a room here first
