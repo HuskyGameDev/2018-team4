@@ -7,6 +7,8 @@ public class GameInformation {
 	private CardDeck roomTileDeck;
     private Dictionary<string, string> Players;
 
+	public Board gameBoard;
+
 	// Use this for initialization
 	public GameInformation() {
 		Players = new Dictionary<string, string>();

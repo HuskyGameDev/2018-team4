@@ -17,7 +17,12 @@ namespace StateMachineSystem.CreatedStates{
             Debug.Log("Generation - Decks, players, StoryTellingEngine");
             Debug.Log("Player Character Dialogue");
             Debug.Log("Load starting area");
-        }
+
+
+			GameManager._instance.gameState.gameBoard.CreateRoom(new HexCoordinate(0,0));
+			GameManager._instance.gameState.gameBoard.CreateRoom(new HexCoordinate(1,0));
+			GameManager._instance.gameState.gameBoard.CreateRoom(new HexCoordinate(2,0));
+		}
 
         public override IEnumerator<object> Exit() {
             yield return base.Exit();
