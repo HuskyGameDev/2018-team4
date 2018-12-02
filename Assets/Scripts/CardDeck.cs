@@ -27,13 +27,12 @@ public class CardDeck {
 
     public void Shuffle() //creates a shuffled deck and copied deck, takes random cards from copied and adds them to shuffled. copied is then copied to _deck
     {
-        int size = _deck.Count;
         List<Card> shuffled = new List<Card>(_deck);
         List<Card> copy = new List<Card>(_deck);
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < shuffled.Count; i++)
         {
             int j=0;
-            size = copy.Count;
+            int size = copy.Count;
             j = Random.Range(0, size);
             shuffled[i] = copy[j];
             copy.RemoveAt(j);
@@ -59,7 +58,7 @@ public class CardDeck {
     {
         if (_deck.Count == 0) {
             Debug.Log("drawing more cards than there are in deck");
-        return null; // the deck is depleted
+            return null; // the deck is depleted
         }
 
         //creates a temporary card that is the card, then removes the card from the deck. Returns temporary card

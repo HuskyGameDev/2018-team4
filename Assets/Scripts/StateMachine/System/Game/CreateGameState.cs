@@ -17,7 +17,16 @@ namespace StateMachineSystem.CreatedStates{
             Debug.Log("Generation - Decks, players, StoryTellingEngine");
             Debug.Log("Player Character Dialogue");
             Debug.Log("Load starting area");
-        }
+
+            //Make a new object to hold the game board prefabs
+            GameManager._instance.boardHolder = new GameObject();
+
+            //[FOR TESTING]Add three prefabs 
+			GameManager._instance.gameState.gameBoard.CreateRoom(new HexCoordinate(0,0));
+			GameManager._instance.gameState.gameBoard.CreateRoom(new HexCoordinate(1,0));
+			GameManager._instance.gameState.gameBoard.CreateRoom(new HexCoordinate(2,0));
+            //[END TESTING]
+		}
 
         public override IEnumerator<object> Exit() {
             yield return base.Exit();
