@@ -12,7 +12,7 @@ public class CameraController : MonoBehaviour {
 	 */
 
 	#region Values
-	private Camera thisCamera;	// used for easy changing of zoom
+	private static Camera _cameraInstance;	// used for easy changing of zoom
 	private Transform cameraTransform;	// used for easy changing of camera location
 
 	// public Camera cameraUI;	// will need some sort of second camera for UI/mini-map
@@ -150,8 +150,6 @@ public class CameraController : MonoBehaviour {
 	private int numZoomCoroutine = 0;   //ditto
 	private int numShakeCoroutine = 0;	//ditto
 	private int numCamSequence = 0;
-
-	public GameObject[] testObject;	// used for testing
 	#endregion
 
 
@@ -233,7 +231,7 @@ public class CameraController : MonoBehaviour {
 	public void sequenceTest() {
 		CameraQueue testQueue1 = new CameraQueue();
 		testQueue1.AddForceZoom(6.0f);
-		testQueue1.AddForceFocus(testObject[0]);
+		//testQueue1.AddForceFocus(testObject[0]);
 		testQueue1.AddChangeZoom(2.0f, 2.0f);
 		testQueue1.AddWait(2.0f);
 
@@ -242,57 +240,47 @@ public class CameraController : MonoBehaviour {
 
 		//testQueue1.AddChangeZoom(2.0f, 8.0f);
 		testQueue1.AddChangeZoom(3.0f, 2.0f);
-		testQueue1.AddMoveFocus(testObject[1], 1.0f);
+		//testQueue1.AddMoveFocus(testObject[1], 1.0f);
 		testQueue1.AddCameraShake(0.5f, 0.2f);
 		testQueue1.AddWait(1.0f);
 		
-		testQueue1.AddMoveFocus(testObject[3], 1.0f);
+		//testQueue1.AddMoveFocus(testObject[3], 1.0f);
 		testQueue1.AddChangeZoom(2.0f, 1.0f);
 		testQueue1.AddWait(1.0f);
 		//testQueue1.AddMoveFocus(testObject[2], 1.0f);
 		//testQueue1.AddWait(1.0f);
 
-		testQueue1.AddMoveFocus(testObject[4], 8.0f);
+		//testQueue1.AddMoveFocus(testObject[4], 8.0f);
 		testQueue1.AddChangeZoom(10.0f, 8.0f);
 		testQueue1.AddCameraShake(0.2f, 4.0f);
 		testQueue1.AddWait(8.0f);
 
 
-		testQueue1.AddFollowFocus(testObject[4], 4.0f);
+		//testQueue1.AddFollowFocus(testObject[4], 4.0f);
 		testQueue1.AddChangeZoom(4.0f, 4.0f);
 		testQueue1.AddCameraShake(0.5f, 4.0f);
 		testQueue1.AddWait(4.0f);
-		/*
-		testQueue1.AddFollowFocus(testObject[4], 4.0f);
-		for (int i = 0; i < 4; i++) {
-			testQueue1.AddForceZoom(5.0f);
-			testQueue1.AddWait(0.5f);
-			testQueue1.AddForceZoom(4.5f);
-			testQueue1.AddWait(0.5f);
-		}
-		*/
-		if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "dev_Roge") {
-			StartCoroutine(CameraSequence(testQueue1));
-		}
 		
+		StartCoroutine(CameraSequence(testQueue1));
 	}
 	
-
-		/*
-	public void lookReturnTest() {
-		ForceFocus(testObject[0]);
-		ForceZoom(6.0f);
-		StartCoroutine(LookAndReturn(testObject[1], 2.0f, 2.0f, 4.0f, 2.0f));
-	}
-*/
 	#endregion
 
 	#region Methods
 	void Start() {
-		thisCamera = this.GetComponent<Camera>();	// set these if they haven't been set
+		if (_cameraInstance != null) {
+			Destroy(this.gameObject);
+			return;
+		}
+
+		_cameraInstance = this.GetComponent<Camera>();  // set these if they haven't been set
+		
+		if (_cameraInstance == null) {
+			Debug.Log("_cameraInstance is null");
+		}
 		cameraTransform = this.GetComponent<Transform>();
-		thisCamera.orthographic = true; // camera must be in orthographic mode
-		sequenceTest();
+		_cameraInstance.orthographic = true; // camera must be in orthographic mode
+		//sequenceTest();
 	}
 
 	/// <summary>
@@ -319,7 +307,7 @@ public class CameraController : MonoBehaviour {
 	/// <param name="moveTime"></param>
 	/// <param name="zoom"></param>
 	/// <returns></returns>
-	IEnumerator<object> MoveFocus(GameObject newFocus, float moveTime = 1.0f, bool sequence = false) {
+	public IEnumerator<object> MoveFocus(GameObject newFocus, float moveTime = 1.0f, bool sequence = false) {
 
 		int thisCoroutine;  // what number this move coroutine is since the last normal move coroutine end
 
@@ -385,7 +373,7 @@ public class CameraController : MonoBehaviour {
 	/// <param name="newFocus"></param>
 	/// <param name="followTime"></param>
 	/// <returns></returns>
-	IEnumerator<object> FollowFocus(GameObject newFocus, float followTime = -1.0f, bool sequence = false) {
+	public IEnumerator<object> FollowFocus(GameObject newFocus, float followTime = -1.0f, bool sequence = false) {
 		int thisCoroutine;  // what number this follow coroutine is since the last normal follow coroutine end
 
 		if (numFollowCoroutine == 0) {  // set the number of follow coroutines since the last normal follow coroutine end, and the number of this coroutine in particular
@@ -469,7 +457,7 @@ public class CameraController : MonoBehaviour {
 		if (!sequence && sequenceMode) {    // if this wasn't called by a sequence, it should interupt all active sequences
 			Stop();
 		}
-		thisCamera.orthographicSize = FindZoom(newZoom);
+		_cameraInstance.orthographicSize = FindZoom(newZoom);
 	}
 
 	/// <summary>
@@ -478,7 +466,7 @@ public class CameraController : MonoBehaviour {
 	/// <param name="newZoom"></param>
 	/// <param name="zoomTime"></param>
 	/// <returns></returns>
-	IEnumerator<object> ChangeZoom(float newZoom, float zoomTime = 1.0f, bool sequence = false) {
+	public IEnumerator<object> ChangeZoom(float newZoom, float zoomTime = 1.0f, bool sequence = false) {
 		int thisCoroutine;  // what number this zoom coroutine is since the last normal zoom coroutine end
 
 		if (numZoomCoroutine == 0) {    // set the number of zoom coroutines since the last normal zoom coroutine end, and the number of this coroutine in particular
@@ -513,7 +501,7 @@ public class CameraController : MonoBehaviour {
 				counter += (Time.deltaTime) / zoomTime;
 				//cameraZoom = Mathf.Lerp(startZoom, intendedZoom, counter);
 				cameraZoom = Mathf.Lerp(startZoom, intendedZoom, Acceleration(counter));
-				thisCamera.orthographicSize = FindZoom(cameraZoom);
+				_cameraInstance.orthographicSize = FindZoom(cameraZoom);
 				yield return null; // waits until a frame has been rendered.
 			}
 		}
@@ -537,7 +525,7 @@ public class CameraController : MonoBehaviour {
 	/// <param name="shakeTime"></param>
 	/// <param name="sequence"></param>
 	/// <returns></returns>
-	IEnumerator<object> CameraShake(float strength, float shakeTime = 1.0f, bool sequence = false) {
+	public IEnumerator<object> CameraShake(float strength, float shakeTime = 1.0f, bool sequence = false) {
 
 		int thisCoroutine;  // what number this move coroutine is since the last normal move coroutine end
 
@@ -617,7 +605,7 @@ public class CameraController : MonoBehaviour {
 	/// </summary>
 	/// <param name="queue"></param>
 	/// <returns></returns>
-	IEnumerator<object> CameraSequence(CameraQueue queue) {
+	public IEnumerator<object> CameraSequence(CameraQueue queue) {
 		int thisCoroutine;  // what number this sequence coroutine is since the last normal sequence coroutine end
 
 		if (numCamSequence == 0) {  // set the number of sequence coroutines since the last normal sequence coroutine end, and the number of this coroutine in particular
@@ -704,7 +692,7 @@ public class CameraController : MonoBehaviour {
 	/// <param name="lookTime"></param>
 	/// <param name="returnTime"></param>
 	/// <returns></returns>
-	IEnumerator<object> LookAndReturn(GameObject lookAtObject, float panTime, float lookZoom, float lookTime, float returnTime) {
+	public IEnumerator<object> LookAndReturn(GameObject lookAtObject, float panTime, float lookZoom, float lookTime, float returnTime) {
 
 		CameraQueue lookAtQueue = new CameraQueue();
 

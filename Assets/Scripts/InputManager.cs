@@ -20,47 +20,48 @@ static public class InputManager {
 
 	[System.Serializable]
 	private class Keybindings {
-		public string[,] keys;
-		/*
-		public string up_1;	//1
-		public string up_2;
-		public string down_1;	//2
-		public string down_2;
-		public string left_1;	//3
-		public string left_2;
-		public string right_1;	//4
-		public string right_2;
-		public string confirm_1;	//5
-		public string confirm_2;
-		public string cancel_1;	//6
-		public string cancel_2;
-		public string action1_1;	//7
-		public string action1_2;
-		public string action2_1;	//8
-		public string action2_2;
-		public string action3_1;	//9
-		public string action3_2;*/
+		//public string[,] keys;
+		public KeyCode[,] keys;
 
 		public Keybindings() {
-			keys = new string[9, 2];
-			keys[0, 0] = "up";
+			/*keys = new string[9, 2];
+			keys[0, 0] = "up";	// up
 			keys[0, 1] = "w";
-			keys[1, 0] = "down";
+			keys[1, 0] = "down";	// down
 			keys[1, 1] = "s";
-			keys[2, 0] = "left";
+			keys[2, 0] = "left";	// left
 			keys[2, 1] = "a";
-			keys[3, 0] = "right";
+			keys[3, 0] = "right";	// right
 			keys[3, 1] = "d";
-			keys[4, 0] = "enter";
-			keys[4, 1] = "joystick button 0";
-			keys[5, 0] = "escape";
-			keys[5, 1] = "joystick button 1";
-			keys[6, 0] = "left ctrl";
+			keys[4, 0] = "enter";	// confirm
+			keys[4, 1] = "b";
+			keys[5, 0] = "escape";	// cancel
+			keys[5, 1] = "v";
+			keys[6, 0] = "left ctrl";	// action_1
 			keys[6, 1] = "mouse 0";
-			keys[7, 0] = "left alt";
+			keys[7, 0] = "left alt";	// action_2
 			keys[7, 1] = "mouse 1";
-			keys[8, 0] = "left shift";
-			keys[8, 1] = "mouse 2";
+			keys[8, 0] = "left shift";	// action_3
+			keys[8, 1] = "mouse 2";*/
+			keys = new KeyCode[9, 2];
+			keys[0, 0] = KeyCode.UpArrow;  // up
+			keys[0, 1] = KeyCode.W;
+			keys[1, 0] = KeyCode.DownArrow;    // down
+			keys[1, 1] = KeyCode.S;
+			keys[2, 0] = KeyCode.LeftArrow;    // left
+			keys[2, 1] = KeyCode.A;
+			keys[3, 0] = KeyCode.RightArrow;   // right
+			keys[3, 1] = KeyCode.D;
+			keys[4, 0] = KeyCode.Return;   // confirm
+			keys[4, 1] = KeyCode.KeypadEnter;
+			keys[5, 0] = KeyCode.Escape;  // cancel
+			keys[5, 1] = KeyCode.Space;
+			keys[6, 0] = KeyCode.LeftControl;   // action_1
+			keys[6, 1] = KeyCode.Mouse0;
+			keys[7, 0] = KeyCode.LeftAlt;    // action_2
+			keys[7, 1] = KeyCode.Mouse0;
+			keys[8, 0] = KeyCode.LeftShift;  // action_3
+			keys[8, 1] = KeyCode.Mouse2; 
 		}
 
 		public Keybindings Copy() {
@@ -97,7 +98,7 @@ static public class InputManager {
 		}
 		keybindings = temp_keybindings.Copy();
 
-		Debug.Log("Saving to location: \"" + Application.persistentDataPath + "\\Keybindings.txt\"");
+		//Debug.Log("Saving to location: \"" + Application.persistentDataPath + "\\Keybindings.txt\"");
 		Stream stream = new FileStream(Application.persistentDataPath + "\\Keybindings.txt", FileMode.Create, FileAccess.Write);
 		formatter.Serialize(stream, keybindings);
 		stream.Close();
@@ -111,7 +112,8 @@ static public class InputManager {
 		}
 	}
 
-	public static void ModifyKeybinds(Action action, bool primary, string newKey) {
+	public static void ModifyKeybinds(Action action, bool primary, KeyCode newKey) {
+		//Debug.Log("ModifyKeybind: " + action + ", primary:" + primary + ", to: " + newKey);
 		int action_num = (int)action;
 		int action_primary = 1;
 		if (primary) action_primary = 0;
@@ -120,10 +122,10 @@ static public class InputManager {
 		int replace_primary = -1;
 		for (int i = 0; i < 9; i++) {
 			if (action_num != i) {
-				if (temp_keybindings.keys[i, 0].Equals(newKey)) {
+				if (temp_keybindings.keys[i, 0] == newKey) {
 					replace_num = i;
 					replace_primary = 0;
-				} else if (temp_keybindings.keys[i, 1].Equals(newKey)) {
+				} else if (temp_keybindings.keys[i, 1] == newKey) {
 					replace_num = i;
 					replace_primary = 1;
 				}
@@ -143,9 +145,7 @@ static public class InputManager {
 	*/
 
 	public static bool OnInput(Action action) {
-		//Debug.Log("Checking \"" + action + "\"");
 		int action_num = (int)action;
-		//Debug.Log("Action \"" + action + "\" is: " + action_num);
 		return (Input.GetKey(keybindings.keys[action_num,0]) | Input.GetKey(keybindings.keys[action_num, 1]));
 	}
 
@@ -159,4 +159,63 @@ static public class InputManager {
 		return (Input.GetKeyUp(keybindings.keys[action_num, 0]) | Input.GetKeyUp(keybindings.keys[action_num, 1]));
 	}
 
+	/*public static void WaitForKeybindInput(Action action, bool primary) {
+		MonoBehaviour.StartCoroutine(WaitForKeybindInput_Coroutine(action, primary));
+	}*/
+
+	static public IEnumerator<object> WaitForKeybindInput(Action action, bool primary) {
+		while (Input.anyKey) {
+			//Debug.Log("Waiting for key release");
+			yield return null;
+		}
+
+		yield return null;
+
+		bool loop = true;
+
+		while (loop) {
+			//Debug.Log("Waiting for key press");
+			Event e = new Event();
+			while ((Event.GetEventCount() > 0) && loop) {
+				Event.PopEvent(e);
+				//Debug.Log("Events to test");
+				if (e.isKey) {
+					//Debug.Log("Detected key code: " + e.keyCode);
+					ModifyKeybinds(action, primary, e.keyCode);
+					loop = false;
+				} else if (e.isMouse) {
+					//Debug.Log("Detected mouse button: " + e.button);
+					switch (e.button) {
+						case 0:
+							ModifyKeybinds(action, primary, KeyCode.Mouse0);
+							break;
+						case 1:
+							ModifyKeybinds(action, primary, KeyCode.Mouse1);
+							break;
+						case 2:
+							ModifyKeybinds(action, primary, KeyCode.Mouse2);
+							break;
+						case 3:
+							ModifyKeybinds(action, primary, KeyCode.Mouse3);
+							break;
+						case 4:
+							ModifyKeybinds(action, primary, KeyCode.Mouse4);
+							break;
+						case 5:
+							ModifyKeybinds(action, primary, KeyCode.Mouse5);
+							break;
+						case 6:
+							ModifyKeybinds(action, primary, KeyCode.Mouse6);
+							break;
+					}
+					loop = false;
+				}
+			}
+			
+			yield return null;
+		}
+
+		yield break;
+	}
 }
+
