@@ -4,19 +4,9 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour {
 
-	/*
-	 * Add: pan/zoom acceleration
-	 * 
-		Camera shake		<-- later
-			Random.unitcircle
-	 */
-
 	#region Values
-	private static Camera _cameraInstance;	// used for easy changing of zoom
+	private Camera cameraInstance;	// used for easy changing of zoom
 	private Transform cameraTransform;	// used for easy changing of camera location
-
-	// public Camera cameraUI;	// will need some sort of second camera for UI/mini-map
-	// public Transform cameraUITransform;
 
 	private GameObject cameraFocus; // object camera is looking at currently/last
 	private Vector3 cameraEndLocation; // location of camera, ithout any offset
@@ -26,9 +16,19 @@ public class CameraController : MonoBehaviour {
 	public Vector3 cameraOffset = new Vector3(0.0f, 0.0f, -10.0f);	// z-axis offset of 10 units should be fine.
 	private Vector3 shakeOffset = new Vector3(0.0f, 0.0f, 0.0f);
 
-	public enum MoveMode {still, moving, follow};	// used to tell if running coroutines should exit
-	//public enum ZoomMode {still, changing}; // used to tell if running coroutines should exit
-	//public enum ShakeMode {still, shaking};
+	public enum MoveMode {still, moving, follow};   // used to tell if running coroutines should exit
+
+	private MoveMode moveMode = MoveMode.still; // used to tell if running coroutines should exit
+	private bool zoomMode = false;  // used to tell if running coroutines should exit
+	private bool shakeMode = false; // used to tell if running coroutines should exit
+	private bool sequenceMode = false;  // used to tell if running coroutines should exit
+
+	private int numMoveCoroutine = 0;   // number of move coroutines called since last move coroutine could finish normally, is used to know which coroutines to shut-down when more coroutines are called when one is still running.
+	private int numFollowCoroutine = 0; // ditto
+	private int numZoomCoroutine = 0;   //ditto
+	private int numShakeCoroutine = 0;  //ditto
+	private int numCamSequence = 0;
+
 	public enum QueType {wait, forceFocus, moveFocus, followFocus, forceZoom, changeZoom, shakeCamera};	// type of command, used with QueCards and CameraSequence
 
 	/// <summary>
@@ -137,19 +137,6 @@ public class CameraController : MonoBehaviour {
 			queue.Enqueue(new QueCard(QueType.shakeCamera, null, shakeTime, shakeStrength));
 		}
 	}
-
-	private MoveMode moveMode = MoveMode.still; // used to tell if running coroutines should exit
-	//private ZoomMode zoomMode = ZoomMode.still;	// used to tell if running coroutines should exit
-	//private ShakeMode shakeMode = ShakeMode.still;  // used to tell if running coroutines should exit
-	private bool zoomMode = false;  // used to tell if running coroutines should exit
-	private bool shakeMode = false; // used to tell if running coroutines should exit
-	private bool sequenceMode = false;  // used to tell if running coroutines should exit
-
-	private int numMoveCoroutine = 0;   // number of move coroutines called since last move coroutine could finish normally, is used to know which coroutines to shut-down when more coroutines are called when one is still running.
-	private int numFollowCoroutine = 0; // ditto
-	private int numZoomCoroutine = 0;   //ditto
-	private int numShakeCoroutine = 0;	//ditto
-	private int numCamSequence = 0;
 	#endregion
 
 
@@ -227,7 +214,7 @@ public class CameraController : MonoBehaviour {
 	}
 	*/
 
-	
+	/*
 	public void sequenceTest() {
 		CameraQueue testQueue1 = new CameraQueue();
 		testQueue1.AddForceZoom(6.0f);
@@ -262,25 +249,28 @@ public class CameraController : MonoBehaviour {
 		testQueue1.AddWait(4.0f);
 		
 		StartCoroutine(CameraSequence(testQueue1));
-	}
+	}*/
 	
 	#endregion
 
 	#region Methods
+		/// <summary>
+		/// stuff that should run immediatly
+		/// </summary>
 	void Start() {
-		if (_cameraInstance != null) {
+		/*if (cameraInstance != null) {
 			Destroy(this.gameObject);
 			return;
-		}
+		}*/
 
-		_cameraInstance = this.GetComponent<Camera>();  // set these if they haven't been set
+		cameraInstance = this.GetComponent<Camera>();  // set these if they haven't been set
 		
-		if (_cameraInstance == null) {
-			Debug.Log("_cameraInstance is null");
+		if (cameraInstance == null) {
+			Debug.Log("cameraInstance is null");
+		} else {
+			cameraTransform = this.GetComponent<Transform>();
+			cameraInstance.orthographic = true; // camera must be in orthographic mode
 		}
-		cameraTransform = this.GetComponent<Transform>();
-		_cameraInstance.orthographic = true; // camera must be in orthographic mode
-		//sequenceTest();
 	}
 
 	/// <summary>
@@ -457,7 +447,7 @@ public class CameraController : MonoBehaviour {
 		if (!sequence && sequenceMode) {    // if this wasn't called by a sequence, it should interupt all active sequences
 			Stop();
 		}
-		_cameraInstance.orthographicSize = FindZoom(newZoom);
+		cameraInstance.orthographicSize = FindZoom(newZoom);
 	}
 
 	/// <summary>
@@ -501,7 +491,7 @@ public class CameraController : MonoBehaviour {
 				counter += (Time.deltaTime) / zoomTime;
 				//cameraZoom = Mathf.Lerp(startZoom, intendedZoom, counter);
 				cameraZoom = Mathf.Lerp(startZoom, intendedZoom, Acceleration(counter));
-				_cameraInstance.orthographicSize = FindZoom(cameraZoom);
+				cameraInstance.orthographicSize = FindZoom(cameraZoom);
 				yield return null; // waits until a frame has been rendered.
 			}
 		}
