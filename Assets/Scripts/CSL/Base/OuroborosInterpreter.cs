@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace OuroborosScripting {
 	/// <summary>
-	/// A grammer and rules specification for a Card Scripting Language
+	/// A generalized form of Script scanning an execution
 	/// </summary>
 	public static class OuroborosInterpreter {
 		public static readonly bool debugParseOutput = false;
@@ -33,7 +33,7 @@ namespace OuroborosScripting {
 			string testingText = "";
 			Regex regex;
 			while (remainder.Length > 0) {
-				Debug.Log("Top of While");
+				//Debug.Log("Top of While");
 				ProcessedToken? token = null;
 				int i = 0;
 				for (; i < TERMINALS.Count; i++) {
@@ -47,7 +47,7 @@ namespace OuroborosScripting {
 						testingText += remainder[k];
 						if (regex.IsMatch(testingText)) {
 							text = testingText; // Store our string since we know that this is the valid string.
-							Debug.Log("Is Match: " + regex + " => " + testingText);
+							//Debug.Log("Is Match: " + regex + " => " + testingText);
 							//Create the processedtoken
 							token = new ProcessedToken(i, null,  text);
 							//Execute the code for reading this token.
@@ -57,7 +57,7 @@ namespace OuroborosScripting {
 					}
 
 					if (token != null) {
-						Debug.Log("Breaking.");
+						//Debug.Log("Breaking.");
 						break;
 					}
 				}
@@ -67,12 +67,12 @@ namespace OuroborosScripting {
 						//We have ignored this section
 					}
 					else {
-						Debug.Log(text + " | " + token);
+						//Debug.Log(text + " | " + token);
 						tokens.Add(token);
 					}
-					Debug.Log("Pre<"+remainder+">");
+					//Debug.Log("Pre<"+remainder+">");
 					remainder = remainder.Substring(text.Length);
-					Debug.Log("Post<" + remainder + ">");
+					//Debug.Log("Post<" + remainder + ">");
 					text = "";
 				}
 				else {
@@ -124,7 +124,7 @@ namespace OuroborosScripting {
 				yield return null;
 
 
-				//Debug.Log(PrintList(parsingStack, false) + "|\\|/| -> " + tokens[currencyIndicator]);
+				Debug.Log(PrintList(parsingStack, false) + "|\\|/| -> " + inputTokens[currencyIndicator]);
 
 				ParseStackElement top = parsingStack[parsingStack.Count -1];
 				//Look at top of stack, if it is a Token, then we need to do a GoTo,
@@ -157,8 +157,8 @@ namespace OuroborosScripting {
 					//It can (should) only be a non terminal, so calculate its column on the parse table.
 					int tokenColumn = currentInputToken.tokenSymbolLocation;
 
-					//Debug.Log(currentInputToken.token);
-					//Debug.Log(tokenColumn+"/"+(nonTerminals.Count+TERMINALS.Count));
+					Debug.Log(currentInputToken.data);
+					Debug.Log(tokenColumn+"/"+(nonTerminals.Count+TERMINALS.Count));
 					ParserInstruction targetInstruction = ParseTable[top.parserStateIndex][tokenColumn];
 
 					if (targetInstruction.instruction == ParserInstruction.Instruction.ACCEPT) {
@@ -169,7 +169,7 @@ namespace OuroborosScripting {
 						break;
 					}
 					else if (targetInstruction.instruction == ParserInstruction.Instruction.SHIFT) {
-						//Debug.Log("Shift");
+						Debug.Log("Shift");
 						//If it is a shift, we put this token on the stack,
 						parsingStack.Add(new ParseStackElement(ParseStackElement.Type.Token, 0, currentInputToken));
 
@@ -225,7 +225,7 @@ namespace OuroborosScripting {
 		public static string PrintList<T>(List<T> list, bool printList = true) {
 			string ret = "";
 			for (int i = 0; i < list.Count; i++) {
-				ret += list[i].ToString() + " | ";
+				ret += ((list[i] != null) ? list[i].ToString() : "NULL") + " | ";
 			}
 
 			if (printList) Debug.Log(ret);
@@ -301,8 +301,17 @@ namespace OuroborosScripting {
 			public CoroutineMethod rule;
 			public object data;
 
+			/*public static void PrintList(List<ProcessedToken?> list, IOuroborosLanguage context) {
+				string ret = "";
+				for (int i = 0; i < list.Count; i++) {
+					//ret += ((list[i] != null) ? context.get.ToString() : "EOF") + " | ";
+				}
+
+				Debug.Log(ret);
+			}*/
+
 			public override string ToString() {
-				return (data != null) ? data.ToString() : "EOF";
+				return ((terminal) ? "T:" : "Nt:")+tokenSymbolLocation;
 			}
 
 			/// <summary>

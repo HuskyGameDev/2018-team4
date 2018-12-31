@@ -41,27 +41,27 @@ namespace OuroborosScripting.GeneratedLanguages {
 			new SymbolStringTuple(13, @"^(#)[^#]*(#)$$",			Execution13)		//CODE,				13
 		};
 		public ProductionRule[] productionRules = new ProductionRule[] {
-			new ProductionRule(0, 5, Execution14),  //14 LanguageDefinition	:	NameHeader ExtHeader UsingHeader GlobalHeader ProductionHeader
-			new ProductionRule(1, 1, Execution15),  //15 IdentifierList		:	IDENTIFIER
+			new ProductionRule(0, 5, Execution14),  //14 LanguageDefinition		:	NameHeader ExtHeader UsingHeader GlobalHeader ProductionHeader
+			new ProductionRule(1, 1, Execution15),  //15 IdentifierList			:	IDENTIFIER
 			new ProductionRule(1, 2, Execution16),  //16 						:	IdentifierList IDENTIFIER
-			new ProductionRule(2, 4, Execution17),  //17 ProductionHeader 	:	HEADERTAG PRODUCTIONSTRING TokenStatementList HEADERTAG
-			new ProductionRule(3, 1, Execution18),  //18 TokenStatementList	:	RegexRule
+			new ProductionRule(2, 4, Execution17),  //17 ProductionHeader 		:	HEADERTAG PRODUCTIONSTRING TokenStatementList HEADERTAG
+			new ProductionRule(3, 1, Execution18),  //18 TokenStatementList		:	RegexRule
 			new ProductionRule(3, 1, Execution19),  //19						:	ProductionRule
 			new ProductionRule(3, 2, Execution20),  //20						:	TokenStatementList RegexRule
 			new ProductionRule(3, 2, Execution21),  //21						:	TokenStatementList ProductionRule
-			new ProductionRule(4, 2, Execution22),  //22 RegexRule			:	IDENTIFIER RegexRuleRHSList
-			new ProductionRule(5, 2, Execution23),  //23 ProductionRule		:	IDENTIFIER ProductionRuleRHSList
+			new ProductionRule(4, 2, Execution22),  //22 RegexRule				:	IDENTIFIER RegexRuleRHSList
+			new ProductionRule(5, 2, Execution23),  //23 ProductionRule			:	IDENTIFIER ProductionRuleRHSList
 			new ProductionRule(6, 1, Execution24),  //24 ProductionRuleRHSList:	ProductionRuleRHS
 			new ProductionRule(6, 2, Execution25),  //25 						:	ProductionRuleRHSList ProductionRuleRHS
 			new ProductionRule(7, 1, Execution26),  //26 RegexRuleRHSList		:	RegexRuleRHS
 			new ProductionRule(7, 2, Execution27),  //27						:	RegexRuleRHSList RegexRuleRHS
-			new ProductionRule(8, 3, Execution28),  //28 RegexRuleRHS 		:	COLON REGEX Coroutine
-			new ProductionRule(9, 3, Execution29),  //29 ProductionRuleRHS	:	COLON IdentifierList Coroutine
-			new ProductionRule(10, 1, Execution30), //30 Coroutine			:	CODE
-			new ProductionRule(11, 3, Execution31), //31 GlobalHeader 		:	HEADERTAG GLOBALSTRING CODE
+			new ProductionRule(8, 3, Execution28),  //28 RegexRuleRHS 			:	COLON REGEX Coroutine
+			new ProductionRule(9, 3, Execution29),  //29 ProductionRuleRHS		:	COLON IdentifierList Coroutine
+			new ProductionRule(10, 1, Execution30), //30 Coroutine				:	CODE
+			new ProductionRule(11, 3, Execution31), //31 GlobalHeader 			:	HEADERTAG GLOBALSTRING CODE
 			new ProductionRule(12, 3, Execution32), //32 UsingHeader			: 	HEADERTAG USINGSTRING CODE
-			new ProductionRule(13, 3, Execution33), //33 NameHeader			: 	HEADERTAG NAMESTRING CODE
-			new ProductionRule(14, 3, Execution34)  //34 ExtHeader			: 	HEADERTAG EXTSTRING CODE
+			new ProductionRule(13, 3, Execution33), //33 NameHeader				: 	HEADERTAG NAMESTRING CODE
+			new ProductionRule(14, 3, Execution34)  //34 ExtHeader				: 	HEADERTAG EXTSTRING CODE
 		};
 		public ParserInstruction[][] parseTable = new ParserInstruction[][] { new ParserInstruction[] {new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(2, ParserInstruction.Instruction.SHIFT), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(1, ParserInstruction.Instruction.GOTO), new ParserInstruction(0, ParserInstruction.Instruction.ERR)},
 new ParserInstruction[] {new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(4, ParserInstruction.Instruction.SHIFT), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(0, ParserInstruction.Instruction.ERR), new ParserInstruction(3, ParserInstruction.Instruction.GOTO)},
@@ -164,6 +164,7 @@ new ParserInstruction[] {new ParserInstruction(15, ParserInstruction.Instruction
 		/// </summary>
 		/// <returns></returns>
 		public IEnumerator<object> BuildParseTable() {
+												//0			1			2			3			4				5			6					7					8		9			10				11		  12	   13
 			terminalTokens = new List<string> { "_WS", "_COMMENT", "_NEWLINE", "NAMESTRING", "EXTSTRING", "GLOBALSTRING", "USINGSTRING", "PRODUCTIONSTRING", "HEADERTAG", "COLON", "DISCARDIDEN", "IDENTIFIER", "REGEX", "CODE" };
 			nonTerminalTokens = new List<string> { "LanguageDefinition", "IndetifierList", "ProductionHeader", "TokenStatementList", "RegexRule", "ProductionRule", "ProductionRuleRHSList", "RegexRuleRHSList", "RegesRuleRHS", "ProductionRuleRHS", "Corotuine", "GlobalHeader", "UsingHeader", "NameHeader", "ExtHeader" };
 
@@ -504,7 +505,7 @@ new ParserInstruction[] {new ParserInstruction(15, ParserInstruction.Instruction
 
 		//ProductionHeader 		:	HEADERTAG PRODUCTIONSTRING TokenStatementList HEADERTAG 
 		public static IEnumerator<object> Execution17(CoroutineWrapper coroutineWrapper) {
-			List<object> rhs = null; yield return GameManager._instance.StartCoroutine(coroutineWrapper.target.Prepare(coroutineWrapper.enviroment, (object data) => { rhs = (List<object>)data; }));
+			//List<object> rhs = null; yield return GameManager._instance.StartCoroutine(coroutineWrapper.target.Prepare(coroutineWrapper.enviroment, (object data) => { rhs = (List<object>)data; }));
 			//Create the tokens ENUMs
 			string enums = "public enum Symbolictoken {\n";
 			foreach (string s in ((OuroborosLanguage)coroutineWrapper.enviroment).terminalTokens) enums += s+",";
