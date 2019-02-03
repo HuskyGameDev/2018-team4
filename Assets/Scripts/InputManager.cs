@@ -4,8 +4,15 @@ using System.IO;
 using UnityEngine;
 
 static public class InputManager {
-	/*TODO: mouse position/click stuff
-	 *		joystick mouse-control?
+	/*TODO: NO---mouse position/click stuff---NO
+	 * 
+	 *		Make into a singleton rather than static
+	 * 
+	 *		joystick - "Axis_1h" & "Axis_1v"
+	 *			button-up/down
+	 *			diagonal-directions
+	 *			Should input check every frame happen in the input manager? Or should input be checked every frame by things looking for input?
+	 *				check happens in input-manager, sends notifications when receive input
 	 *		
 	 *		Make sure buttonDown/Up does not trigger twice from both buttons being pressed if the first button is down when the second if pressed
 	*/
@@ -144,10 +151,23 @@ static public class InputManager {
 	}
 
 	/*
-	public Vector2 GetMousePos() {
-		return new Vector2(2.0f, 2.0f);
+	/// <summary>
+	/// returns the mouse position in pixels on the screen, not in world-coordinates
+	/// (0,0) is bottom left corner, top right is (pixelWidth,pixelHeight)
+	/// </summary>
+	/// <returns></returns>
+	public static Vector3 GetMousePos() {
+		//Vector3 mousePos = Camera.ScreenToWorldPoint(Input.mousePosition);
+		return Input.mousePosition;
+		//return new Vector2(2.0f, 2.0f);
+	}*/
+	
+	/// <summary>
+	/// 
+	/// </summary>
+	void Update() {
+
 	}
-	*/
 
 	/// <summary>
 	/// Check if either of the keys bound to the action are pressed down.
@@ -156,7 +176,29 @@ static public class InputManager {
 	/// <returns></returns>
 	public static bool OnInput(Action action) {
 		int action_num = (int)action;
-		return (Input.GetKey(keybindings.keys[action_num,0]) | Input.GetKey(keybindings.keys[action_num, 1]));
+		
+		if (action_num >= 0 & action_num <= 3) {
+			bool joyStick = false;
+			switch (action_num) {
+				case 0: // up
+					joyStick = (Input.GetAxis("Axis_1v") < 0);
+					break;
+				case 1: // down
+					joyStick = (Input.GetAxis("Axis_1v") > 0);
+					break;
+				case 2: // left
+					joyStick = (Input.GetAxis("Axis_1h") < 0);
+					break;
+				case 3: // right
+					joyStick = (Input.GetAxis("Axis_1h") > 0);
+					break;
+			}
+			return (Input.GetKey(keybindings.keys[action_num, 0]) | Input.GetKey(keybindings.keys[action_num, 1]) | joyStick);
+		} else {
+			return (Input.GetKey(keybindings.keys[action_num, 0]) | Input.GetKey(keybindings.keys[action_num, 1]));
+		}
+
+		//return (Input.GetKey(keybindings.keys[action_num,0]) | Input.GetKey(keybindings.keys[action_num, 1]));
 	}
 
 	/// <summary>
