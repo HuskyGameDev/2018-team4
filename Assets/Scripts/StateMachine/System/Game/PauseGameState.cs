@@ -51,6 +51,8 @@ namespace StateMachineSystem.CreatedStates{
         }
 
         void SwitchToOptions(object sender, object args) {
+            this.PostNotification("Options Menu Enable");
+            this.PostNotification("Pause Menu Disable");
             Debug.Log("Pause Menu was told to change to the options state, but didnt because we dont quite have the logic set up for that yet.");
         }
         void SwitchToLoadGame(object sender, object args) {

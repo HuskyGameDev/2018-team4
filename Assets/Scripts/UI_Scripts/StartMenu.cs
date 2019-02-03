@@ -17,7 +17,7 @@ public class StartMenu : MonoBehaviour
     public void OptionsMenu()
     {
         //Main_Menu.SetActive(false);
-        //Options_Menu.SetActive(true);
+        //Options.SetActive(true);
 
     }
 

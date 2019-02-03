@@ -9,11 +9,11 @@ namespace StateMachineSystem.CreatedStates {
 
         public override IEnumerator<object> Enter() {
             yield return base.Enter();
-            Debug.Log("Load Files - Saves, Card Files, images");
-            Debug.Log("¿Connect to online server? - ¿Update from server?");
-            Debug.Log("Initialize CSL - Connect to Card Database");
-            Debug.Log("Load Graphics, Audio, and Controls options");
-            Debug.Log("Suposed to Transition to : Main Menu");
+            //Debug.Log("Load Files - Saves, Card Files, images");
+            //Debug.Log("¿Connect to online server? - ¿Update from server?");
+            //Debug.Log("Initialize CSL - Connect to Card Database");
+            //Debug.Log("Load Graphics, Audio, and Controls options");
+            //Debug.Log("Suposed to Transition to : Main Menu");
             owner.ChangeState<MainMenuState>();
         }
 
