@@ -8,7 +8,7 @@ using Card = BoardGameScripting.BGSScript;
 /// </summary>
 public class Player : MonoBehaviour {
 	/* TODO:
-	Movement (teleport, animation, statemachine will decide what moement is valid)
+	Movement (teleport, animation, statemachine will decide what movement is valid)
 	-Store/Give Event/Item/Artifact
 	-Get Event/Item/Artifact
 	-Discard Event/Item/Artifact
