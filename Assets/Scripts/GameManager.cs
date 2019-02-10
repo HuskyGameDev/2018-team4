@@ -18,7 +18,7 @@ public class GameManager : MonoBehaviour {
         }
         _instance = this;
 
-		InputManager.LoadKeybinds();
+		InputManager.instance.LoadKeybinds();
 
         DontDestroyOnLoad(this.gameObject);
         gameState = new GameInformation();
