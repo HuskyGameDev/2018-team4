@@ -56,7 +56,7 @@ public class InputManager {
 	 */
 
 	#region Singleton Pattern
-	public readonly static InputManager instance = new InputManager();
+	public readonly static InputManager instance = new InputManager();	// should only be one instance of the camera manager
 	private InputManager() {}	// Constuctor w/ nothing inside
 	#endregion
 
@@ -268,7 +268,7 @@ public class InputManager {
 	}*/
 
 	/// <summary>
-	/// 
+	/// Every frame, check for input and send any notifications
 	/// </summary>
 	void Update() {
 		#region Joystick Data Processing
@@ -277,6 +277,7 @@ public class InputManager {
 		joystickStateChange[2] = false;
 		joystickStateChange[3] = false;
 
+		// Check the state of the "up" direction of joystick as compared to last frame
 		if (Input.GetAxis("Axis_1v") < -0.5f) {	// up
 			if (joystickLastState[0]) { // joystick is up, & was up
 				joystickStateCount[0] = 0; // reset count
@@ -301,6 +302,7 @@ public class InputManager {
 			}
 		}
 
+		// Check the state of the "down" direction of joystick as compared to last frame
 		if (Input.GetAxis("Axis_1v") > 0.5f) { // down
 			if (joystickLastState[1]) { // joystick is up, & was up
 				joystickStateCount[1] = 0; // reset count
@@ -325,6 +327,7 @@ public class InputManager {
 			}
 		}
 
+		// Check the state of the "left" direction of joystick as compared to last frame
 		if (Input.GetAxis("Axis_1h") > 0.5f) { // left
 			if (joystickLastState[2]) { // joystick is up, & was up
 				joystickStateCount[2] = 0; // reset count
@@ -349,6 +352,7 @@ public class InputManager {
 			}
 		}
 
+		// Check the state of the "right" direction of joystick as compared to last frame
 		if (Input.GetAxis("Axis_1h") < -0.5f) { // right
 			if (joystickLastState[3]) { // joystick is up, & was up
 				joystickStateCount[3] = 0; // reset count
@@ -376,14 +380,9 @@ public class InputManager {
 		#endregion
 
 		#region OnKey Input
-		// directional first - (up = 0, down = 1, left = 2, right = 3)
+		// Send notification if a key is currently pressed down
 
-		//bool upKey = (Input.GetKey(keybindings.keys[0, 0]) | Input.GetKey(keybindings.keys[0, 1]) | joystickLastState[0]);
-		//bool downKey = (Input.GetKey(keybindings.keys[1, 0]) | Input.GetKey(keybindings.keys[1, 1]) | joystickLastState[1]);
-		//bool leftKey = (Input.GetKey(keybindings.keys[2, 0]) | Input.GetKey(keybindings.keys[2, 1]) | joystickLastState[2]);
-		//bool rightKey = (Input.GetKey(keybindings.keys[3, 0]) | Input.GetKey(keybindings.keys[3, 1]) | joystickLastState[3]);
-		//int direction = (upKey ? 10 : 0) + (downKey ? -10 : 0) + (rightKey ? 1 : 0) + (leftKey ? -1 : 0);
-
+		// probably a dumb way of doing this. YOU HEAR ME? THIS IS ALMOST CERTAINLY STUPID
 		int direction = 
 			  ((Input.GetKey(keybindings.keys[0, 0]) | Input.GetKey(keybindings.keys[0, 1]) | joystickLastState[0]) ? 10 : 0) 
 			+ ((Input.GetKey(keybindings.keys[1, 0]) | Input.GetKey(keybindings.keys[1, 1]) | joystickLastState[1]) ? -10 : 0) 
@@ -445,6 +444,8 @@ public class InputManager {
 
 
 		#region OnKeyDown Input
+		// Send notification if a key was pressed down this frame
+
 		// up - 0
 		if (Input.GetKeyDown(keybindings.keys[0, 0]) | Input.GetKeyDown(keybindings.keys[0, 1]) | (joystickStateChange[0] & joystickLastState[0])) {
 			NotificationCenter.instance.PostNotification("KeyDown_Up");
@@ -485,6 +486,8 @@ public class InputManager {
 
 
 		#region OnKeyUp Input
+		// Send notification if a key was released this frame
+
 		// up - 0
 		if (Input.GetKeyUp(keybindings.keys[0, 0]) | Input.GetKeyUp(keybindings.keys[0, 1]) | (joystickStateChange[0] & !joystickLastState[0])) {
 			NotificationCenter.instance.PostNotification("KeyDown_Up");
