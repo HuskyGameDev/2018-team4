@@ -23,15 +23,15 @@ public class InputTest : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		pos = target.transform.position;
-		if (InputManager.OnInput(left) && !InputManager.OnInput(right)) {
+		if (InputManager.instance.OnInput(left) && !InputManager.instance.OnInput(right)) {
 			pos.x += -speed * Time.deltaTime;
-		} else if (!InputManager.OnInput(left) && InputManager.OnInput(right)) {
+		} else if (!InputManager.instance.OnInput(left) && InputManager.instance.OnInput(right)) {
 			pos.x += speed * Time.deltaTime;
 		}
 
-		if (InputManager.OnInput(down) && !InputManager.OnInput(up)) {
+		if (InputManager.instance.OnInput(down) && !InputManager.instance.OnInput(up)) {
 			pos.y += -speed * Time.deltaTime;
-		} else if (!InputManager.OnInput(down) && InputManager.OnInput(up)) {
+		} else if (!InputManager.instance.OnInput(down) && InputManager.instance.OnInput(up)) {
 			pos.y += speed * Time.deltaTime;
 		}
 		target.transform.position = pos;
