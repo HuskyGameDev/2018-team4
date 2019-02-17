@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Card = BoardGameScripting.BGSScript; // Add an alias for a card to be a BoardGameScript
+using Card = System.Object;//******************WRONG. FIX EVENTUALLY*******************************************************
 
 public class CardDeck {
 

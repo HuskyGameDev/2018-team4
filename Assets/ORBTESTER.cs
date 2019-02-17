@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using OuroborosScripting;
-using OuroborosScripting.GeneratedLanguages;
+//using OuroborosScripting.GeneratedLanguages;
 using System.IO;
 
 public class ORBTESTER : MonoBehaviour {
@@ -15,6 +15,6 @@ public class ORBTESTER : MonoBehaviour {
 		//OuroborosLanguage b = new OuroborosLanguage();
 		//StartCoroutine(b.BuildParseTable());
 
-		StartCoroutine(OuroborosInterpreter.Execute<OuroborosLanguage>(contents));
+		//StartCoroutine(OuroborosInterpreter.Execute<OuroborosLanguage>(contents));
 	}
 }

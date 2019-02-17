@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Card = BoardGameScripting.BGSScript;
+using Card = System.Object;//BoardGameScripting.BGSScript;
 
 /// <summary>
 /// Player object. Holds player stats, the number of dice to roll for stats, the player's location, items, artifacts, status effects, etc.

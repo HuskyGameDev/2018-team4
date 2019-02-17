@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using BoardGameScripting;
+//using BoardGameScripting;
 
 public class BoardTile : MonoBehaviour {
 	
@@ -23,7 +23,7 @@ public class BoardTile : MonoBehaviour {
 	/// <summary>
 	/// The associated card script for this tile
 	/// </summary>
-	public BGSScript cardScript;
+	//public BGSScript cardScript;
 
 
 }
