@@ -2,7 +2,7 @@
 using System;
 using System.Collections;
 /// <summary>
-/// An alias for Action<Object, Object>, where the arguments are sender are args
+/// An alias for Action<Object, Object>, where the arguments are sender and args
 /// </summary>
 using Handler = System.Action<System.Object, System.Object>;
 
