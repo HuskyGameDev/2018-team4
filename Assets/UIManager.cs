@@ -38,6 +38,10 @@ public class UIManager : MonoBehaviour {
     public GameObject Gameplay;
     public GameObject Controls;
     public GameObject Pause;
+    public GameObject PlayerImageStats;
+    public GameObject ChoosePLayerCount;
+    public GameObject PlayerChooseAction;
+    public GameObject PlayerOrder;
     //public GameObject Dummy;
 
     public void OnOptionsClick()

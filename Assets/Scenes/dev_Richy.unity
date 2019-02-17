@@ -284,6 +284,39 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &127779043
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 127779044}
+  m_Layer: 5
+  m_Name: Game UI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &127779044
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 127779043}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 930549175}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &173266064
 GameObject:
   m_ObjectHideFlags: 0
@@ -487,6 +520,7 @@ GameObject:
   - component: {fileID: 487754039}
   - component: {fileID: 487754038}
   - component: {fileID: 487754037}
+  - component: {fileID: 487754040}
   m_Layer: 5
   m_Name: Audio Button
   m_TagString: Untagged
@@ -599,6 +633,28 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 487754035}
   m_CullTransparentMesh: 0
+--- !u!114 &487754040
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 487754035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: 
+  PlayEvent: 7
+  StopEvent: 8
+  CollisionTag: 
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: -1
+  OverrideMaxDistance: -1
 --- !u!1 &585560360
 GameObject:
   m_ObjectHideFlags: 0
@@ -610,6 +666,7 @@ GameObject:
   - component: {fileID: 585560363}
   - component: {fileID: 585560362}
   - component: {fileID: 585560364}
+  - component: {fileID: 585560365}
   m_Layer: 5
   m_Name: Start Game Button
   m_TagString: Untagged
@@ -706,6 +763,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8dcd4abc03fa4df468a2aeeb6a6ca148, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &585560365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 585560360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: 
+  PlayEvent: 7
+  StopEvent: 8
+  CollisionTag: 
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: -1
+  OverrideMaxDistance: -1
 --- !u!1 &603825940
 GameObject:
   m_ObjectHideFlags: 0
@@ -792,6 +871,7 @@ GameObject:
   - component: {fileID: 754903391}
   - component: {fileID: 754903390}
   - component: {fileID: 754903389}
+  - component: {fileID: 754903392}
   m_Layer: 5
   m_Name: Gameplay Button
   m_TagString: Untagged
@@ -904,6 +984,28 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 754903387}
   m_CullTransparentMesh: 0
+--- !u!114 &754903392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 754903387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: 
+  PlayEvent: 7
+  StopEvent: 8
+  CollisionTag: 
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: -1
+  OverrideMaxDistance: -1
 --- !u!1 &858898224
 GameObject:
   m_ObjectHideFlags: 0
@@ -1069,6 +1171,7 @@ RectTransform:
   - {fileID: 1832796432}
   - {fileID: 77490080}
   - {fileID: 933267166}
+  - {fileID: 127779044}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1369,6 +1472,7 @@ GameObject:
   - component: {fileID: 1137259592}
   - component: {fileID: 1137259591}
   - component: {fileID: 1137259590}
+  - component: {fileID: 1137259593}
   m_Layer: 5
   m_Name: Graphics Button
   m_TagString: Untagged
@@ -1481,6 +1585,28 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1137259588}
   m_CullTransparentMesh: 0
+--- !u!114 &1137259593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1137259588}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: 
+  PlayEvent: 7
+  StopEvent: 8
+  CollisionTag: 
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: -1
+  OverrideMaxDistance: -1
 --- !u!1 &1182602390
 GameObject:
   m_ObjectHideFlags: 0
@@ -1567,6 +1693,7 @@ GameObject:
   - component: {fileID: 1244169456}
   - component: {fileID: 1244169455}
   - component: {fileID: 1244169454}
+  - component: {fileID: 1244169457}
   m_Layer: 5
   m_Name: Abandon Button
   m_TagString: Untagged
@@ -1663,6 +1790,28 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1244169452}
   m_CullTransparentMesh: 0
+--- !u!114 &1244169457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1244169452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: 
+  PlayEvent: 7
+  StopEvent: 8
+  CollisionTag: 
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: -1
+  OverrideMaxDistance: -1
 --- !u!1 &1244229916
 GameObject:
   m_ObjectHideFlags: 0
@@ -1831,6 +1980,7 @@ GameObject:
   - component: {fileID: 1330148615}
   - component: {fileID: 1330148614}
   - component: {fileID: 1330148613}
+  - component: {fileID: 1330148616}
   m_Layer: 5
   m_Name: Controls Button
   m_TagString: Untagged
@@ -1943,6 +2093,28 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1330148611}
   m_CullTransparentMesh: 0
+--- !u!114 &1330148616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1330148611}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: 
+  PlayEvent: 7
+  StopEvent: 8
+  CollisionTag: 
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: -1
+  OverrideMaxDistance: -1
 --- !u!1 &1336254686
 GameObject:
   m_ObjectHideFlags: 0
@@ -2104,6 +2276,7 @@ GameObject:
   - component: {fileID: 1409903769}
   - component: {fileID: 1409903768}
   - component: {fileID: 1409903767}
+  - component: {fileID: 1409903770}
   m_Layer: 5
   m_Name: Options Button
   m_TagString: Untagged
@@ -2216,6 +2389,28 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1409903765}
   m_CullTransparentMesh: 0
+--- !u!114 &1409903770
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1409903765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: 
+  PlayEvent: 7
+  StopEvent: 8
+  CollisionTag: 
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: -1
+  OverrideMaxDistance: -1
 --- !u!1 &1413651048
 GameObject:
   m_ObjectHideFlags: 0
@@ -2227,6 +2422,7 @@ GameObject:
   - component: {fileID: 1413651052}
   - component: {fileID: 1413651051}
   - component: {fileID: 1413651050}
+  - component: {fileID: 1413651053}
   m_Layer: 5
   m_Name: Load Game Button
   m_TagString: Untagged
@@ -2339,6 +2535,28 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1413651048}
   m_CullTransparentMesh: 0
+--- !u!114 &1413651053
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1413651048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: 
+  PlayEvent: 7
+  StopEvent: 8
+  CollisionTag: 
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: -1
+  OverrideMaxDistance: -1
 --- !u!1 &1537465193
 GameObject:
   m_ObjectHideFlags: 0
@@ -2425,6 +2643,7 @@ GameObject:
   - component: {fileID: 1540649359}
   - component: {fileID: 1540649358}
   - component: {fileID: 1540649357}
+  - component: {fileID: 1540649360}
   m_Layer: 5
   m_Name: Save Game Button
   m_TagString: Untagged
@@ -2537,6 +2756,28 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1540649355}
   m_CullTransparentMesh: 0
+--- !u!114 &1540649360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1540649355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: 
+  PlayEvent: 7
+  StopEvent: 8
+  CollisionTag: 
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: -1
+  OverrideMaxDistance: -1
 --- !u!1 &1664480379
 GameObject:
   m_ObjectHideFlags: 0
@@ -2737,6 +2978,7 @@ GameObject:
   - component: {fileID: 1828260522}
   - component: {fileID: 1828260521}
   - component: {fileID: 1828260523}
+  - component: {fileID: 1828260524}
   m_Layer: 5
   m_Name: Options Button
   m_TagString: Untagged
@@ -2833,6 +3075,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8dcd4abc03fa4df468a2aeeb6a6ca148, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1828260524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1828260519}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: 
+  PlayEvent: 7
+  StopEvent: 8
+  CollisionTag: 
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: -1
+  OverrideMaxDistance: -1
 --- !u!1 &1832796431
 GameObject:
   m_ObjectHideFlags: 0
@@ -3022,6 +3286,7 @@ GameObject:
   - component: {fileID: 2072747765}
   - component: {fileID: 2072747764}
   - component: {fileID: 2072747763}
+  - component: {fileID: 2072747766}
   m_Layer: 5
   m_Name: Exit Button
   m_TagString: Untagged
@@ -3134,6 +3399,28 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2072747761}
   m_CullTransparentMesh: 0
+--- !u!114 &2072747766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2072747761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: 
+  PlayEvent: 7
+  StopEvent: 8
+  CollisionTag: 
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: -1
+  OverrideMaxDistance: -1
 --- !u!1 &2096671482
 GameObject:
   m_ObjectHideFlags: 0
@@ -3145,6 +3432,7 @@ GameObject:
   - component: {fileID: 2096671486}
   - component: {fileID: 2096671485}
   - component: {fileID: 2096671484}
+  - component: {fileID: 2096671487}
   m_Layer: 5
   m_Name: Resume Button
   m_TagString: Untagged
@@ -3257,6 +3545,28 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2096671482}
   m_CullTransparentMesh: 0
+--- !u!114 &2096671487
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2096671482}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a6610d2e704f1648819acc8d7460285, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: 
+  PlayEvent: 7
+  StopEvent: 8
+  CollisionTag: 
+  AllowFadeout: 1
+  TriggerOnce: 0
+  Preload: 0
+  Params: []
+  OverrideAttenuation: 0
+  OverrideMinDistance: -1
+  OverrideMaxDistance: -1
 --- !u!1 &2100724635
 GameObject:
   m_ObjectHideFlags: 0
