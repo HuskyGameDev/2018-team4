@@ -1,9 +1,16 @@
 fileFormatVersion: 2
 <<<<<<< HEAD
+<<<<<<< HEAD
 guid: e356ce6bc395cf04ead11207ad28f02b
 =======
 guid: d1a4cec806565e642a865098df77d5ba
 >>>>>>> 57213f1795981bdc20267f4600b0af01e3dd438c
+=======
+guid: 9380675475011e24fbe65dd6e1e914df
+=======
+guid: d1a4cec806565e642a865098df77d5ba
+>>>>>>> 3bf1687990c37698fbf2de90314aeded05fb939b
+>>>>>>> 777788bc58b78138f3ccb126b4a2688b394a2300
 TextureImporter:
   fileIDToRecycleName: {}
   externalObjects: {}
@@ -14,7 +21,11 @@ TextureImporter:
     enableMipMap: 1
 =======
     enableMipMap: 0
+<<<<<<< HEAD
 >>>>>>> 57213f1795981bdc20267f4600b0af01e3dd438c
+=======
+>>>>>>> 3bf1687990c37698fbf2de90314aeded05fb939b
+>>>>>>> 777788bc58b78138f3ccb126b4a2688b394a2300
     sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
@@ -58,7 +69,11 @@ TextureImporter:
   lightmap: 0
   compressionQuality: 50
   spriteMode: 1
+<<<<<<< HEAD
 >>>>>>> 57213f1795981bdc20267f4600b0af01e3dd438c
+=======
+>>>>>>> 3bf1687990c37698fbf2de90314aeded05fb939b
+>>>>>>> 777788bc58b78138f3ccb126b4a2688b394a2300
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -75,7 +90,11 @@ TextureImporter:
   alphaIsTransparency: 1
   spriteTessellationDetail: -1
   textureType: 8
+<<<<<<< HEAD
 >>>>>>> 57213f1795981bdc20267f4600b0af01e3dd438c
+=======
+>>>>>>> 3bf1687990c37698fbf2de90314aeded05fb939b
+>>>>>>> 777788bc58b78138f3ccb126b4a2688b394a2300
   textureShape: 1
   singleChannelComponent: 0
   maxTextureSizeSet: 0
@@ -103,7 +122,11 @@ TextureImporter:
     spriteID: 
 =======
     spriteID: 67cb1ff4e4f6bdd46b3fb068d7e59c98
+<<<<<<< HEAD
 >>>>>>> 57213f1795981bdc20267f4600b0af01e3dd438c
+=======
+>>>>>>> 3bf1687990c37698fbf2de90314aeded05fb939b
+>>>>>>> 777788bc58b78138f3ccb126b4a2688b394a2300
     vertices: []
     indices: 
     edges: []

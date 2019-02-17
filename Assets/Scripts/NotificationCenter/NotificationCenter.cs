@@ -79,7 +79,6 @@ public class NotificationCenter {
 			list.Add(handler);
 		}
 	}
-
 	/// <summary>
 	/// removes observer with given attributes
 	/// </summary>
@@ -103,7 +102,6 @@ public class NotificationCenter {
 
 		SenderTable subTable = _table[notificationName];
 		System.Object key = sender ?? (this);
-
 		if (!subTable.ContainsKey(key))
 			return;
 
@@ -115,7 +113,6 @@ public class NotificationCenter {
 			list.RemoveAt(index);
 		}
 	}
-
 	/// <summary>
 	/// Post notification w/ given notificationName, sender, and method arguments
 	/// </summary>
