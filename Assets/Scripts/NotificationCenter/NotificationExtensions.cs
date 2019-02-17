@@ -11,8 +11,8 @@ public static class NotificationExtensions {
 		NotificationCenter.instance.PostNotification(notificationName, obj);
 	}
 	
-	public static void PostNotification (this object obj, string notificationName, object e) {
-		NotificationCenter.instance.PostNotification(notificationName, obj, e);
+	public static void PostNotification (this object obj, string notificationName, object args) {
+		NotificationCenter.instance.PostNotification(notificationName, obj, args);
 	}
 	
 	public static void AddObserver (this object obj, Handler handler, string notificationName) {

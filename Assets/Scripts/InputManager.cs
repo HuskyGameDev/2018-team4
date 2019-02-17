@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-public class InputManager {
+public class InputManager : MonoBehaviour {
 	/*TODO: 
 	 *		[NO] mouse position/click stuff
 	 *		[X] Make into a singleton rather than static
 	 * 
 	 *		[X] joystick - "Axis_1h" & "Axis_1v"
-	 *		[_]		button-up/down
-	 *		[_]		diagonal-directions
+	 *		[_] Revamp axis input
+	 *		[X]		button-up/down
+	 *		[X]		diagonal-directions
 	 *				Should input check every frame happen in the input manager? Or should input be checked every frame by things looking for input?
-	 *		[_]		check happens in input-manager, sends notifications when receive input
+	 *		[X]		check happens in input-manager, sends notifications when receive input
 	 *		
 	 *		[?]Make sure buttonDown/Up does not trigger twice from both buttons being pressed if the first button is down when the second if pressed
 	*/
@@ -27,6 +28,11 @@ public class InputManager {
 	private int[] joystickStateCount = new int[4];  // count of frames that joystick has been sending input, all 0 when created
 	private bool[] joystickStateChange = new bool[4];	// indicates that joystick input has changes state this frame
 	private const int JOYSTICKTIME = 4;    // number of frames that joystick must give/not give input in order to change state
+
+	// 0 = up, 1 = down, 2 = left, 3 = right, 4 = upLeft, 5 = upRight, 6 = downLeft, 7 = downRight
+	//private bool[] joystickLastState = new bool[8]; // indicates if joystick input was considered pressed/not pressed last frame, all false when created
+	//private int[] joystickStateCount = new int[8];  // count of frames that joystick has been sending input, all 0 when created
+	//private bool[] joystickStateChange = new bool[8];   // indicates that joystick input has changes state this frame
 
 	/*	Key notifications take following form: "inputType_inputKey"
 	 * where "inputType" is one of these three options:
@@ -271,12 +277,21 @@ public class InputManager {
 	/// Every frame, check for input and send any notifications
 	/// </summary>
 	void Update() {
+		//Debug.Log("InputManager checking for inputs");
+
 		#region Joystick Data Processing
 		joystickStateChange[0] = false;	// any joystick state changes (KeyDown()/KeyUp()) should only last a single frame
 		joystickStateChange[1] = false;
 		joystickStateChange[2] = false;
 		joystickStateChange[3] = false;
 
+		//Input.GetAxis("Axis_1v")
+		//Input.GetAxis("Axis_1h")
+		// Tan(theta) = opposite/addjacent
+		//Debug.Log("Angle of ");
+		// r = (x^2+y^2)^(1/2)
+		// theta = Mathf.Atan2(y,x)
+		
 		// Check the state of the "up" direction of joystick as compared to last frame
 		if (Input.GetAxis("Axis_1v") < -0.5f) {	// up
 			if (joystickLastState[0]) { // joystick is up, & was up
@@ -383,6 +398,10 @@ public class InputManager {
 		// Send notification if a key is currently pressed down
 
 		// probably a dumb way of doing this. YOU HEAR ME? THIS IS ALMOST CERTAINLY STUPID
+		if (keybindings == null) {
+			LoadKeybinds();
+		}
+
 		int direction = 
 			  ((Input.GetKey(keybindings.keys[0, 0]) | Input.GetKey(keybindings.keys[0, 1]) | joystickLastState[0]) ? 10 : 0) 
 			+ ((Input.GetKey(keybindings.keys[1, 0]) | Input.GetKey(keybindings.keys[1, 1]) | joystickLastState[1]) ? -10 : 0) 
@@ -391,54 +410,58 @@ public class InputManager {
 
 		switch (direction) {
 			case 11:    // up & right
-				NotificationCenter.instance.PostNotification("Key_UpRight");
+				this.PostNotification("Key_UpRight");
 				break;	
 			case 10:    // up
-				NotificationCenter.instance.PostNotification("Key_Up");
+				this.PostNotification("Key_Up");
+				Debug.Log("Posting up input");
 				break;
 			case 9: // up & left
-				NotificationCenter.instance.PostNotification("Key_UpLeft");
+				this.PostNotification("Key_UpLeft");
 				break;
 			case 1: // right
-				NotificationCenter.instance.PostNotification("Key_Right");
+				this.PostNotification("Key_Right");
+				Debug.Log("Posting right input");
 				break;
 			case -1:    // left
-				NotificationCenter.instance.PostNotification("Key_Left");
+				this.PostNotification("Key_Left");
+				Debug.Log("Posting left input");
 				break;
 			case -9:    // down & right
-				NotificationCenter.instance.PostNotification("Key_DownRight");
+				this.PostNotification("Key_DownRight");
 				break;
 			case -10:   // down
-				NotificationCenter.instance.PostNotification("Key_Down");
+				this.PostNotification("Key_Down");
+				Debug.Log("Posting down input");
 				break;
 			case -11:   // down & left
-				NotificationCenter.instance.PostNotification("Key_DownLeft");
+				this.PostNotification("Key_DownLeft");
 				break;
 		}
 
 		// confirm - 4
 		if (Input.GetKey(keybindings.keys[4, 0]) | Input.GetKey(keybindings.keys[4, 1])) {
-			NotificationCenter.instance.PostNotification("Key_Confirm");
+			this.PostNotification("Key_Confirm");
 		}
 
 		// cancel - 5
 		if (Input.GetKey(keybindings.keys[5, 0]) | Input.GetKey(keybindings.keys[5, 1])) {
-			NotificationCenter.instance.PostNotification("Key_Cancel");
+			this.PostNotification("Key_Cancel");
 		}
 
 		// action_1 - 6
 		if (Input.GetKey(keybindings.keys[6, 0]) | Input.GetKey(keybindings.keys[6, 1])) {
-			NotificationCenter.instance.PostNotification("Key_Action_1");
+			this.PostNotification("Key_Action_1");
 		}
 
 		// action_2 - 7
 		if (Input.GetKey(keybindings.keys[7, 0]) | Input.GetKey(keybindings.keys[7, 1])) {
-			NotificationCenter.instance.PostNotification("Key_Action_2");
+			this.PostNotification("Key_Action_2");
 		}
 
 		// action_3 - 8
 		if (Input.GetKey(keybindings.keys[8, 0]) | Input.GetKey(keybindings.keys[8, 1])) {
-			NotificationCenter.instance.PostNotification("Key_Action_3");
+			this.PostNotification("Key_Action_3");
 		}
 		#endregion
 
@@ -448,39 +471,39 @@ public class InputManager {
 
 		// up - 0
 		if (Input.GetKeyDown(keybindings.keys[0, 0]) | Input.GetKeyDown(keybindings.keys[0, 1]) | (joystickStateChange[0] & joystickLastState[0])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Up");
+			this.PostNotification("KeyDown_Up");
 		}
 		// down - 1
 		if (Input.GetKeyDown(keybindings.keys[1, 0]) | Input.GetKeyDown(keybindings.keys[1, 1]) | (joystickStateChange[1] & joystickLastState[1])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Down");
+			this.PostNotification("KeyDown_Down");
 		}
 		// left - 2
 		if (Input.GetKeyDown(keybindings.keys[2, 0]) | Input.GetKeyDown(keybindings.keys[2, 1]) | (joystickStateChange[2] & joystickLastState[2])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Left");
+			this.PostNotification("KeyDown_Left");
 		}
 		// right - 3
 		if (Input.GetKeyDown(keybindings.keys[3, 0]) | Input.GetKeyDown(keybindings.keys[3, 1]) | (joystickStateChange[3] & joystickLastState[3])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Right");
+			this.PostNotification("KeyDown_Right");
 		}
 		// confirm - 4
 		if (Input.GetKeyDown(keybindings.keys[4, 0]) | Input.GetKeyDown(keybindings.keys[4, 1])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Confirm");
+			this.PostNotification("KeyDown_Confirm");
 		}
 		// cancel - 5
 		if (Input.GetKeyDown(keybindings.keys[5, 0]) | Input.GetKeyDown(keybindings.keys[5, 1])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Cancel");
+			this.PostNotification("KeyDown_Cancel");
 		}
 		// action_1 - 6
 		if (Input.GetKeyDown(keybindings.keys[6, 0]) | Input.GetKeyDown(keybindings.keys[6, 1])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Action_1");
+			this.PostNotification("KeyDown_Action_1");
 		}
 		// action_2 - 7
 		if (Input.GetKeyDown(keybindings.keys[7, 0]) | Input.GetKeyDown(keybindings.keys[7, 1])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Action_2");
+			this.PostNotification("KeyDown_Action_2");
 		}
 		// action_3 - 8
 		if (Input.GetKeyDown(keybindings.keys[8, 0]) | Input.GetKeyDown(keybindings.keys[8, 1])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Action_3");
+			this.PostNotification("KeyDown_Action_3");
 		}
 		#endregion
 
@@ -490,46 +513,46 @@ public class InputManager {
 
 		// up - 0
 		if (Input.GetKeyUp(keybindings.keys[0, 0]) | Input.GetKeyUp(keybindings.keys[0, 1]) | (joystickStateChange[0] & !joystickLastState[0])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Up");
+			this.PostNotification("KeyDown_Up");
 		}
 		// down - 1
 		if (Input.GetKeyUp(keybindings.keys[1, 0]) | Input.GetKeyUp(keybindings.keys[1, 1]) | (joystickStateChange[1] & !joystickLastState[1])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Down");
+			this.PostNotification("KeyDown_Down");
 		}
 		// left - 2
 		if (Input.GetKeyUp(keybindings.keys[2, 0]) | Input.GetKeyUp(keybindings.keys[2, 1]) | (joystickStateChange[2] & !joystickLastState[2])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Left");
+			this.PostNotification("KeyDown_Left");
 		}
 		// right - 3
 		if (Input.GetKeyUp(keybindings.keys[3, 0]) | Input.GetKeyUp(keybindings.keys[3, 1]) | (joystickStateChange[3] & !joystickLastState[3])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Right");
+			this.PostNotification("KeyDown_Right");
 		}
 		// confirm - 4
 		if (Input.GetKeyUp(keybindings.keys[4, 0]) | Input.GetKeyUp(keybindings.keys[4, 1])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Confirm");
+			this.PostNotification("KeyDown_Confirm");
 		}
 		// cancel - 5
 		if (Input.GetKeyUp(keybindings.keys[5, 0]) | Input.GetKeyUp(keybindings.keys[5, 1])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Cancel");
+			this.PostNotification("KeyDown_Cancel");
 		}
 		// action_1 - 6
 		if (Input.GetKeyUp(keybindings.keys[6, 0]) | Input.GetKeyUp(keybindings.keys[6, 1])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Action_1");
+			this.PostNotification("KeyDown_Action_1");
 		}
 		// action_2 - 7
 		if (Input.GetKeyUp(keybindings.keys[7, 0]) | Input.GetKeyUp(keybindings.keys[7, 1])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Action_2");
+			this.PostNotification("KeyDown_Action_2");
 		}
 		// action_3 - 8
 		if (Input.GetKeyUp(keybindings.keys[8, 0]) | Input.GetKeyUp(keybindings.keys[8, 1])) {
-			NotificationCenter.instance.PostNotification("KeyDown_Action_3");
+			this.PostNotification("KeyDown_Action_3");
 		}
 		#endregion
 	}
 
 
 	#region OLD - Direct Key Check
-	
+	/*
 	/// <summary>
 	/// Check if either of the keys bound to the action are pressed down.
 	/// </summary>
@@ -580,9 +603,9 @@ public class InputManager {
 	public bool OnInputUp(Action action) {
 		int action_num = (int)action;
 		return (Input.GetKeyUp(keybindings.keys[action_num, 0]) | Input.GetKeyUp(keybindings.keys[action_num, 1]));
-	}
+	}*/
 	#endregion
-
+	
 	/*public static void WaitForKeybindInput(Action action, bool primary) {
 		MonoBehaviour.StartCoroutine(WaitForKeybindInput_Coroutine(action, primary));
 	}*/

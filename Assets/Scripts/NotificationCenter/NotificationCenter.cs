@@ -120,6 +120,9 @@ public class NotificationCenter {
 	/// <param name="sender"></param>
 	/// <param name="arg"></param>
 	public void PostNotification(string notificationName, System.Object sender = null, System.Object arg = null) {
+		Debug.Log("Posting notification: \"" + notificationName + "\"");
+
+
 		if (string.IsNullOrEmpty(notificationName)) {
 			Debug.LogError("A notification name is required");
 			return;

@@ -10,15 +10,15 @@ public class KeybindTest : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-
+		/*
 		if (InputManager.instance.OnInputDown(confirm)) {
 			Debug.Log("Set/Save keybind");
-			/*
-			InputManager.ModifyKeybinds(InputManager.Action.up, true, KeyCode.Keypad8);
-			InputManager.ModifyKeybinds(InputManager.Action.down, true, KeyCode.Keypad5);
-			InputManager.ModifyKeybinds(InputManager.Action.left, true, KeyCode.Keypad4);
-			InputManager.ModifyKeybinds(InputManager.Action.right, true, KeyCode.Keypad6);
-			*/
+			
+			//InputManager.ModifyKeybinds(InputManager.Action.up, true, KeyCode.Keypad8);
+			//InputManager.ModifyKeybinds(InputManager.Action.down, true, KeyCode.Keypad5);
+			//InputManager.ModifyKeybinds(InputManager.Action.left, true, KeyCode.Keypad4);
+			//InputManager.ModifyKeybinds(InputManager.Action.right, true, KeyCode.Keypad6);
+			
 			InputManager.instance.ApplyKeybinds();
 		}
 
@@ -33,5 +33,6 @@ public class KeybindTest : MonoBehaviour {
 			Debug.Log("Starting WaitForKeybindInput Coroutine");
 			StartCoroutine(InputManager.instance.WaitForKeybindInput(InputManager.Action.up, false));
 		}
+*/
 	}
 }
