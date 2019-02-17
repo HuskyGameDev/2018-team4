@@ -11,12 +11,14 @@ namespace StateMachineSystem.CreatedStates{
         public override IEnumerator<object> Enter() {
             //Wait for base
             yield return base.Enter();
+            this.PostNotification("Options Menu Enable");
             Debug.Log("Enable options menu UI");
         }
 
         public override IEnumerator<object> Exit() {
             //Wait for base
             yield return base.Exit();
+            this.PostNotification("Options Menu Disable");
             Debug.Log("Disable options Menu");
         }
 
@@ -26,27 +28,55 @@ namespace StateMachineSystem.CreatedStates{
 
         protected override void AddListeners() {
             base.AddListeners();
-            Debug.Log("AddListener for Back button ");
-            this.AddObserver(OnBackButton, "OptionsBackButton");
-            Debug.Log("AddListener for Apply changes button");
-            //this.AddObserver(OnApplyButton, "OptionsApplyButton");
-            Debug.Log("AddListener for Sub Menu buttons");
-            //this.AddObserver(OnSubMenuXButton, "OptionSubMenuXButton");
+            this.AddObserver(ShowGameplayMenu, "Gameplay Menu Pressed");
+            this.AddObserver(ShowAudioMenu, "Audio Menu Pressed");
+            this.AddObserver(ShowControlsMenu, "Controls Menu Pressed");
+            this.AddObserver(ShowGraphicsMenu, "Graphics Menu Pressed");
+            this.AddObserver(DisableAllSubMenus, "Options Menu Pressed");
         }
 
         protected override void RemoveListeners() {
             base.RemoveListeners();
-            Debug.Log("RemoveListener for Back button ");
-            this.RemoveObserver(OnBackButton, "OptionsBackButton");
-            Debug.Log("RemoveListener for Apply changes button");
-            //this.RemoveObserver(OnApplyButton, "OptionsApplyButton");
-            Debug.Log("RemoveListener for Sub Menu buttons");
-            //this.RemoveObserver(OnSubMenuXButton, "OptionSubMenuXButton");
+            this.RemoveObserver(ShowGameplayMenu, "Gameplay Menu Pressed");
+            this.RemoveObserver(ShowAudioMenu, "Audio Menu Pressed");
+            this.RemoveObserver(ShowControlsMenu, "Controls Menu Pressed");
+            this.RemoveObserver(ShowGraphicsMenu, "Graphics Menu Pressed");
+            this.RemoveObserver(DisableAllSubMenus, "Options Menu Pressed");
         }
 
         void OnBackButton(object send, object args) {
             Debug.Log("Transition to Main menu");
             owner.ChangeState<MainMenuState>();
         }
+        void ShowGameplayMenu(object send,object args)
+        {
+            this.PostNotification("Options Menu Disable");
+            this.PostNotification("Gameplay Menu Enable");
+        }
+        void ShowAudioMenu(object send, object args)
+        {
+            this.PostNotification("Options Menu Disable");
+            this.PostNotification("Audio Menu Enable");
+        }
+        void ShowControlsMenu(object send, object args)
+        {
+            this.PostNotification("Options Menu Disable");
+            this.PostNotification("Audio Menu Enable");
+        }
+        void ShowGraphicsMenu(object send, object args)
+        {
+            this.PostNotification("Options Menu Disable");
+            this.PostNotification("Audio Menu Enable");
+        }
+        void DisableAllSubMenus(object send, object args)
+        {
+            this.PostNotification("Options Menu Enable");
+            this.PostNotification("Audio Menu Disable");
+            this.PostNotification("Gameplay Menu Disable");
+            this.PostNotification("Graphics Menu Disable");
+            this.PostNotification("Controls Menu Disable");
+            this.PostNotification("Pause Menu Disable");
+        }
+
     }
 }

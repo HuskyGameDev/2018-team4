@@ -10,10 +10,12 @@ namespace StateMachineSystem.CreatedStates{
         public override IEnumerator<object> Enter(){
             yield return base.Enter();
             Debug.Log("Enable Main menu UI");
+            this.PostNotification("Main Menu Enable");
         }
         public override IEnumerator<object> Exit() {
            yield return base.Exit();
             Debug.Log("Disable Main menu UI");
+            this.PostNotification("Main Menu Disable");
         }
 
 
@@ -23,16 +25,17 @@ namespace StateMachineSystem.CreatedStates{
 
         protected override void AddListeners() {
             base.AddListeners();
-            this.AddObserver(GetOut, "MainMenuExitGameButton");
-            this.AddObserver(OptionsMenu, "MainMenuOptionsMenuButton");
-            this.AddObserver(StartGame, "MainMenuStartGameButton");
+            this.AddObserver(OptionsMenu,"Options Menu Pressed");
+            this.AddObserver(StartGame, "Start Game Pressed");
+            this.AddObserver(GetOut, "Abandon Pressed");
+            
         }
 
         protected override void RemoveListeners() {
             base.RemoveListeners();
-            this.RemoveObserver(GetOut, "MainMenuExitGameButton");
-            this.RemoveObserver(OptionsMenu, "MainMenuOptionsMenuButton");
-            this.RemoveObserver(StartGame, "MainMenuStartGameButton");
+            this.RemoveObserver(OptionsMenu, "Options Menu Pressed");
+            this.RemoveObserver(StartGame, "Start Game Pressed");
+            this.RemoveObserver(GetOut, "Abandon Pressed");
         }
 
         public void StartGame(object sender, object args){
@@ -52,5 +55,6 @@ namespace StateMachineSystem.CreatedStates{
             Debug.Break();
             Application.Quit();
         }
+       
     }
 }

@@ -1,10 +1,10 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
-using ScriptSegment = System.Collections.Generic.List<OuroborosScripting.OuroborosInterpreter.ProcessedToken>;
+using ScriptSegment = System.Collections.Generic.List<System.Object>; //INcorrectr
 
 namespace BoardGameScripting {
 	/// <summary>

@@ -11,7 +11,7 @@ public class KeybindTest : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (InputManager.OnInputDown(confirm)) {
+		if (InputManager.instance.OnInputDown(confirm)) {
 			Debug.Log("Set/Save keybind");
 			/*
 			InputManager.ModifyKeybinds(InputManager.Action.up, true, KeyCode.Keypad8);
@@ -19,19 +19,19 @@ public class KeybindTest : MonoBehaviour {
 			InputManager.ModifyKeybinds(InputManager.Action.left, true, KeyCode.Keypad4);
 			InputManager.ModifyKeybinds(InputManager.Action.right, true, KeyCode.Keypad6);
 			*/
-			InputManager.ApplyKeybinds();
+			InputManager.instance.ApplyKeybinds();
 		}
 
-		if (InputManager.OnInputDown(cancel)) {
+		if (InputManager.instance.OnInputDown(cancel)) {
 			Debug.Log("Reset keybind");
-			InputManager.ResetKeybinds();
+			InputManager.instance.ResetKeybinds();
 
-			InputManager.ApplyKeybinds();
+			InputManager.instance.ApplyKeybinds();
 		}
 
-		if (InputManager.OnInputDown(action_1)) {
+		if (InputManager.instance.OnInputDown(action_1)) {
 			Debug.Log("Starting WaitForKeybindInput Coroutine");
-			StartCoroutine(InputManager.WaitForKeybindInput(InputManager.Action.up, false));
+			StartCoroutine(InputManager.instance.WaitForKeybindInput(InputManager.Action.up, false));
 		}
 	}
 }

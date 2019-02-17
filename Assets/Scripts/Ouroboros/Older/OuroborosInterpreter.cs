@@ -360,7 +360,7 @@ namespace OuroborosScripting {
 						}
 						else {
 							//This means it is a non terminal, so we must yield to its results, and pass it a llamda expression callback that assigns this specific member
-							yield return GameManager._instance.StartCoroutine(rhs[i].rule(new CoroutineWrapper(enviroment, rhs[i], (object data) => { expressionResults[i] = data; })));
+							yield return null;//COMMENTED OUT TO FIX COMPILER ERROR GameManager._instance.StartCoroutine(rhs[i].rule(new CoroutineWrapper(enviroment, rhs[i], (object data) => { expressionResults[i] = data; })));
 						}
 					}
 				}

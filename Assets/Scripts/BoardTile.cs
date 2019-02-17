@@ -23,7 +23,7 @@ public class BoardTile : MonoBehaviour {
 	/// <summary>
 	/// The associated card script for this tile
 	/// </summary>
-	public BGSScript cardScript;
+	//public BGSScript cardScript;
 
 
 }
