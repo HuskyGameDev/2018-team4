@@ -23,16 +23,10 @@ public class InputManager : MonoBehaviour {
 	private Keybindings temp_keybindings = null; // potential changes to keybindings, can then be applied or discarded
 	private System.Runtime.Serialization.IFormatter formatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();    // used for saving/loading keybindings from file
 
-	// Used for deciding if joystick input was "pressed" or "released" this frame
-	private bool[] joystickLastState = new bool[4];	// indicates if joystick input was considered pressed/not pressed last frame, all false when created
-	private int[] joystickStateCount = new int[4];  // count of frames that joystick has been sending input, all 0 when created
-	private bool[] joystickStateChange = new bool[4];	// indicates that joystick input has changes state this frame
-	private const int JOYSTICKTIME = 4;    // number of frames that joystick must give/not give input in order to change state
-
-	// 0 = up, 1 = down, 2 = left, 3 = right, 4 = upLeft, 5 = upRight, 6 = downLeft, 7 = downRight
-	//private bool[] joystickLastState = new bool[8]; // indicates if joystick input was considered pressed/not pressed last frame, all false when created
-	//private int[] joystickStateCount = new int[8];  // count of frames that joystick has been sending input, all 0 when created
-	//private bool[] joystickStateChange = new bool[8];   // indicates that joystick input has changes state this frame
+	// Used for deciding if arrow key input was "pressed" or "released" this frame
+	private bool[] state = new bool[8];
+	private bool[] lastState = new bool[8]; // 
+	private const float REQUIREDVAL = 0.6f;
 
 	/*	Key notifications take following form: "inputType_inputKey"
 	 * where "inputType" is one of these three options:
@@ -278,166 +272,78 @@ public class InputManager : MonoBehaviour {
 	/// </summary>
 	void Update() {
 		//Debug.Log("InputManager checking for inputs");
-
-		#region Joystick Data Processing
-		joystickStateChange[0] = false;	// any joystick state changes (KeyDown()/KeyUp()) should only last a single frame
-		joystickStateChange[1] = false;
-		joystickStateChange[2] = false;
-		joystickStateChange[3] = false;
-
-		//Input.GetAxis("Axis_1v")
-		//Input.GetAxis("Axis_1h")
-		// Tan(theta) = opposite/addjacent
-		//Debug.Log("Angle of ");
-		// r = (x^2+y^2)^(1/2)
-		// theta = Mathf.Atan2(y,x)
-		
-		// Check the state of the "up" direction of joystick as compared to last frame
-		if (Input.GetAxis("Axis_1v") < -0.5f) {	// up
-			if (joystickLastState[0]) { // joystick is up, & was up
-				joystickStateCount[0] = 0; // reset count
-			} else {    // joystick is up, & was not up
-				joystickStateCount[0] += 1; // increase count, check if greater than JOYSTICKTIME, possibly switch lastState
-				if (joystickStateCount[0] > JOYSTICKTIME) {
-					joystickStateChange[0] = true;
-					joystickLastState[0] = true;
-					joystickStateCount[0] = 0;	// reset count
-				}
-			}
-		} else {
-			if (joystickLastState[0]) { // joystick is not up, & was up
-				joystickStateCount[0] += 1; // increase count, check if greater than JOYSTICKTIME, possibly switch lastState
-				if (joystickStateCount[0] > JOYSTICKTIME) {
-					joystickStateChange[0] = true;
-					joystickLastState[0] = false;
-					joystickStateCount[0] = 0;  // reset count
-				}
-			} else {    // joystick is not up, & was not up
-				joystickStateCount[0] = 0; // reset count
-			}
-		}
-
-		// Check the state of the "down" direction of joystick as compared to last frame
-		if (Input.GetAxis("Axis_1v") > 0.5f) { // down
-			if (joystickLastState[1]) { // joystick is up, & was up
-				joystickStateCount[1] = 0; // reset count
-			} else {    // joystick is up, & was not up
-				joystickStateCount[1] += 1; // increase count, check if greater than JOYSTICKTIME, possibly switch lastState
-				if (joystickStateCount[1] > JOYSTICKTIME) {
-					joystickStateChange[1] = true;
-					joystickLastState[1] = true;
-					joystickStateCount[1] = 0;  // reset count
-				}
-			}
-		} else {
-			if (joystickLastState[1]) { // joystick is not up, & was up
-				joystickStateCount[1] += 1; // increase count, check if greater than JOYSTICKTIME, possibly switch lastState
-				if (joystickStateCount[1] > JOYSTICKTIME) {
-					joystickStateChange[1] = true;
-					joystickLastState[1] = false;
-					joystickStateCount[1] = 0;  // reset count
-				}
-			} else {    // joystick is not up, & was not up
-				joystickStateCount[1] = 0; // reset count
-			}
-		}
-
-		// Check the state of the "left" direction of joystick as compared to last frame
-		if (Input.GetAxis("Axis_1h") > 0.5f) { // left
-			if (joystickLastState[2]) { // joystick is up, & was up
-				joystickStateCount[2] = 0; // reset count
-			} else {    // joystick is up, & was not up
-				joystickStateCount[2] += 1; // increase count, check if greater than JOYSTICKTIME, possibly switch lastState
-				if (joystickStateCount[2] > JOYSTICKTIME) {
-					joystickStateChange[2] = true;
-					joystickLastState[2] = true;
-					joystickStateCount[2] = 0;  // reset count
-				}
-			}
-		} else {
-			if (joystickLastState[2]) { // joystick is not up, & was up
-				joystickStateCount[2] += 1; // increase count, check if greater than JOYSTICKTIME, possibly switch lastState
-				if (joystickStateCount[2] > JOYSTICKTIME) {
-					joystickStateChange[2] = true;
-					joystickLastState[2] = false;
-					joystickStateCount[2] = 0;  // reset count
-				}
-			} else {    // joystick is not up, & was not up
-				joystickStateCount[2] = 0; // reset count
-			}
-		}
-
-		// Check the state of the "right" direction of joystick as compared to last frame
-		if (Input.GetAxis("Axis_1h") < -0.5f) { // right
-			if (joystickLastState[3]) { // joystick is up, & was up
-				joystickStateCount[3] = 0; // reset count
-			} else {    // joystick is up, & was not up
-				joystickStateCount[3] += 1; // increase count, check if greater than JOYSTICKTIME, possibly switch lastState
-				if (joystickStateCount[3] > JOYSTICKTIME) {
-					joystickStateChange[3] = true;
-					joystickLastState[3] = true;
-					joystickStateCount[3] = 0;  // reset count
-				}
-			}
-		} else {
-			if (joystickLastState[3]) { // joystick is not up, & was up
-				joystickStateCount[3] += 1; // increase count, check if greater than JOYSTICKTIME, possibly switch lastState
-				if (joystickStateCount[3] > JOYSTICKTIME) {
-					joystickStateChange[3] = true;
-					joystickLastState[3] = false;
-					joystickStateCount[3] = 0;  // reset count
-				}
-			} else {    // joystick is not up, & was not up
-				joystickStateCount[3] = 0; // reset count
-			}
-		}
-
-		#endregion
-
-		#region OnKey Input
-		// Send notification if a key is currently pressed down
-
-		// probably a dumb way of doing this. YOU HEAR ME? THIS IS ALMOST CERTAINLY STUPID
 		if (keybindings == null) {
 			LoadKeybinds();
 		}
 
-		int direction = 
-			  ((Input.GetKey(keybindings.keys[0, 0]) | Input.GetKey(keybindings.keys[0, 1]) | joystickLastState[0]) ? 10 : 0) 
-			+ ((Input.GetKey(keybindings.keys[1, 0]) | Input.GetKey(keybindings.keys[1, 1]) | joystickLastState[1]) ? -10 : 0) 
-			+ ((Input.GetKey(keybindings.keys[2, 0]) | Input.GetKey(keybindings.keys[2, 1]) | joystickLastState[2]) ? 1 : 0) 
-			+ ((Input.GetKey(keybindings.keys[3, 0]) | Input.GetKey(keybindings.keys[3, 1]) | joystickLastState[3]) ? -1 : 0);
+		#region Arrow Key Stuff
+		// any joystick state changes (KeyDown()/KeyUp()) should only last a single frame
+		//joystickStateChange[0] = false; 
+		float verti = Input.GetAxis("Axis_1v");
+		float horiz = Input.GetAxis("Axis_1h");
 
-		switch (direction) {
-			case 11:    // up & right
-				this.PostNotification("Key_UpRight");
-				break;	
-			case 10:    // up
-				this.PostNotification("Key_Up");
-				Debug.Log("Posting up input");
-				break;
-			case 9: // up & left
-				this.PostNotification("Key_UpLeft");
-				break;
-			case 1: // right
-				this.PostNotification("Key_Right");
-				Debug.Log("Posting right input");
-				break;
-			case -1:    // left
-				this.PostNotification("Key_Left");
-				Debug.Log("Posting left input");
-				break;
-			case -9:    // down & right
-				this.PostNotification("Key_DownRight");
-				break;
-			case -10:   // down
-				this.PostNotification("Key_Down");
-				Debug.Log("Posting down input");
-				break;
-			case -11:   // down & left
-				this.PostNotification("Key_DownLeft");
-				break;
+		state[0] = ((verti < -REQUIREDVAL) ? true : false) || Input.GetKey(keybindings.keys[0, 0]) || Input.GetKey(keybindings.keys[0, 1]);  // up
+		state[1] = ((verti > REQUIREDVAL) ? true : false) || Input.GetKey(keybindings.keys[1, 0]) || Input.GetKey(keybindings.keys[1, 1]);  // down
+		state[2] = ((horiz < -REQUIREDVAL) ? true : false) || Input.GetKey(keybindings.keys[2, 0]) || Input.GetKey(keybindings.keys[2, 1]);  // left
+		state[3] = ((horiz > REQUIREDVAL) ? true : false) || Input.GetKey(keybindings.keys[3, 0]) || Input.GetKey(keybindings.keys[3, 1]);  // right
+
+		state[4] = state[0] && state[1]; // up right
+		state[5] = state[1] && state[2]; // down right
+		state[6] = state[2] && state[3]; // down left
+		state[7] = state[3] && state[0]; // up left
+
+		for (int i = 0; i < 8; i++) {
+			string key;
+			switch (i) {
+				case 0:
+					key = "Up";
+					break;
+				case 1:
+					key = "Down";
+					break;
+				case 2:
+					key = "Left";
+					break;
+				case 3:
+					key = "Right";
+					break;
+				case 4:
+					key = "UpRight";
+					break;
+				case 5:
+					key = "DownRight";
+					break;
+				case 6:
+					key = "DownLeft";
+					break;
+				case 7:
+					key = "UpLeft";
+					break;
+				default:
+					key = "";
+					break;
+			}
+
+			if (state[i]) {    // up
+				this.PostNotification("Key_" + key);
+				if (!lastState[i]) {
+					lastState[i] = true;
+					this.PostNotification("KeyDown_" + key);
+				}
+			} else {
+				if (lastState[i]) {
+					lastState[i] = false;
+					this.PostNotification("KeyUp_" + key);
+				}
+			}
 		}
+		
+
+		#endregion
+
+
+		#region OnKey Input
+		// Send notification if a key is currently pressed down
 
 		// confirm - 4
 		if (Input.GetKey(keybindings.keys[4, 0]) | Input.GetKey(keybindings.keys[4, 1])) {
@@ -469,22 +375,6 @@ public class InputManager : MonoBehaviour {
 		#region OnKeyDown Input
 		// Send notification if a key was pressed down this frame
 
-		// up - 0
-		if (Input.GetKeyDown(keybindings.keys[0, 0]) | Input.GetKeyDown(keybindings.keys[0, 1]) | (joystickStateChange[0] & joystickLastState[0])) {
-			this.PostNotification("KeyDown_Up");
-		}
-		// down - 1
-		if (Input.GetKeyDown(keybindings.keys[1, 0]) | Input.GetKeyDown(keybindings.keys[1, 1]) | (joystickStateChange[1] & joystickLastState[1])) {
-			this.PostNotification("KeyDown_Down");
-		}
-		// left - 2
-		if (Input.GetKeyDown(keybindings.keys[2, 0]) | Input.GetKeyDown(keybindings.keys[2, 1]) | (joystickStateChange[2] & joystickLastState[2])) {
-			this.PostNotification("KeyDown_Left");
-		}
-		// right - 3
-		if (Input.GetKeyDown(keybindings.keys[3, 0]) | Input.GetKeyDown(keybindings.keys[3, 1]) | (joystickStateChange[3] & joystickLastState[3])) {
-			this.PostNotification("KeyDown_Right");
-		}
 		// confirm - 4
 		if (Input.GetKeyDown(keybindings.keys[4, 0]) | Input.GetKeyDown(keybindings.keys[4, 1])) {
 			this.PostNotification("KeyDown_Confirm");
@@ -510,23 +400,7 @@ public class InputManager : MonoBehaviour {
 
 		#region OnKeyUp Input
 		// Send notification if a key was released this frame
-
-		// up - 0
-		if (Input.GetKeyUp(keybindings.keys[0, 0]) | Input.GetKeyUp(keybindings.keys[0, 1]) | (joystickStateChange[0] & !joystickLastState[0])) {
-			this.PostNotification("KeyDown_Up");
-		}
-		// down - 1
-		if (Input.GetKeyUp(keybindings.keys[1, 0]) | Input.GetKeyUp(keybindings.keys[1, 1]) | (joystickStateChange[1] & !joystickLastState[1])) {
-			this.PostNotification("KeyDown_Down");
-		}
-		// left - 2
-		if (Input.GetKeyUp(keybindings.keys[2, 0]) | Input.GetKeyUp(keybindings.keys[2, 1]) | (joystickStateChange[2] & !joystickLastState[2])) {
-			this.PostNotification("KeyDown_Left");
-		}
-		// right - 3
-		if (Input.GetKeyUp(keybindings.keys[3, 0]) | Input.GetKeyUp(keybindings.keys[3, 1]) | (joystickStateChange[3] & !joystickLastState[3])) {
-			this.PostNotification("KeyDown_Right");
-		}
+		
 		// confirm - 4
 		if (Input.GetKeyUp(keybindings.keys[4, 0]) | Input.GetKeyUp(keybindings.keys[4, 1])) {
 			this.PostNotification("KeyDown_Confirm");

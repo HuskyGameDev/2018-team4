@@ -122,6 +122,7 @@ GameObject:
   m_Component:
   - component: {fileID: 74930066}
   - component: {fileID: 74930067}
+  - component: {fileID: 74930068}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -156,6 +157,17 @@ MonoBehaviour:
   systemStateMachine: {fileID: 0}
   boardTilePrefab: {fileID: 0}
   boardHolder: {fileID: 0}
+--- !u!114 &74930068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 74930065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeee9d90481d8314ca2427644edc3350, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &157799649
 GameObject:
   m_ObjectHideFlags: 0
@@ -348,12 +360,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraOffset: {x: 0, y: 0, z: -10}
-  testObject:
-  - {fileID: 1817589114}
-  - {fileID: 157799649}
-  - {fileID: 1562078578}
-  - {fileID: 1093493913}
-  - {fileID: 1073940628}
 --- !u!1 &1073940628
 GameObject:
   m_ObjectHideFlags: 0
@@ -554,6 +560,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   confirm: 4
   cancel: 5
+  action_1: 6
 --- !u!1 &1190501829
 GameObject:
   m_ObjectHideFlags: 0
@@ -717,10 +724,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd758d7f2138f0248b897cfa48e31172, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  left: 2
-  right: 3
-  up: 0
-  down: 1
   target: {fileID: 0}
   speed: 1
 --- !u!1 &1817589114
