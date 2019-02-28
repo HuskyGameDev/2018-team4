@@ -9,7 +9,7 @@ public class InputManager : MonoBehaviour {
 	 *		[X] Make into a singleton rather than static
 	 * 
 	 *		[X] joystick - "Axis_1h" & "Axis_1v"
-	 *		[_] Revamp axis input
+	 *		[X] Revamp axis input
 	 *		[X]		button-up/down
 	 *		[X]		diagonal-directions
 	 *				Should input check every frame happen in the input manager? Or should input be checked every frame by things looking for input?
@@ -48,9 +48,7 @@ public class InputManager : MonoBehaviour {
 	 *		"Action_1"	: action #1
 	 *		"Action_2"	: action #2
 	 *		"Action_3"	: action #3
-	 *		
-	 *	Note that diagonal directions (UpRight, UpLeft, DownRight, DownLeft) only have the "Key" inputType, not "KeyUp" or "KeyDown"
-	 *		
+	 *			
 	 * Example #1 "KeyDown_Confirm" : confirm key was pressed down this frame
 	 * Example #2 "KeyUp_Down" : Down direction key was released this frame
 	 */
@@ -282,19 +280,20 @@ public class InputManager : MonoBehaviour {
 		float verti = Input.GetAxis("Axis_1v");
 		float horiz = Input.GetAxis("Axis_1h");
 
+		// Get input from joystick or either bound key
 		state[0] = ((verti < -REQUIREDVAL) ? true : false) || Input.GetKey(keybindings.keys[0, 0]) || Input.GetKey(keybindings.keys[0, 1]);  // up
 		state[1] = ((verti > REQUIREDVAL) ? true : false) || Input.GetKey(keybindings.keys[1, 0]) || Input.GetKey(keybindings.keys[1, 1]);  // down
 		state[2] = ((horiz < -REQUIREDVAL) ? true : false) || Input.GetKey(keybindings.keys[2, 0]) || Input.GetKey(keybindings.keys[2, 1]);  // left
 		state[3] = ((horiz > REQUIREDVAL) ? true : false) || Input.GetKey(keybindings.keys[3, 0]) || Input.GetKey(keybindings.keys[3, 1]);  // right
-
+		// diagonal directions are based on cardinal directions
 		state[4] = state[0] && state[1]; // up right
 		state[5] = state[1] && state[2]; // down right
 		state[6] = state[2] && state[3]; // down left
 		state[7] = state[3] && state[0]; // up left
 
-		for (int i = 0; i < 8; i++) {
+		for (int i = 0; i < 8; i++) {	// for each directional input
 			string key;
-			switch (i) {
+			switch (i) {	// for each posted notification, the last part of the string is the only thing that changes
 				case 0:
 					key = "Up";
 					break;
@@ -324,16 +323,16 @@ public class InputManager : MonoBehaviour {
 					break;
 			}
 
-			if (state[i]) {    // up
-				this.PostNotification("Key_" + key);
-				if (!lastState[i]) {
+			if (state[i]) {    // if the key is pressed down
+				this.PostNotification("Key_" + key);	// post Key notification
+				if (!lastState[i]) {	// if key was not pressed down last frame
 					lastState[i] = true;
-					this.PostNotification("KeyDown_" + key);
+					this.PostNotification("KeyDown_" + key);	// post KeyDown notification
 				}
-			} else {
-				if (lastState[i]) {
+			} else {	// if key is not pressed
+				if (lastState[i]) {	// if key was pressed down last frame
 					lastState[i] = false;
-					this.PostNotification("KeyUp_" + key);
+					this.PostNotification("KeyUp_" + key);	// post KeyUp notification
 				}
 			}
 		}
